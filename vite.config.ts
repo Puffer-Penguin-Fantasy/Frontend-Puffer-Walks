@@ -24,14 +24,23 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-    minify: 'esbuild', // Switch back to esbuild as it's faster, manualChunks will fix the collision
+    minify: 'esbuild',
     cssMinify: true,
     rollupOptions: {
       output: {
-        // Splits each node_module into its own chunk to prevent symbol collisions
+        // Refined chunking: Group tightly coupled libraries to avoid circular dependency / constructor issues
         manualChunks(id) {
+          // Group all Aptos and Wallet related libs together
+          if (id.includes('@aptos-labs') || id.includes('@aptos-connect') || id.includes('@wallet-standard')) {
+            return 'aptos-suite';
+          }
+          // Group other heavy framework libs
+          if (id.includes('firebase') || id.includes('framer-motion') || id.includes('lucide-react')) {
+            return 'framework-libs';
+          }
+          // Default vendor chunk for other node_modules
           if (id.includes('node_modules')) {
-            return id.toString().split('node_modules/')[1].split('/')[0].toString();
+            return 'vendor';
           }
         },
       },
