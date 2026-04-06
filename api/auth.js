@@ -5,9 +5,9 @@
  * It is mapped to /auth/(.*) via vercel.json.
  */
 
-const express = require("express");
-const cors = require("cors");
-const admin = require("firebase-admin");
+import express from "express";
+import cors from "cors";
+import admin from "firebase-admin";
 
 // ─── Firebase Admin Init ───────────────────────────────────────────────────────
 let serviceAccount;
@@ -231,4 +231,4 @@ app.post("/auth/fitbit/disconnect", async (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = app;
+export default app;
