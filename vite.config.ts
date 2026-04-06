@@ -38,15 +38,17 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-             // 1. SDK Core: Group Aptos SDK with ALL its sensitive crypto sub-deps 
-             // (@noble, @scure, poseidon-lite) to preserve initialization order.
-             // These libraries have static class fields and const cross-references
-             // that break when split into separate files.
+             // 1. SDK Core + ALL sub-dependencies that have cross-module const references.
+             // @aptos-labs/wallet-adapter-react depends on @radix-ui/react-slot internally,
+             // so they must all live in the same chunk to preserve initialization order.
              if (
                id.includes('@aptos-labs/ts-sdk') || 
+               id.includes('@aptos-labs/wallet-adapter') ||
+               id.includes('@aptos-labs/wallet-standard') ||
                id.includes('poseidon') || 
                id.includes('@noble') ||
-               id.includes('@scure')
+               id.includes('@scure') ||
+               id.includes('@radix-ui')
              ) {
                return 'aptos-sdk-core';
              }
