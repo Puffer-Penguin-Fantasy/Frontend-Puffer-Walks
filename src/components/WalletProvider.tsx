@@ -10,7 +10,7 @@ interface WalletProviderProps {
 
 export function WalletProvider({ children }: WalletProviderProps) {
     return (
-        <RazorkitWalletProvider>
+        <RazorkitWalletProvider autoConnect={true}>
             {children}
         </RazorkitWalletProvider>
     );
