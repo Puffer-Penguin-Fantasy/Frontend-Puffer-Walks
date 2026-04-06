@@ -23,10 +23,9 @@ export default defineConfig({
     },
   },
   build: {
-    target: 'es2020',
+    target: 'esnext', // Crucial: Prevents esbuild from attempting to transpile/rename symbols
     minify: 'terser',
     terserOptions: {
-      // Keep constructor names intact for crypto/wallet SDKs
       mangle: {
          keep_fnames: true
       },
@@ -36,13 +35,31 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-        // ULTIMATE STABILITY FIX:
-        // Removing manualChunks entirely. 
-        // This keeps all node_modules in a single vendor/index file, 
-        // which prevents identifier collisions (the "qe" error) across different files
-        // and resolves all temporal dead zone (TDZ) initialization cycles 
-        // (the "Cannot read properties of undefined (reading 'poseidon1')" error).
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+             // 1. SDK Core: Group Aptos SDK with its sensitive crypto sub-deps 
+             // (poseidon, noble) to ensure initialization order is preserved.
+             if (id.includes('@aptos-labs/ts-sdk') || id.includes('poseidon') || id.includes('@noble')) {
+               return 'aptos-sdk-core';
+             }
+
+             // 2. Fragmented Adapters: Split these individually to avoid the "qe" symbol collision
+             if (id.includes('wallet-adapter') || id.includes('radix') || id.includes('aptos-connect')) {
+               return id.toString().split('node_modules/')[1].split('/')[0].toString();
+             }
+
+             // 3. Framework & React Suite
+             if (id.includes('react') || id.includes('react-dom') || id.includes('firebase') || id.includes('framer-motion')) {
+               return 'framework-suite';
+             }
+
+             // 4. Everything else: Individual chunks to prevent any identifier merging.
+             return id.toString().split('node_modules/')[1].split('/')[0].toString();
+          }
+        },
+      },
     },
-    chunkSizeWarningLimit: 6000,
+    chunkSizeWarningLimit: 3000,
   }
 })
