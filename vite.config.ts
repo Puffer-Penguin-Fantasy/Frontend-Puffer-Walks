@@ -54,8 +54,17 @@ export default defineConfig({
              }
 
              // 2. Fragmented Adapters: Split these individually to avoid the "qe" symbol collision
-             if (id.includes('wallet-adapter') || id.includes('radix') || id.includes('aptos-connect')) {
+             if (id.includes('wallet-adapter') || id.includes('aptos-connect')) {
                return id.toString().split('node_modules/')[1].split('/')[0].toString();
+             }
+
+             // 3. UI Suite: Group MUI, Emotion, and Material-React-Table together to prevent TDZ ReferenceErrors
+             if (
+               id.includes('@emotion') || 
+               id.includes('@mui') || 
+               id.includes('material-react-table')
+             ) {
+               return 'ui-suite';
              }
 
              // 3. Framework & React Suite
