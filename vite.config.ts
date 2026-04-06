@@ -24,21 +24,20 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-    minify: 'terser',
+    minify: 'esbuild', // Switch back to esbuild but with safety on
+    cssMinify: true,
+    lib: false,
+    // THE FIX: Disable name changes used by some libraries that cause collisions
     terserOptions: {
-      compress: {
-        keep_fnames: true,
-        keep_classnames: true,
-      },
-      mangle: {
-        keep_fnames: true,
-        keep_classnames: true,
-      },
-    },
-    rollupOptions: {
-      output: {
-        manualChunks: undefined,
-      },
+      mangle: false, // Don't mangle variable names
+      compress: true,
     },
   },
+  esbuild: {
+    // THE FIX: Explicitly tell esbuild NOT to minify identifiers
+    minifyIdentifiers: false,
+    minifySyntax: true,
+    minifyWhitespace: true,
+    keepNames: true,
+  }
 })
