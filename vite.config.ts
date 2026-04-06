@@ -38,9 +38,16 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-             // 1. SDK Core: Group Aptos SDK with its sensitive crypto sub-deps 
-             // (poseidon, noble) to ensure initialization order is preserved.
-             if (id.includes('@aptos-labs/ts-sdk') || id.includes('poseidon') || id.includes('@noble')) {
+             // 1. SDK Core: Group Aptos SDK with ALL its sensitive crypto sub-deps 
+             // (@noble, @scure, poseidon-lite) to preserve initialization order.
+             // These libraries have static class fields and const cross-references
+             // that break when split into separate files.
+             if (
+               id.includes('@aptos-labs/ts-sdk') || 
+               id.includes('poseidon') || 
+               id.includes('@noble') ||
+               id.includes('@scure')
+             ) {
                return 'aptos-sdk-core';
              }
 
