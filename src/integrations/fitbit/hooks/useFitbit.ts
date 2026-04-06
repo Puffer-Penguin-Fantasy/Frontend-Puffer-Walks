@@ -4,7 +4,8 @@ import { db } from "../../../lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 import { toast } from "sonner";
 
-const AUTH_SERVER = import.meta.env.VITE_AUTH_SERVER_URL || "http://localhost:3001";
+const isDev = import.meta.env.DEV;
+const AUTH_SERVER = isDev ? (import.meta.env.VITE_AUTH_SERVER_URL || "http://localhost:3001") : "";
 
 export function useFitbit() {
   const { address: rawAddress } = useAccount();
