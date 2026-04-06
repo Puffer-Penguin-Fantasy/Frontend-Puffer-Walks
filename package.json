@@ -11,12 +11,11 @@
   },
   "dependencies": {
     "@aptos-labs/ts-sdk": "^5.2.1",
-    "@aptos-labs/wallet-adapter-react": "^8.1.0",
-    "@aptos-labs/wallet-standard": "^0.5.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
+    "@razorlabs/razorkit": "^1.1.2",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/ol": "^6.5.3",
     "autoprefixer": "^10.4.23",

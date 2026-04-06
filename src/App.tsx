@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useWallet } from '@aptos-labs/wallet-adapter-react'
+import { useAccount } from '@razorlabs/razorkit'
 import LoginPage from './pages/Login'
 import SettingsPage from './pages/Settings'
 import Callback from './pages/Callback'
@@ -8,17 +8,17 @@ import LeaderboardPage from './pages/Leaderboard'
 
 
 function AppRoutes() {
-	const { connected } = useWallet()
+	const { isConnected } = useAccount()
 
 	return (
 		<Routes>
 			<Route
 				path="/login"
-				element={connected ? <Navigate to="/" /> : <LoginPage />}
+				element={isConnected ? <Navigate to="/" /> : <LoginPage />}
 			/>
 			<Route
 				path="/"
-				element={connected ? <SettingsPage /> : <LoginPage />}
+				element={isConnected ? <SettingsPage /> : <LoginPage />}
 			/>
 			<Route path="/callback" element={<Callback />} />
 			<Route path="/google-callback" element={<GoogleCallback />} />

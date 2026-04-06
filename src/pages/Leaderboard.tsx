@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useGame } from "@/hooks/useGame";
 import { useFitbit } from "@/integrations/fitbit/hooks/useFitbit";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useAccount } from "@razorlabs/razorkit";
 import { GameLeaderboard } from "@/components/GameLeaderboard";
 import { Header } from "@/components/Header";
 import { WalletPanel } from "@/components/WalletPanel";
@@ -14,13 +14,13 @@ export default function LeaderboardPage() {
   const { gameId: gameSlug } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
   const { games, isLoading: gamesLoading } = useGame();
-  const { account } = useWallet();
+  const { address: rawAddress } = useAccount();
   const { steps, isConnected } = useFitbit();
   const [isSyncing, setIsSyncing] = useState(false);
   const [isWalletOpen, setIsWalletOpen] = useState(false);
 
   const game = games.find((g) => g.slug === gameSlug || g.id === gameSlug);
-  const myAddress = account?.address?.toString()?.toLowerCase();
+  const myAddress = rawAddress?.toLowerCase();
 
   // Sync identities and metadata
   useEffect(() => {

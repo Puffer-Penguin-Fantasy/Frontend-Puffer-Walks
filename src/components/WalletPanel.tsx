@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { LogOut, ChevronDown, Camera, Check, Loader2 } from "lucide-react";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { FitbitConnector } from "../integrations/fitbit/components/FitbitConnector";
 import { useArcticPenguin } from "../hooks/useArcticPenguin";
 import { useProfile } from "../hooks/useProfile";
@@ -18,14 +18,15 @@ interface WalletPanelProps {
 }
 
 export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
-    const { account, disconnect, signAndSubmitTransaction } = useWallet();
+    const { address: rawAddress } = useAccount();
+    const { disconnect, signAndSubmitTransaction } = useWallet();
     const [expandedKey, setExpandedKey] = useState<string | null>("profile");
     
     // Profile Edit State
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     
-    const address = account?.address?.toString()?.toLowerCase();
+    const address = rawAddress?.toLowerCase();
     console.log("WalletPanel: Normalized address:", address);
     const { 
         username: initialUsername, 
@@ -148,11 +149,11 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     };
 
     const saveOnChain = async () => {
-        if (!account || !profileName) return;
+        if (!rawAddress || !profileName) return;
         setIsSavingOnChain(true);
         try {
             await signAndSubmitTransaction({
-                data: {
+                payload: {
                     function: `${MODULE_ADDRESS}::profile::create_profile`,
                     functionArguments: [profileName, profileImage || ""],
                 }

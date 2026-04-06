@@ -1,4 +1,4 @@
-import { useWallet } from "@aptos-labs/wallet-adapter-react"
+import { useAccount } from "@razorlabs/razorkit"
 import { WalletPanel } from "@/components/WalletPanel"
 import React from "react"
 import { Trophy, Plus } from "lucide-react"
@@ -10,14 +10,14 @@ import { Header } from "../components/Header"
 import 'ol/ol.css'
 
 export default function SettingsPage() {
-    const { account } = useWallet()
+    const { address: rawAddress } = useAccount()
     const [isPanelOpen, setIsPanelOpen] = React.useState(false)
     const [isAdminPanelOpen, setIsAdminPanelOpen] = React.useState(false)
     const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
     const [discoverCode, setDiscoverCode] = React.useState("")
     const { games, adminAddress, isLoading: gamesLoading, refresh: refreshGames, joinGame, claimRewards, createGame } = useGame()
     
-    const address = account?.address?.toString()?.toLowerCase();
+    const address = rawAddress?.toLowerCase();
     React.useEffect(() => {
         const url = new URL(window.location.href);
         if (url.searchParams.has('fitbit')) {

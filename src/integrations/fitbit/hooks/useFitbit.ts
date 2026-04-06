@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useAccount } from "@razorlabs/razorkit";
 import { db } from "../../../lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 import { toast } from "sonner";
@@ -7,8 +7,8 @@ import { toast } from "sonner";
 const AUTH_SERVER = import.meta.env.VITE_AUTH_SERVER_URL || "http://localhost:3001";
 
 export function useFitbit() {
-  const { account } = useWallet();
-  const walletAddress = account?.address?.toString()?.toLowerCase()?.trim() || null;
+  const { address: rawAddress } = useAccount();
+  const walletAddress = rawAddress?.toLowerCase()?.trim() || null;
   // Ensure the address is standardized with 0x prefix if needed
   const standardizedWallet = walletAddress && !walletAddress.startsWith("0x") ? `0x${walletAddress}` : walletAddress;
 

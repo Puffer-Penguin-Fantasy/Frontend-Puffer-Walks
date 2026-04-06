@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 
 import { db } from "../lib/firebase";
 import { collection, onSnapshot, doc, getDoc } from "firebase/firestore";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useAccount } from "@razorlabs/razorkit";
 import {
   Users
 } from "lucide-react";
@@ -113,10 +113,10 @@ export function GameLeaderboard({
   sponsorImageUrl,
   gameId,
 }: GameLeaderboardProps) {
-  const { account } = useWallet();
+  const { address } = useAccount();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const myAddress = account?.address?.toString()?.toLowerCase();
+  const myAddress = address?.toLowerCase();
 
   useEffect(() => {
     if (!gameId) return;

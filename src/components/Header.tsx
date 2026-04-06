@@ -1,4 +1,4 @@
-import { useWallet } from "@aptos-labs/wallet-adapter-react"
+import { useAccount } from "@razorlabs/razorkit"
 import React from "react"
 import { Cog } from "lucide-react"
 import { db } from "../lib/firebase"
@@ -11,12 +11,12 @@ interface HeaderProps {
 }
 
 export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
-    const { account, wallet } = useWallet()
+    const { address, isConnected } = useAccount()
     const { adminAddress } = useGame()
     const [profileImage, setProfileImage] = React.useState<string | null>(null)
 
-    const address = account?.address?.toString()?.toLowerCase();
-    
+    const normalizedAddress = address?.toLowerCase();
+
     const standardize = (addr: string | null | undefined) => {
         if (!addr) return "";
         let clean = addr.toLowerCase();
@@ -24,13 +24,13 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
         return clean;
     };
 
-    const isAdmin = address && adminAddress && standardize(address) === standardize(adminAddress);
+    const isAdmin = normalizedAddress && adminAddress && standardize(normalizedAddress) === standardize(adminAddress);
 
     React.useEffect(() => {
-        if (!address) return;
+        if (!normalizedAddress) return;
         const fetchProfile = async () => {
             try {
-                const userDoc = await getDoc(doc(db, "users", address));
+                const userDoc = await getDoc(doc(db, "users", normalizedAddress));
                 if (userDoc.exists()) {
                     const data = userDoc.data();
                     if (data.profileImage) setProfileImage(data.profileImage);
@@ -40,9 +40,11 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
             }
         };
         fetchProfile();
-    }, [address]);
+    }, [normalizedAddress]);
 
-    const shortAddress = address?.slice(0, 6) + '...' + address?.slice(-4)
+    const shortAddress = normalizedAddress
+        ? normalizedAddress.slice(0, 6) + '...' + normalizedAddress.slice(-4)
+        : '';
 
     return (
         <header className="fixed top-0 left-0 right-0 z-[1000] bg-white border-b border-gray-200 h-16 flex items-center px-4 md:px-6">
@@ -54,20 +56,15 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
                 </div>
 
                 <div className="flex items-center gap-1.5 md:gap-2.5">
-                    {account && (
+                    {isConnected && (
                         <button
                             onClick={onOpenWallet}
                             className="hidden sm:flex px-4 py-1.5 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-all items-center gap-2 mr-2 group"
                         >
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                            <div className="flex items-center gap-2">
-                                {wallet?.icon && (
-                                    <img src={wallet.icon} alt={wallet.name} className="w-4 h-4 object-contain opacity-80 group-hover:opacity-100 transition-opacity" />
-                                )}
-                                <span className="text-sm font-semibold text-gray-700 font-mono tracking-tight group-hover:text-blue-600 transition-colors">
-                                    {shortAddress}
-                                </span>
-                            </div>
+                            <span className="text-sm font-semibold text-gray-700 font-mono tracking-tight group-hover:text-blue-600 transition-colors">
+                                {shortAddress}
+                            </span>
                         </button>
                     )}
 

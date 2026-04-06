@@ -1,6 +1,6 @@
 import { CheckCircle } from "lucide-react";
 import type { Game } from "../types/game";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useAccount } from "@razorlabs/razorkit";
 
 interface GameCardProps {
   game: Game;
@@ -10,7 +10,7 @@ interface GameCardProps {
 }
 
 export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProps) {
-  const { account } = useWallet();
+  const { address: rawAddress } = useAccount();
   const depositInMove = (parseFloat(game.deposit_amount) / 100_000_000).toFixed(2);
   const totalPool = ((parseFloat(game.prize_pool) + parseFloat(game.sponsored_pool)) / 100_000_000).toFixed(2);
   const startTime = new Date(parseInt(game.start_time) * 1000);
@@ -25,7 +25,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
     return clean;
   };
 
-  const userAddr = standardize(account?.address?.toString());
+  const userAddr = standardize(rawAddress);
   const isJoined = game.participants?.some(p => standardize(p) === userAddr);
 
 

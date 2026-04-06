@@ -1,30 +1,17 @@
 "use client";
 
-import { useMemo } from "react";
 import type { ReactNode } from "react";
-import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
-import { AptosConfig, Network } from "@aptos-labs/ts-sdk";
+import { WalletProvider as RazorkitWalletProvider } from "@razorlabs/razorkit";
+import "@razorlabs/razorkit/style.css";
 
 interface WalletProviderProps {
     children: ReactNode;
 }
 
 export function WalletProvider({ children }: WalletProviderProps) {
-    // Movement Mainnet configuration from template
-    const aptosConfig = useMemo(() => new AptosConfig({
-        network: Network.MAINNET,
-        fullnode: "https://full.mainnet.movementinfra.xyz/v1",
-    }), []);
-
     return (
-        <AptosWalletAdapterProvider
-            autoConnect={true}
-            dappConfig={aptosConfig}
-            onError={(error) => {
-                console.error("Wallet error:", JSON.stringify(error, null, 2));
-            }}
-        >
+        <RazorkitWalletProvider>
             {children}
-        </AptosWalletAdapterProvider>
+        </RazorkitWalletProvider>
     );
 }

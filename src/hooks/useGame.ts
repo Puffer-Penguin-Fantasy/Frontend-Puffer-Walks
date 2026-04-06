@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { db } from "../lib/firebase";
 import { doc, setDoc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { MODULE_ADDRESS, NETWORK_CONFIG } from "../GameOnchain/movement_service/constants";
@@ -13,7 +13,8 @@ const aptosConfig = new AptosConfig({
 const aptosClient = new Aptos(aptosConfig);
 
 export function useGame() {
-  const { account, signAndSubmitTransaction } = useWallet();
+  const { address: rawAddress } = useAccount();
+  const { signAndSubmitTransaction } = useWallet();
   const [games, setGames] = useState<Game[]>([]);
   const [adminAddress, setAdminAddress] = useState<string | null>(null);
   const [secondaryAdminAddress, setSecondaryAdminAddress] = useState<string | null>(null);
@@ -97,13 +98,13 @@ export function useGame() {
   }, []);
 
   const joinGame = async (gameId: string, joinCode: string = "") => {
-    if (!account) return;
-    const walletAddress = account.address.toString().toLowerCase();
+    if (!rawAddress) return;
+    const walletAddress = rawAddress.toLowerCase();
     
     try {
       // 1. Submit on-chain transaction
       const response = await signAndSubmitTransaction({
-        data: {
+        payload: {
           function: `${MODULE_ADDRESS}::game::join_game`,
           functionArguments: [
             gameId, 
@@ -180,10 +181,10 @@ export function useGame() {
     sponsor_name?: string,
     sponsor_image_url?: string
   }) => {
-    if (!account) return;
+    if (!rawAddress) return;
     try {
       const response = await signAndSubmitTransaction({
-        data: {
+        payload: {
           function: `${MODULE_ADDRESS}::game::create_game`,
           functionArguments: [
             params.name,
@@ -211,10 +212,10 @@ export function useGame() {
   };
 
   const claimRewards = async (gameId: string) => {
-    if (!account) return;
+    if (!rawAddress) return;
     try {
       const response = await signAndSubmitTransaction({
-        data: {
+        payload: {
           function: `${MODULE_ADDRESS}::game::claim_rewards`,
           functionArguments: [gameId],
         }
@@ -229,10 +230,10 @@ export function useGame() {
   };
 
   const updateSecondaryAdmin = async (newAdmin: string) => {
-    if (!account) return;
+    if (!rawAddress) return;
     try {
       const response = await signAndSubmitTransaction({
-        data: {
+        payload: {
           function: `${MODULE_ADDRESS}::game::set_secondary_admin`,
           functionArguments: [newAdmin],
         }
@@ -246,10 +247,10 @@ export function useGame() {
   };
 
   const updateOracleAddress = async (newOracle: string) => {
-    if (!account) return;
+    if (!rawAddress) return;
     try {
       const response = await signAndSubmitTransaction({
-        data: {
+        payload: {
           function: `${MODULE_ADDRESS}::game::set_oracle`,
           functionArguments: [newOracle],
         }

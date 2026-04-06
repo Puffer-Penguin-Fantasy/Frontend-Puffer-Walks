@@ -38,19 +38,19 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-             // 1. SDK Core + ALL sub-dependencies that have cross-module const references.
-             // @aptos-labs/wallet-adapter-react depends on @radix-ui/react-slot internally,
-             // so they must all live in the same chunk to preserve initialization order.
+             // 1. SDK Core + crypto sub-dependencies (must be colocated to preserve init order)
              if (
                id.includes('@aptos-labs/ts-sdk') || 
-               id.includes('@aptos-labs/wallet-adapter') ||
-               id.includes('@aptos-labs/wallet-standard') ||
                id.includes('poseidon') || 
                id.includes('@noble') ||
-               id.includes('@scure') ||
-               id.includes('@radix-ui')
+               id.includes('@scure')
              ) {
                return 'aptos-sdk-core';
+             }
+
+             // 2. Razor Kit wallet provider (grouped to avoid its own init cycles)
+             if (id.includes('@razorlabs') || id.includes('razorkit') || id.includes('@radix-ui')) {
+               return 'wallet-suite';
              }
 
              // 2. Fragmented Adapters: Split these individually to avoid the "qe" symbol collision
