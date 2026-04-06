@@ -15,36 +15,40 @@ export default defineConfig({
       overlay: false,
     },
     proxy: {
-      '/fitbit': {
-        target: 'https://api.fitbit.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/fitbit/, ''),
-      },
+        '/fitbit': {
+            target: 'https://api.fitbit.com',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/fitbit/, ''),
+        },
     },
   },
   build: {
     target: 'esnext',
-    minify: 'esbuild',
-    cssMinify: true,
+    minify: 'terser', // Terser is better at handling complex re-bundling
+    terserOptions: {
+      mangle: true, // Keep it true but safe
+      compress: true
+    },
     rollupOptions: {
       output: {
-        // Refined chunking: Group tightly coupled libraries to avoid circular dependency / constructor issues
         manualChunks(id) {
-          // Group all Aptos and Wallet related libs together
-          if (id.includes('@aptos-labs') || id.includes('@aptos-connect') || id.includes('@wallet-standard')) {
+          // GROUPING: Keep all Aptos SDK and Connect modules together 
+          // to fix initialization order / static field initialization bugs.
+          if (id.includes('@aptos-labs') || id.includes('@aptos-connect') || id.includes('aptos')) {
             return 'aptos-suite';
           }
-          // Group other heavy framework libs
-          if (id.includes('firebase') || id.includes('framer-motion') || id.includes('lucide-react')) {
-            return 'framework-libs';
+          // GROUPING: Keep wallet-specific libs together
+          if (id.includes('@wallet-standard') || id.includes('wallet-adapter')) {
+             return 'wallet-suite';
           }
-          // Default vendor chunk for other node_modules
+          // SPLITTING: Split ALL OTHER library to its own chunk 
+          // to prevent symbol collisions between different packages.
           if (id.includes('node_modules')) {
-            return 'vendor';
+            return id.toString().split('node_modules/')[1].split('/')[0].toString();
           }
         },
       },
     },
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 3000,
   }
 })
