@@ -18,13 +18,12 @@ export default function SettingsPage() {
     const { games, adminAddress, isLoading: gamesLoading, refresh: refreshGames, joinGame, claimRewards, createGame } = useGame()
     
     const address = account?.address?.toString()?.toLowerCase();
-    const navigate = React.useMemo(() => {
+    React.useEffect(() => {
         const url = new URL(window.location.href);
         if (url.searchParams.has('fitbit')) {
             url.searchParams.delete('fitbit');
             window.history.replaceState({}, '', url.pathname + url.search);
         }
-        return null;
     }, []);
     
     // Helper to ensure addresses are compared correctly (handles 0x and case)
