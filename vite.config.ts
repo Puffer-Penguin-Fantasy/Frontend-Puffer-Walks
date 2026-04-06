@@ -24,20 +24,18 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-    minify: 'esbuild', // Switch back to esbuild but with safety on
+    minify: 'esbuild', // Switch back to esbuild as it's faster, manualChunks will fix the collision
     cssMinify: true,
-    lib: false,
-    // THE FIX: Disable name changes used by some libraries that cause collisions
-    terserOptions: {
-      mangle: false, // Don't mangle variable names
-      compress: true,
+    rollupOptions: {
+      output: {
+        // Splits each node_module into its own chunk to prevent symbol collisions
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return id.toString().split('node_modules/')[1].split('/')[0].toString();
+          }
+        },
+      },
     },
-  },
-  esbuild: {
-    // THE FIX: Explicitly tell esbuild NOT to minify identifiers
-    minifyIdentifiers: false,
-    minifySyntax: true,
-    minifyWhitespace: true,
-    keepNames: true,
+    chunkSizeWarningLimit: 2000,
   }
 })
