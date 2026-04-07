@@ -1,6 +1,6 @@
 import { useAccount } from "@razorlabs/razorkit"
 import React from "react"
-import { Cog } from "lucide-react"
+import SettingsIcon from "@mui/icons-material/Settings";
 import { db } from "../lib/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { useGame } from "../hooks/useGame"
@@ -74,7 +74,7 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
                             className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center hover:bg-blue-100 transition-all mr-2 shadow-sm"
                             title="Admin Protocol Settings"
                         >
-                            <Cog className="w-5 h-5 shadow-sm" />
+                            <SettingsIcon className="w-5 h-5" />
                         </button>
                     )}
 
