@@ -96,12 +96,18 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
             </div>
           )}
           {isEnded && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onClaim(game.id); }}
-              className="px-4 py-2 rounded-xl bg-green-600 text-white text-[11px] font-normal transition-all active:scale-95"
-            >
-              Claim
-            </button>
+            isJoined ? (
+              <button
+                onClick={(e) => { e.stopPropagation(); onClaim(game.id); }}
+                className="px-4 py-2 rounded-xl bg-green-600 text-white text-[11px] font-normal transition-all active:scale-95 shadow-sm hover:bg-green-700"
+              >
+                Claim All
+              </button>
+            ) : (
+              <div className="flex items-center gap-1 bg-gray-50 text-gray-400 px-3 py-2 rounded-xl text-[11px] font-normal border border-gray-100 cursor-default">
+                 Ended
+              </div>
+            )
           )}
           {isActive && (
             <div className="flex items-center gap-1 bg-gray-50 text-gray-400 px-3 py-2 rounded-xl text-[11px] font-normal border border-gray-100">
