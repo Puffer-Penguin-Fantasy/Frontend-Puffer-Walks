@@ -37,10 +37,16 @@ function Callback() {
       const exchangeToken = async () => {
         try {
           const authServer = import.meta.env.VITE_AUTH_SERVER_URL || "http://localhost:3001";
+          const redirectUri = import.meta.env.VITE_FITBIT_REDIRECT_URI || `${window.location.origin}/callback`;
+          
           const res = await fetch(`${authServer}/auth/fitbit/exchange`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code, walletAddress: state }),
+            body: JSON.stringify({ 
+              code, 
+              walletAddress: state,
+              redirectUri 
+            }),
           });
 
           if (res.ok) {

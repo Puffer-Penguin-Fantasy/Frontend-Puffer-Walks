@@ -90,7 +90,7 @@ export function useFitbit() {
     return () => clearInterval(interval);
   }, [isConnected, fetchSteps]);
 
-  // ── Connect: redirect user through oracle auth server ────────────────────
+  // ── Connect: handle OAuth redirect entirely in frontend ──────────────────
   const connect = useCallback(async () => {
     if (!standardizedWallet) {
       toast.error("Please connect your wallet first");
@@ -98,12 +98,15 @@ export function useFitbit() {
     }
 
     try {
-      // Get the OAuth URL from the oracle server (which knows the client_secret)
-      const res = await fetch(`${AUTH_SERVER}/auth/fitbit/url?wallet=${standardizedWallet}`);
-      if (!res.ok) throw new Error("Failed to get auth URL");
-      const { url } = await res.json();
+      const clientId = import.meta.env.VITE_FITBIT_CLIENT_ID;
+      const redirectUri = import.meta.env.VITE_FITBIT_REDIRECT_URI || `${window.location.origin}/callback`;
+      const scope = "activity profile";
+      
+      const url = `https://www.fitbit.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${standardizedWallet}`;
+      
       window.location.href = url;
-    } catch {
+    } catch (err) {
+      console.error("Fitbit connection error:", err);
       toast.error("Failed to start Fitbit connection");
     }
   }, [standardizedWallet]);

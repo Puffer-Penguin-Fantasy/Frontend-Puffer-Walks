@@ -113,7 +113,7 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 // ─── Endpoints ────────────────────────────────────────────────────────────────
-app.get("/auth/fitbit/url", (req, res) => {
+app.get("/fitbit/url", (req, res) => {
   const wallet = standardizeAddress(req.query.wallet);
   if (!wallet) return res.status(400).json({ error: "wallet required" });
 
@@ -131,7 +131,7 @@ app.get("/auth/fitbit/url", (req, res) => {
   res.json({ url });
 });
 
-app.get("/auth/fitbit/callback", async (req, res) => {
+app.get("/fitbit/callback", async (req, res) => {
   const { code, state } = req.query;
   const walletAddress = standardizeAddress(state);
   const db = admin.firestore();
@@ -159,7 +159,7 @@ app.get("/auth/fitbit/callback", async (req, res) => {
   }
 });
 
-app.get("/auth/fitbit/status", async (req, res) => {
+app.get("/fitbit/status", async (req, res) => {
   const { wallet } = req.query;
   if (!wallet) return res.status(400).json({ error: "wallet required" });
   const db = admin.firestore();
@@ -175,7 +175,7 @@ app.get("/auth/fitbit/status", async (req, res) => {
   }
 });
 
-app.post("/auth/fitbit/steps", async (req, res) => {
+app.post("/fitbit/steps", async (req, res) => {
   const { wallet, date } = req.body;
   if (!wallet || !date) return res.status(400).json({ error: "wallet and date required" });
   const db = admin.firestore();
@@ -222,7 +222,7 @@ app.post("/auth/fitbit/steps", async (req, res) => {
   }
 });
 
-app.post("/auth/fitbit/disconnect", async (req, res) => {
+app.post("/fitbit/disconnect", async (req, res) => {
   const wallet = standardizeAddress(req.body.wallet);
   if (!wallet) return res.status(400).json({ error: "wallet required" });
   const db = admin.firestore();
