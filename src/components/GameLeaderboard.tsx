@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 
 import { db } from "../lib/firebase";
-import { collection, onSnapshot, doc, getDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore";
 import { useAccount } from "@razorlabs/razorkit";
 import {
   Users,
@@ -121,15 +121,37 @@ export function GameLeaderboard({
     if (!gameId) return;
     const ref = collection(db, "games", gameId, "participants");
     const unsub = onSnapshot(ref, {
-      next: (snap) => {
+      next: async (snap) => {
         const data = snap.docs.map((d) => d.data() as Participant);
         setParticipants(data);
         setIsLoading(false);
+
+        // Backfill: ensure all existing participants have a full days template
+        const backfills = snap.docs
+          .filter((d) => {
+            const p = d.data();
+            // backfill if days is missing OR doesn't have all expected day keys
+            const hasDays = p.days && Object.keys(p.days).length >= numDays;
+            return !hasDays;
+          })
+          .map((d) => {
+            const existing = (d.data().days || {}) as Record<string, number>;
+            const initialDays: Record<string, number> = {};
+            for (let i = 1; i <= numDays; i++) {
+              initialDays[`day${i}`] = existing[`day${i}`] ?? 0;
+            }
+            return setDoc(
+              doc(db, "games", gameId, "participants", d.id),
+              { days: initialDays },
+              { merge: true }
+            );
+          });
+        if (backfills.length > 0) await Promise.all(backfills);
       },
       error: () => setIsLoading(false)
     });
     return () => unsub();
-  }, [gameId]);
+  }, [gameId, numDays]);
 
   const startDate = startTime;
   const endDate = new Date(startTime.getTime() + (numDays - 1) * 24 * 60 * 60 * 1000);
