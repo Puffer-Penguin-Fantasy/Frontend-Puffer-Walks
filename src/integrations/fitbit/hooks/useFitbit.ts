@@ -102,7 +102,7 @@ export function useFitbit() {
       const redirectUri = import.meta.env.VITE_FITBIT_REDIRECT_URI || `${window.location.origin}/callback`;
       const scope = "activity profile";
       
-      const url = `https://www.fitbit.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${standardizedWallet}`;
+      const url = `https://www.fitbit.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${standardizedWallet}&prompt=login%20consent`;
       
       window.location.href = url;
     } catch (err) {

@@ -50,7 +50,7 @@ export default function LeaderboardPage() {
               username: profile?.username || null,
               profileImage: profile?.profileImage || null,
               joinedAt: Date.now(),
-              isEliminated: pSnap.exists() ? pSnap.data()?.isEliminated : false
+              isEliminated: (pSnap.exists() && pSnap.data()?.isEliminated === true) ? true : false
             }, { merge: true });
           }
         }
