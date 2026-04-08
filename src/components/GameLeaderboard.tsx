@@ -214,7 +214,8 @@ export function GameLeaderboard({
       ),
     },
     ...dayColumns.map((d): MRT_ColumnDef<RankedParticipant> => ({
-      accessorKey: `days.day${d}`,
+      id: `day${d}`,
+      accessorFn: (row) => row.days ? row.days[`day${d}`] : undefined,
       header: `Day ${d}`,
       size: 90,
       Cell: ({ cell }: { cell: any }) => {
