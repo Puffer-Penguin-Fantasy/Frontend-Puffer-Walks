@@ -11,12 +11,14 @@ interface CreateGameModalProps {
 export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [sponsorLogoFile, setSponsorLogoFile] = useState<File | null>(null);
   
   const [formData, setFormData] = useState({
     name: "",
     deposit: "1.0",
     min_steps: "5000",
     start_date: "",
+    end_date: "",
     duration_days: "7",
     is_public: true,
     code: "",
@@ -56,13 +58,19 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
       if (imageFile) {
         image_url = await uploadToPinata(imageFile);
       }
+      if (sponsorLogoFile) {
+        sponsor_image_url = await uploadToPinata(sponsorLogoFile);
+      }
 
 
-      // Calculate start time as Midnight of the selected date
-      const startObj = new Date(formData.start_date + "T00:00:00");
-      const start = Math.floor(startObj.getTime() / 1000);
+      // Calculate start time as Midnight UTC of the selected date
+      // We use the date string "YYYY-MM-DD" and create a UTC date at 00:00:00
+      const [year, month, day] = formData.start_date.split("-").map(Number);
+      const startUtc = Date.UTC(year, month - 1, day, 0, 0, 0);
+      const start = Math.floor(startUtc / 1000);
       
       // Calculate end time based on start + (days * 86400)
+      // This ensures the competition ends exactly at Midnight UTC on the day after the last day
       const durationSeconds = parseInt(formData.duration_days) * 86400;
       const end = start + durationSeconds;
 
@@ -73,8 +81,8 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
         deposit: parseFloat(formData.deposit),
         min_steps: parseInt(formData.min_steps),
         sponsor_amount: parseFloat(formData.sponsor_amount),
-        start_time: start.toString(),
-        end_time: end.toString(),
+        start: start,
+        end: end,
         no_of_days: formData.duration_days,
       });
       onClose();
@@ -188,26 +196,67 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                       type="date"
                       className="w-full h-11 pl-11 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 transition-all text-xs text-gray-800"
                       value={formData.start_date}
-                      onChange={e => setFormData({...formData, start_date: e.target.value})}
+                      onChange={e => {
+                        const start = e.target.value;
+                        if (start && formData.end_date) {
+                          const s = new Date(start);
+                          const e_date = new Date(formData.end_date);
+                          const diff = Math.ceil((e_date.getTime() - s.getTime()) / (1000 * 3600 * 24));
+                          setFormData({...formData, start_date: start, duration_days: Math.max(0, diff).toString()});
+                        } else {
+                          setFormData({...formData, start_date: start});
+                        }
+                      }}
                     />
                   </div>
                 </div>
 
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">game duration (days)</label>
+                  <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">end date</label>
                   <div className="relative">
-                    <Footprints className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400/60" size={16} />
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400/60" size={16} />
                     <input 
                       required
-                      type="number"
-                      min="1"
-                      placeholder="e.g. 7"
+                      type="date"
+                      min={formData.start_date}
                       className="w-full h-11 pl-11 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 transition-all text-xs text-gray-800"
-                      value={formData.duration_days}
-                      onChange={e => setFormData({...formData, duration_days: e.target.value})}
+                      value={formData.end_date}
+                      onChange={e => {
+                        const end = e.target.value;
+                        if (formData.start_date && end) {
+                          const s = new Date(formData.start_date);
+                          const e_date = new Date(end);
+                          const diff = Math.ceil((e_date.getTime() - s.getTime()) / (1000 * 3600 * 24));
+                          setFormData({...formData, end_date: end, duration_days: diff.toString()});
+                        } else {
+                          setFormData({...formData, end_date: end});
+                        }
+                      }}
                     />
                   </div>
                 </div>
+
+                {formData.start_date && (
+                  <div className="col-span-2 p-4 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-between group transition-all hover:bg-blue-50/30 hover:border-blue-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform">
+                        <Footprints size={18} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-gray-400 lowercase font-normal">competition duration</p>
+                        <p className="text-sm text-gray-900 font-medium lowercase">
+                          {formData.duration_days || "—"} days
+                        </p>
+                      </div>
+                    </div>
+                    {formData.end_date && (
+                      <div className="text-right">
+                        <p className="text-[10px] text-gray-400 lowercase font-normal">time window (utc)</p>
+                        <p className="text-[10px] text-blue-600 font-medium">12:00 AM — 12:00 AM</p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div>
                   <label className="text-[11px] font-normal text-gray-400 mb-2 block ml-1 lowercase">visibility</label>
@@ -274,15 +323,34 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                       />
                     </div>
                     <div className="col-span-2 sm:col-span-1">
+                      <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">sponsor logo</label>
+                      <div className="relative flex items-center">
+                        <ImageIcon className="absolute left-4 text-gray-400/60 pointer-events-none" size={16} />
+                        <input 
+                          type="file"
+                          accept="image/*"
+                          className="w-full h-11 pl-11 py-2 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl text-xs text-gray-600 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-normal file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 transition-all cursor-pointer"
+                          onChange={e => {
+                            if (e.target.files && e.target.files[0]) {
+                              setSponsorLogoFile(e.target.files[0]);
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-span-2 sm:col-span-1">
                       <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">sponsor deposit (move)</label>
-                      <input 
-                        type="number"
-                        step="0.1"
-                        placeholder="0.0"
-                        className="w-full h-11 px-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 text-xs text-gray-800"
-                        value={formData.sponsor_amount}
-                        onChange={e => setFormData({...formData, sponsor_amount: e.target.value})}
-                      />
+                      <div className="relative">
+                        <Coins className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400/60" size={16} />
+                        <input 
+                          type="number"
+                          step="0.1"
+                          placeholder="0.0"
+                          className="w-full h-11 pl-11 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 text-xs text-gray-800"
+                          value={formData.sponsor_amount}
+                          onChange={e => setFormData({...formData, sponsor_amount: e.target.value})}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

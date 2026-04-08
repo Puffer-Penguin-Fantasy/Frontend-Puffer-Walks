@@ -19,4 +19,5 @@ export interface Game {
   sponsor_name: string;
   sponsor_amount: string;
   sponsor_image_url: string;
+  joinCode?: string;
 }

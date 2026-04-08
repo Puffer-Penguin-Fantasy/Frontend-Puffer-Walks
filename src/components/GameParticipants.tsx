@@ -44,14 +44,7 @@ export function GameParticipants({ gameId, numDays, gameName }: GameParticipants
     );
   }
 
-  if (participants.length === 0) {
-    return (
-      <div className="py-10 flex flex-col items-center justify-center text-center">
-        <Users size={32} className="text-gray-200 mb-3" />
-        <p className="text-sm text-gray-400">No participants yet</p>
-      </div>
-    );
-  }
+
 
   return (
     <div className="w-full overflow-x-auto">
@@ -82,61 +75,72 @@ export function GameParticipants({ gameId, numDays, gameName }: GameParticipants
           </tr>
         </thead>
         <tbody>
-          {participants.map((p) => {
-            const completedDays = dayColumns.filter(
-              d => p.days?.[`day${d}`] !== null && p.days?.[`day${d}`] !== undefined
-            ).length;
-            const allDone = completedDays === numDays;
+          {participants.length === 0 ? (
+            <tr>
+              <td colSpan={2 + dayColumns.length} className="py-20 text-center">
+                <div className="flex flex-col items-center justify-center text-gray-400 gap-2">
+                  <Users size={24} className="opacity-20" />
+                  <span className="text-xs font-normal lowercase italic">no participants joined yet...</span>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            participants.map((p) => {
+              const completedDays = dayColumns.filter(
+                d => p.days?.[`day${d}`] !== null && p.days?.[`day${d}`] !== undefined
+              ).length;
+              const allDone = completedDays === numDays;
 
-            return (
-              <tr
-                key={p.walletAddress}
-                className={`rounded-xl ${allDone ? 'bg-green-50' : 'bg-white'} border border-gray-100`}
-              >
-                {/* Player */}
-                <td className="px-3 py-3 rounded-l-xl">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 overflow-hidden flex-shrink-0 ring-1 ring-blue-200/50">
-                      {p.profileImage ? (
-                        <img src={p.profileImage} alt={p.username} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-blue-400 text-xs font-bold">
-                          {p.username?.[0]?.toUpperCase() || "?"}
-                        </div>
-                      )}
+              return (
+                <tr
+                  key={p.walletAddress}
+                  className={`rounded-xl ${allDone ? 'bg-green-50' : 'bg-white'} border border-gray-100`}
+                >
+                  {/* Player */}
+                  <td className="px-3 py-3 rounded-l-xl">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 overflow-hidden flex-shrink-0 ring-1 ring-blue-200/50">
+                        {p.profileImage ? (
+                          <img src={p.profileImage} alt={p.username} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-blue-400 text-xs font-bold">
+                            {p.username?.[0]?.toUpperCase() || "?"}
+                          </div>
+                        )}
+                      </div>
+                      <span className="font-medium text-gray-800 text-xs truncate max-w-[120px]">
+                        {p.username}
+                      </span>
                     </div>
-                    <span className="font-medium text-gray-800 text-xs truncate max-w-[100px]">
-                      {p.username}
+                  </td>
+
+                  {/* Wallet */}
+                  <td className="px-3 py-3">
+                    <span className="font-mono text-[11px] text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
+                      {shortAddr(p.walletAddress)}
                     </span>
-                  </div>
-                </td>
+                  </td>
 
-                {/* Wallet */}
-                <td className="px-3 py-3">
-                  <span className="font-mono text-[11px] text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
-                    {shortAddr(p.walletAddress)}
-                  </span>
-                </td>
-
-                {/* Days */}
-                {dayColumns.map(d => {
-                  const steps = p.days?.[`day${d}`];
-                  return (
-                    <td key={d} className="px-2 py-3 text-center">
-                      {steps === null || steps === undefined ? (
-                        <Clock size={13} className="text-gray-200 mx-auto" />
-                      ) : (
-                        <div className="flex flex-col items-center gap-0.5">
-                          <CheckCircle size={13} className="text-green-500" />
-                          <span className="text-[9px] text-gray-400 font-medium">{steps.toLocaleString()}</span>
-                        </div>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
+                  {/* Days */}
+                  {dayColumns.map(d => {
+                    const steps = p.days?.[`day${d}`];
+                    return (
+                      <td key={d} className="px-2 py-3 text-center">
+                        {steps === null || steps === undefined ? (
+                          <Clock size={13} className="text-gray-200 mx-auto" />
+                        ) : (
+                          <div className="flex flex-col items-center gap-0.5">
+                            <CheckCircle size={13} className="text-green-500" />
+                            <span className="text-[9px] text-gray-400 font-medium">{steps.toLocaleString()}</span>
+                          </div>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })
+          )}
         </tbody>
       </table>
     </div>

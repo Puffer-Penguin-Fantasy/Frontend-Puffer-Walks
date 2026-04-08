@@ -12,6 +12,20 @@ const aptosConfig = new AptosConfig({
 });
 const aptosClient = new Aptos(aptosConfig);
 
+const detectHash = (response: any): string | null => {
+  if (typeof response === "string" && response.startsWith("0x")) {
+    return response;
+  }
+  if (response && typeof response === "object") {
+    const hash = response.hash || response.transactionHash || response.transaction_hash;
+    if (hash && typeof hash === "string" && hash.startsWith("0x")) return hash;
+    
+    const values = Object.values(response);
+    return (values.find(v => typeof v === "string" && v.startsWith("0x") && v.length === 66) as string) || null;
+  }
+  return null;
+};
+
 export function useGame() {
   const { address: rawAddress } = useAccount();
   const { signAndSubmitTransaction } = useWallet();
@@ -44,9 +58,8 @@ export function useGame() {
         rawGames = gamesResource.data;
       }
 
-      const formattedGames: Game[] = rawGames.map((item: any) => {
+      const results = (rawGames as any[]).map((item: any) => {
         const g = item.value || item;
-        
         let gameId = "unknown";
         if (g.id) {
           if (typeof g.id === 'string') gameId = g.id;
@@ -54,43 +67,51 @@ export function useGame() {
           else if (Array.isArray(g.id)) gameId = g.id[0];
           else gameId = String(g.id);
         }
-        
-        const name = typeof g.name === 'object' ? g.name.value : (g.name || gameId);
-        const slug = name.toLowerCase()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/[\s_-]+/g, '-')
-          .replace(/^-+|-+$/g, '');
 
         return {
           id: gameId,
-          name,
-          slug,
-          image_url: typeof g.image_url === 'object' ? g.image_url.value : g.image_url,
-          deposit_amount: g.deposit_amount,
-          min_daily_steps: g.min_daily_steps,
-          start_time: g.start_time,
-          end_time: g.end_time,
-          no_of_days: g.no_of_days,
-          is_sponsored: g.is_sponsored,
-          is_paused: g.is_paused,
+          name: typeof g.name === "object" ? g.name.value : (g.name || ""),
+          image_url: typeof g.image_url === "object" ? g.image_url.value : (g.image_url || ""),
+          slug: (typeof g.name === "object" ? g.name.value : (g.name || "")).toLowerCase().replace(/ /g, "-"),
+          deposit_amount: g.deposit_amount || "0",
+          min_daily_steps: g.min_daily_steps || "0",
+          start_time: g.start_time || "0",
+          end_time: g.end_time || "0",
           is_public: g.is_public,
-          required_nft: g.required_nft,
-          participants: Array.isArray(g.participants) 
-            ? g.participants.map((p: any) => typeof p === "string" ? p : p.value || String(p)) 
-            : [],
+          is_sponsored: (g.sponsors?.[0]?.amount || "0") !== "0",
           prize_pool: g.prize_vault?.value || "0",
           sponsored_pool: g.sponsored_vault?.value || "0",
           participants_count: Array.isArray(g.participants) ? g.participants.length : (g.participants?.value?.length || 0),
-          sponsor_name: typeof g.sponsor_name === "object" ? g.sponsor_name.value : (g.sponsor_name || ""),
-          sponsor_amount: g.sponsor_amount || "0",
-          sponsor_image_url: typeof g.sponsor_image_url === "object" ? g.sponsor_image_url.value : (g.sponsor_image_url || ""),
+          participants: Array.isArray(g.participants) ? g.participants : (g.participants?.value || []),
+          sponsor_name: g.sponsors?.[0]?.name?.value || g.sponsors?.[0]?.name || "",
+          sponsor_amount: g.sponsors?.[0]?.amount || "0",
+          sponsor_image_url: g.sponsors?.[0]?.image_url?.value || g.sponsors?.[0]?.image_url || "",
+          no_of_days: g.no_of_days || "0",
+          is_paused: g.is_paused || false,
+          required_nft: typeof g.required_nft === "object" ? g.required_nft.value : (g.required_nft || "0x0"),
         };
       });
 
-      setGames(formattedGames.filter(g => g.id !== "unknown"));
+      // Merge metadata from Firestore for discovery
+      const finalGames = await Promise.all(results.map(async (g) => {
+        try {
+          const metaRef = doc(db, "game_metadata", g.id);
+          const metaSnap = await getDoc(metaRef);
+          if (metaSnap.exists()) {
+            return { ...g, joinCode: metaSnap.data().joinCode };
+          }
+        } catch (e) {
+          console.warn(`⚠️ Could not fetch metadata for game ${g.id}:`, e);
+        }
+        return g;
+      }));
+ 
+      setGames(finalGames.filter(g => g.id !== "unknown"));
+      return finalGames;
     } catch (err) {
       console.error("Error fetching games:", err);
       setGames([]);
+      return [];
     } finally {
       hasLoadedOnce.current = true;
       setIsLoading(false);
@@ -114,7 +135,12 @@ export function useGame() {
         }
       });
       
-      await aptosClient.waitForTransaction({ transactionHash: (response as any).hash });
+      const hash = detectHash(response);
+      if (hash) {
+        await aptosClient.waitForTransaction({ transactionHash: hash });
+      } else {
+        await new Promise(r => setTimeout(r, 2000));
+      }
 
       // 2. Find game metadata and sync to Firestore
       const game = games.find(g => g.id === gameId);
@@ -183,30 +209,66 @@ export function useGame() {
   }) => {
     if (!rawAddress) return;
     try {
+      console.log("🚀 Creating game with params:", params);
+      
       const response = await signAndSubmitTransaction({
         payload: {
           function: `${MODULE_ADDRESS}::game::create_game`,
           functionArguments: [
             params.name,
             params.image_url,
-            Math.floor(params.deposit * 100_000_000),
-            params.min_steps,
-            params.start,
-            params.end,
+            Math.floor(params.deposit * 100_000_000).toString(),
+            params.min_steps.toString(),
+            params.start.toString(),
+            params.end.toString(),
             params.is_public,
             "0x0000000000000000000000000000000000000000000000000000000000000000",
             Array.from(new TextEncoder().encode(params.code)),
-            Math.floor((params.sponsor_amount || 0) * 100_000_000),
+            Math.floor((params.sponsor_amount || 0) * 100_000_000).toString(),
             params.sponsor_name || "",
             params.sponsor_image_url || ""
           ],
         }
       });
-      await aptosClient.waitForTransaction({ transactionHash: (response as any).hash });
+      
+      console.log("💰 Create Game Response:", response);
+      
+      
+      const hash = detectHash(response);
+      
+      if (!hash) {
+        console.warn("⚠️ No transaction hash found in response, but submission might have succeeded. Response:", response);
+        await new Promise(r => setTimeout(r, 2000));
+        await fetchGames();
+        return response;
+      }
+      
+      console.log("📍 Detected transaction hash:", hash);
+      await aptosClient.waitForTransaction({ transactionHash: hash });
+      
+      // Save metadata to Firestore for discovery (since on-chain only has hashes)
+      const games = await fetchGames();
+      if (games) {
+        const newGame = games.find(g => g.name === params.name); // Find by name as fallback
+        if (newGame) {
+          await setDoc(doc(db, "game_metadata", newGame.id), {
+            id: newGame.id,
+            name: newGame.name,
+            joinCode: params.code,
+            isPublic: params.is_public,
+            createdAt: Date.now()
+          });
+        }
+      }
+
       await fetchGames();
       return response;
-    } catch (err) {
-      console.error("Error creating game:", err);
+    } catch (err: any) {
+      console.error("❌ Error creating game:", err);
+      // Log more details if it's a JSON parse error
+      if (err instanceof SyntaxError) {
+        console.error("Possible RPC issue or invalid transaction payload format.");
+      }
       throw err;
     }
   };
@@ -220,7 +282,14 @@ export function useGame() {
           functionArguments: [gameId],
         }
       });
-      await aptosClient.waitForTransaction({ transactionHash: (response as any).hash });
+      
+      const hash = detectHash(response);
+      if (hash) {
+        await aptosClient.waitForTransaction({ transactionHash: hash });
+      } else {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+      
       await fetchGames();
       return response;
     } catch (err) {
@@ -238,7 +307,14 @@ export function useGame() {
           functionArguments: [newAdmin],
         }
       });
-      await aptosClient.waitForTransaction({ transactionHash: (response as any).hash });
+      
+      const hash = detectHash(response);
+      if (hash) {
+        await aptosClient.waitForTransaction({ transactionHash: hash });
+      } else {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+      
       await fetchGames();
     } catch (err) {
       console.error("Failed to set secondary admin:", err);
@@ -255,7 +331,14 @@ export function useGame() {
           functionArguments: [newOracle],
         }
       });
-      await aptosClient.waitForTransaction({ transactionHash: (response as any).hash });
+      
+      const hash = detectHash(response);
+      if (hash) {
+        await aptosClient.waitForTransaction({ transactionHash: hash });
+      } else {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+      
       await fetchGames();
     } catch (err) {
       console.error("Failed to set oracle address:", err);

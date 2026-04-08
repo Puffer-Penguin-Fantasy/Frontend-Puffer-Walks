@@ -83,7 +83,22 @@ export default function SettingsPage() {
                             <div key={i} className="h-80 rounded-3xl bg-gray-100 animate-pulse border border-gray-200" />
                         ))
                     ) : games.length > 0 ? (
-                        games.map((game) => (
+                        games
+                        .filter(game => {
+                            const isSearchTermLongEnough = discoverCode.length > 2;
+                            const isCodeMatch = isSearchTermLongEnough && game.joinCode === discoverCode;
+                            const isNameMatch = isSearchTermLongEnough && game.name.toLowerCase().includes(discoverCode.toLowerCase());
+                            const isJoined = game.participants?.some(p => standardize(p) === standardize(address));
+                            
+                            // Public games: Always show (but filter by name if searching)
+                            if (game.is_public) {
+                                return isSearchTermLongEnough ? isNameMatch : true;
+                            }
+                            
+                            // Private games: ONLY show if exact code matches OR user is already joined
+                            return isCodeMatch || isJoined;
+                        })
+                        .map((game) => (
                             <GameCard 
                                 key={game.id} 
                                 game={game} 

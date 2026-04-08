@@ -52,13 +52,16 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
             </div>
           )}
           <div className="min-w-0 pr-2 flex-1">
-            <h3 className="text-base font-normal text-gray-900 leading-tight">
+            <h3 className="text-base font-medium text-gray-900 leading-tight">
               {game.name}
             </h3>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[10px] font-normal text-blue-500">
                 {totalPool} Move
               </span>
+              {game.is_sponsored && (
+                <span className="bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-md text-[9px] font-semibold tracking-tight border border-amber-100/50">Sponsored</span>
+              )}
               {!game.is_public && (
                 <span className="bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded-md text-[9px] font-normal tracking-tight">Private</span>
               )}
@@ -90,9 +93,12 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
             )
           )}
           {isSummarising && (
-            <div className="flex items-center gap-1.5 bg-amber-50 text-amber-600 px-4 py-2 rounded-xl text-[11px] font-normal border border-amber-100 cursor-default transition-all">
-               <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
-               Summarising
+            <div className="flex flex-col items-end">
+               <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-[11px] font-medium border border-amber-100/50 cursor-default transition-all shadow-sm">
+                  <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
+                  Summarising
+               </div>
+               <span className="text-[8px] text-amber-500/60 mt-1 uppercase font-bold tracking-tighter">Finalizing steps...</span>
             </div>
           )}
           {isEnded && (
@@ -119,12 +125,23 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
       </div>
 
       {/* Stats Row: The "Internal Card" (Flush, Darker, Taller) */}
-      <div className="bg-gray-100 p-7 px-5 grid grid-cols-4 gap-2 items-center border-t border-gray-100 rounded-t-xl mt-auto">
-        <div className="flex flex-col items-center">
-          <span className="text-[9px] text-gray-500 font-normal lowercase tracking-tight mb-0.5">entry</span>
+      <div className="bg-gray-100 p-7 px-5 grid grid-cols-4 gap-2 items-center border-t border-gray-100 rounded-t-xl mt-auto relative overflow-hidden">
+        {game.is_sponsored && game.sponsor_image_url && (
+          <div className="absolute top-0 right-0 p-1 px-3 bg-amber-100/50 rounded-bl-xl flex items-center gap-1.5 border-l border-b border-amber-200 ring-1 ring-amber-200/50">
+            <span className="text-[8px] font-medium text-amber-700 lowercase tracking-tight">sponsored by</span>
+            <img src={game.sponsor_image_url} alt={game.sponsor_name} className="w-3.5 h-3.5 rounded-full object-cover" />
+            <span className="text-[9px] font-semibold text-amber-900 leading-none">{game.sponsor_name}</span>
+          </div>
+        )}
+        
+        <div className="flex flex-col items-center min-w-0">
+          <span className="text-[9px] text-gray-500 font-normal lowercase tracking-tight mb-0.5 whitespace-nowrap">entry fee</span>
           <div className="flex items-center gap-1">
-             <span className="text-xs font-normal text-gray-800">{parseFloat(depositInMove).toFixed(0)}<span className="text-[10px] text-gray-400 ml-0.5">+10</span></span>
-             <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3.5 h-3.5 rounded-full" alt="MOVE" />
+             <span className="text-xs font-medium text-gray-800">
+               {parseFloat(depositInMove).toFixed(0)}
+             </span>
+             <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3 h-3 rounded-full" alt="MOVE" />
+             <span className="text-[8px] text-blue-500 font-medium whitespace-nowrap">+10</span>
           </div>
         </div>
         <div className="flex flex-col items-center border-l border-gray-200 pl-1">

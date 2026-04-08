@@ -5,7 +5,7 @@ import { useAccount } from "@razorlabs/razorkit";
 import { GameLeaderboard } from "@/components/GameLeaderboard";
 import { Header } from "@/components/Header";
 import { WalletPanel } from "@/components/WalletPanel";
-import { ArrowLeft, Trophy, Loader2 } from "lucide-react";
+import { ArrowLeft, Trophy, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
@@ -70,11 +70,20 @@ export default function LeaderboardPage() {
       try {
         const gameStart = new Date(parseInt(game.start_time) * 1000);
         gameStart.setHours(0, 0, 0, 0);
+        
+        const gameEnd = new Date(parseInt(game.end_time) * 1000);
+        gameEnd.setHours(0, 0, 0, 0);
+
         const now = new Date();
         now.setHours(0, 0, 0, 0);
-        const diffTime = Math.abs(now.getTime() - gameStart.getTime());
-        const currentDayIdx = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        // ONLY sync if the game is currently active
+        if (now < gameStart || now >= gameEnd) return;
+
+        const diffTime = now.getTime() - gameStart.getTime();
+        const currentDayIdx = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         const dayKey = `day${currentDayIdx + 1}`;
+        
         const pRef = doc(db, "games", game.id, "participants", myAddress);
         await updateDoc(pRef, { [`days.${dayKey}`]: steps, lastUpdated: new Date().toISOString() });
       } catch (err) {
@@ -87,7 +96,45 @@ export default function LeaderboardPage() {
 
 
   if (gamesLoading) {
-    return <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center"><Loader2 className="animate-spin text-gray-300" /></div>;
+    return (
+      <div className="min-h-screen bg-[#f8f9fa]">
+        <Header onOpenWallet={() => setIsWalletOpen(true)} />
+        <main className="container mx-auto px-4 pt-24 max-w-5xl">
+          <div className="w-16 h-4 bg-gray-200 rounded animate-pulse mb-6" />
+          
+          <div className="flex flex-col gap-4">
+            {/* Sponsor Card Skeleton */}
+            <div className="h-32 bg-gray-200 rounded-2xl animate-pulse w-full" />
+            
+            {/* Main Content Skeleton */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-16 h-16 rounded-full bg-gray-100 animate-pulse" />
+                <div className="flex-1">
+                  <div className="w-1/3 h-6 bg-gray-100 rounded animate-pulse mb-2" />
+                  <div className="w-1/4 h-3 bg-gray-50 rounded animate-pulse" />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-4 gap-4 py-6 border-y border-gray-50 mb-8">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <div className="w-10 h-2 bg-gray-50 rounded animate-pulse" />
+                    <div className="w-12 h-5 bg-gray-100 rounded animate-pulse" />
+                  </div>
+                ))}
+              </div>
+              
+              <div className="space-y-4">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className="h-10 bg-gray-50 rounded animate-pulse w-full" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   if (!game) {
@@ -96,7 +143,24 @@ export default function LeaderboardPage() {
         <div className="text-center bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm max-w-sm w-full">
           <Trophy size={48} className="mx-auto text-amber-500 mb-4" />
           <h1 className="text-xl font-semibold mb-2">Game Not Found</h1>
-          <button onClick={() => navigate("/")} className="w-full py-4 mt-4 bg-gray-900 text-white rounded-2xl">back home</button>
+          <button onClick={() => navigate("/")} className="w-full py-4 mt-4 bg-gray-900 text-white rounded-2xl text-sm font-medium">back home</button>
+        </div>
+      </div>
+    );
+  }
+
+  const isJoined = game.participants?.some(p => p.toLowerCase() === myAddress);
+  
+  if (!game.is_public && !isJoined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] p-6 px-4">
+        <div className="text-center bg-white p-10 rounded-[40px] border border-gray-100 shadow-xl shadow-black/5 max-w-sm w-full">
+          <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Lock size={36} className="text-gray-400" />
+          </div>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-3 lowercase tracking-tight">Private Battle</h1>
+          <p className="text-gray-400 text-sm mb-10 lowercase leading-relaxed">This competition is invite-only. You must join through the main dashboard using a code to access the results.</p>
+          <button onClick={() => navigate("/")} className="w-full py-4 bg-gray-900 text-white rounded-2xl text-sm font-medium transition-all active:scale-95 shadow-lg shadow-black/10">Back to Dashboard</button>
         </div>
       </div>
     );
@@ -136,7 +200,6 @@ export default function LeaderboardPage() {
           imageUrl={game.image_url}
           entryDeposit={parseFloat(game.deposit_amount) / 100_000_000}
           sponsorName={game.sponsor_name}
-          sponsorAmount={parseFloat(game.sponsor_amount)}
           sponsorImageUrl={game.sponsor_image_url}
         />
       </main>

@@ -4,7 +4,8 @@ import { db } from "../lib/firebase";
 import { collection, onSnapshot, doc, getDoc } from "firebase/firestore";
 import { useAccount } from "@razorlabs/razorkit";
 import {
-  Users
+  Users,
+  Trophy
 } from "lucide-react";
 import {
   MaterialReactTable,
@@ -35,7 +36,6 @@ interface GameLeaderboardProps {
   imageUrl?: string | null;
   entryDeposit: number;
   sponsorName?: string;
-  sponsorAmount?: number;
   sponsorImageUrl?: string;
   gameId: string;
 }
@@ -87,7 +87,7 @@ function ParticipantProfile({ address, fallbackName, isMe, isPodium, rank }: {
         )}
       </div>
       <div className="min-w-0">
-        <div className={`text-xs font-normal truncate max-w-[90px] ${isMe ? "text-blue-600" : "text-gray-800"}`}>
+        <div className={`text-xs font-normal truncate max-w-[120px] ${isMe ? "text-blue-600" : "text-gray-800"}`}>
           {username}
         </div>
       </div>
@@ -109,7 +109,6 @@ export function GameLeaderboard({
   imageUrl,
   entryDeposit,
   sponsorName,
-  sponsorAmount,
   sponsorImageUrl,
   gameId,
 }: GameLeaderboardProps) {
@@ -184,7 +183,7 @@ export function GameLeaderboard({
     },
     {
       accessorKey: 'username',
-      header: 'player',
+      header: 'Player',
       size: 180,
       muiTableHeadCellProps: {
         sx: {
@@ -210,7 +209,7 @@ export function GameLeaderboard({
     },
     ...dayColumns.map((d): MRT_ColumnDef<RankedParticipant> => ({
       accessorKey: `days.day${d}`,
-      header: `day ${d}`,
+      header: `Day ${d}`,
       size: 90,
       Cell: ({ cell }: { cell: any }) => {
         const steps = cell.getValue() as number | null;
@@ -254,13 +253,13 @@ export function GameLeaderboard({
     }),
     muiTableHeadCellProps: {
       sx: {
-        fontSize: '9px',
-        fontWeight: 'normal',
-        color: '#9ca3af',
-        textTransform: 'lowercase',
-        padding: '8px 12px',
-        backgroundColor: 'transparent',
-        borderBottom: 'none',
+        fontSize: '10px',
+        fontWeight: '700',
+        color: '#374151',
+        textTransform: 'none',
+        padding: '12px 12px',
+        backgroundColor: '#f9fafb',
+        borderBottom: '1px solid #f3f4f6',
       },
     },
     muiTableBodyCellProps: {
@@ -293,18 +292,25 @@ export function GameLeaderboard({
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-5xl mx-auto">
-      {/* Sponsor Area */}
-      {!!(sponsorName || (sponsorAmount && sponsorAmount > 0)) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center border border-gray-100 relative group transition-all hover:bg-gray-50/50">
-            {sponsorImageUrl && (
-              <img src={sponsorImageUrl} alt={sponsorName} className="h-8 object-contain mb-4 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all" />
-            )}
-            <div className="text-gray-900 text-4xl font-normal tracking-tight">
-              {sponsorAmount?.toLocaleString()} <span className="text-blue-500/40 text-xl font-normal">MOVE</span>
+    <div className="flex flex-col gap-5 w-full max-w-5xl mx-auto">
+      {/* Sponsor Area (Separate Compact Minimalist Card) */}
+      {!!sponsorName && (
+        <div className="flex justify-center mb-0">
+          <div className="flex items-center gap-3 py-4 px-6 rounded-3xl transition-all">
+            <div className="w-10 h-10 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {sponsorImageUrl ? (
+                <img src={sponsorImageUrl} alt={sponsorName} className="w-full h-full object-contain grayscale opacity-80" />
+              ) : (
+                <Trophy className="text-gray-300" size={20} />
+              )}
             </div>
-            {sponsorName && <div className="text-gray-400 text-[10px] mt-2 lowercase">{sponsorName}</div>}
+            
+            <div className="flex flex-col">
+              <span className="text-gray-400 text-[10px] font-normal lowercase tracking-wide mb-0.5">sponsored by</span>
+              <h4 className="text-gray-900 text-sm md:text-md font-medium tracking-tight whitespace-nowrap lowercase">
+                {sponsorName}
+              </h4>
+            </div>
           </div>
         </div>
       )}
@@ -325,63 +331,66 @@ export function GameLeaderboard({
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-2xl font-normal text-gray-900 leading-none mb-1">
+                <h3 className="text-xl md:text-2xl font-medium text-gray-900 leading-tight mb-1">
                   {gameName}
                 </h3>
               </div>
             </div>
 
-              {status === 'upcoming' && (
-                <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-blue-50 border-blue-100 text-blue-600">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                  upcoming
+            {status === 'upcoming' && (
+              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-blue-50 border-blue-100 text-blue-600">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                upcoming
+              </div>
+            )}
+            {status === 'live' && (
+              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-green-50 border-green-100 text-green-600">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                live
+              </div>
+            )}
+            {status === 'summarising' && (
+              <div className="flex flex-col items-end">
+                <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-[11px] font-medium border border-amber-100/50 cursor-default transition-all shadow-sm">
+                  <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
+                  Summarising
                 </div>
-              )}
-              {status === 'live' && (
-                <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-green-50 border-green-100 text-green-600">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  live
-                </div>
-              )}
-              {status === 'summarising' && (
-                <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-amber-50 border-amber-100 text-amber-600">
-                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  summarising
-                </div>
-              )}
-              {status === 'ended' && (
-                <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-gray-50 border-gray-200 text-gray-500">
-                  ended
-                </div>
-              )}
+                <span className="text-[8px] text-amber-500/60 mt-1 uppercase font-bold tracking-tighter">Finalizing steps...</span>
+              </div>
+            )}
+            {status === 'ended' && (
+              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-gray-50 border-gray-200 text-gray-500">
+                ended
+              </div>
+            )}
           </div>
-
-          {/* Stats Grid Block */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-t border-gray-100">
-            <div className="flex flex-col gap-1 text-center border-r border-gray-100">
-              <span className="text-[10px] text-gray-400 lowercase">entry</span>
-              <div className="flex items-center justify-center gap-1.5 h-[28px]">
-                <div className="text-gray-900 text-lg font-normal tabular-nums leading-none">
-                  {Math.floor(entryDeposit || 0)}<span className="text-gray-400 text-xs ml-0.5">+10</span>
+          <div className="grid grid-cols-4 gap-2 md:gap-4 py-4 border-t border-gray-100">
+            <div className="flex flex-col gap-1 text-center border-r border-gray-100 px-1">
+              <span className="text-[9px] md:text-[10px] text-gray-400 lowercase whitespace-nowrap">entry fee</span>
+              <div className="flex items-center justify-center gap-1 md:gap-1.5 h-[28px]">
+                <div className="text-gray-900 text-sm md:text-lg font-medium tabular-nums leading-none">
+                  {Math.floor(entryDeposit || 0)}
                 </div>
-                <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-5 h-5 rounded-full shadow-sm" alt="MOVE" />
+                <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-4 h-4 md:w-5 md:h-5 rounded-full" alt="MOVE" />
+                <span className="text-blue-500 text-[10px] font-bold">+10</span>
               </div>
             </div>
-            <div className="flex flex-col gap-1 text-center md:border-r border-gray-100">
-              <span className="text-[10px] text-gray-400 lowercase">{numDays} days</span>
-              <span className="text-gray-900 text-lg font-normal tabular-nums">
-                {startDate.getMonth() + 1}/{startDate.getDate()} <span className="text-gray-300 text-[10px]"> - </span> {endDate.getMonth() + 1}/{endDate.getDate()}
+            <div className="flex flex-col gap-1 text-center border-r border-gray-100 px-1">
+              <span className="text-[9px] md:text-[10px] text-gray-400 lowercase whitespace-nowrap">{numDays} days</span>
+              <span className="text-gray-900 text-sm md:text-lg font-normal tabular-nums leading-none flex items-center justify-center h-[28px]">
+                {startDate.getMonth() + 1}/{startDate.getDate()} <span className="text-gray-300 text-[10px] mx-1"> - </span> {endDate.getMonth() + 1}/{endDate.getDate()}
               </span>
             </div>
-            <div className="flex flex-col gap-1 text-center border-r border-gray-100">
-              <span className="text-[10px] text-gray-400 lowercase">steps</span>
-              <span className="text-gray-900 text-lg font-normal">{(minDailySteps / 1000).toFixed(0)}k</span>
+            <div className="flex flex-col gap-1 text-center border-r border-gray-100 px-1">
+              <span className="text-[9px] md:text-[10px] text-gray-400 lowercase whitespace-nowrap">steps</span>
+              <span className="text-gray-900 text-sm md:text-lg font-normal flex items-center justify-center h-[28px]">{(minDailySteps / 1000).toFixed(0)}k</span>
             </div>
-            <div className="flex flex-col gap-1 text-center">
-              <span className="text-[10px] text-gray-400 lowercase">players</span>
-              <span className="text-gray-900 text-lg font-normal tabular-nums">{participants.length}</span>
+            <div className="flex flex-col gap-1 text-center px-1">
+              <span className="text-[9px] md:text-[10px] text-gray-400 lowercase whitespace-nowrap">players</span>
+              <span className="text-gray-900 text-sm md:text-lg font-normal tabular-nums flex items-center justify-center h-[28px]">{participants.length}</span>
             </div>
           </div>
+
         </div>
 
         {/* Nested Table Card */}
