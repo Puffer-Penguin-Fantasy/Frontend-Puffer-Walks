@@ -199,6 +199,18 @@ export function useGame() {
           minSteps: parseInt(game.min_daily_steps),
           deposit: parseFloat(game.deposit_amount) / 100_000_000
         }, { merge: true });
+
+        // Initialize blank days template for the UI and Oracle
+        const initialDays: Record<string, number> = {};
+        for(let i = 1; i <= parseInt(game.no_of_days); i++){
+          initialDays[`day${i}`] = 0;
+        }
+
+        await setDoc(doc(db, "games", gameId, "participants", rawAddress.toLowerCase()), {
+          walletAddress: rawAddress.toLowerCase(),
+          joinedAt: new Date(),
+          days: initialDays
+        }, { merge: true });
       }
       await fetchGames();
       return response;
