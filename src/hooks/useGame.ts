@@ -80,13 +80,20 @@ export function useGame() {
       // --- USER SPECIFIC STATUS FETCH ---
       let gamesWithClaimStatus = [...results];
       if (rawAddress) {
-        try {
-          const upResource = await aptosClient.getAccountResource({
-            accountAddress: rawAddress,
-            resourceType: `${MODULE_ADDRESS}::game::UserParticipation`
-          }) as any;
-          
-          const gamesStatus = upResource?.games_status;
+        const userAddrNorm = rawAddress.toLowerCase();
+        const hasJoinedAnyGame = results.some(g => g.participants.some((p: any) => {
+            const pAddr = typeof p === 'string' ? p : (p.value || "");
+            return pAddr.toLowerCase() === userAddrNorm;
+        }));
+
+        if (hasJoinedAnyGame) {
+          try {
+            const upResource = await aptosClient.getAccountResource({
+              accountAddress: rawAddress,
+              resourceType: `${MODULE_ADDRESS}::game::UserParticipation`
+            }) as any;
+            
+            const gamesStatus = upResource?.games_status;
           const tableHandle = gamesStatus?.inner?.handle || gamesStatus?.handle;
           
           if (tableHandle) {
@@ -126,7 +133,10 @@ export function useGame() {
               return g;
             }));
           }
-        } catch (e) { console.log("UserParticipation not found or error:", e); }
+        } catch (e) { 
+            // Silent catch: It is completely normal for new users to not have a UserParticipation resource yet.
+          }
+        }
       }
 
       // --- MERGE FIREBASE METADATA ---

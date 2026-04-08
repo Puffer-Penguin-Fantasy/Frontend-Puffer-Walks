@@ -10,8 +10,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { db } from "../lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { MODULE_ADDRESS } from "../GameOnchain/movement_service/constants";
-
-
 interface WalletPanelProps {
     isOpen: boolean;
     onClose: () => void;
@@ -149,19 +147,33 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     };
 
     const saveOnChain = async () => {
-        if (!rawAddress || !profileName) return;
+        if (!rawAddress) return;
+        
+        // Strictly pull the saved Firebase data to ensure we use Pinata IPFS links
+        const finalName = initialUsername || profileName;
+        const finalImage = initialImage || profileImage || "https://gateway.pinata.cloud/ipfs/QmDefault";
+
+        // Double check we are not sending un-uploaded raw images to the blockchain
+        if (finalImage.startsWith('data:image')) {
+            alert("Please edit and 'Save Changes' to upload your image to IPFS first.");
+            return;
+        }
+
         setIsSavingOnChain(true);
         try {
             await signAndSubmitTransaction({
                 payload: {
+                    type: "entry_function_payload",
                     function: `${MODULE_ADDRESS}::profile::create_profile`,
-                    functionArguments: [profileName, profileImage || ""],
-                }
+                    typeArguments: [],
+                    functionArguments: [finalName, finalImage],
+                } as any
             });
             console.log("Profile saved on-chain!");
             await refreshProfile();
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error saving on-chain profile:", err);
+            alert(err?.message || "Failed to save profile. Simulation might have aborted.");
         } finally {
             setIsSavingOnChain(false);
         }
