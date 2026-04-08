@@ -4,6 +4,7 @@ import React from "react"
 import { Trophy, Plus } from "lucide-react"
 import { useGame } from "../hooks/useGame"
 import { GameCard } from "../components/GameCard"
+import { GameCardSkeleton } from "../components/GameCardSkeleton"
 import { CreateGameModal } from "../components/CreateGameModal"
 import { AdminPanel } from "../components/AdminPanel"
 import { Header } from "../components/Header"
@@ -78,9 +79,9 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {gamesLoading && games.length === 0 ? (
-                        Array(3).fill(0).map((_, i) => (
-                            <div key={i} className="h-80 rounded-3xl bg-gray-100 animate-pulse border border-gray-200" />
+                    {gamesLoading ? (
+                        Array(6).fill(0).map((_, i) => (
+                            <GameCardSkeleton key={i} />
                         ))
                     ) : games.length > 0 ? (
                         games

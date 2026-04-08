@@ -20,4 +20,7 @@ export interface Game {
   sponsor_amount: string;
   sponsor_image_url: string;
   joinCode?: string;
+  isClaimed?: boolean;
+  userCompletedDays?: number;
+  userMissedDays?: number;
 }

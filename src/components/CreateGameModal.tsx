@@ -202,7 +202,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                           const s = new Date(start);
                           const e_date = new Date(formData.end_date);
                           const diff = Math.ceil((e_date.getTime() - s.getTime()) / (1000 * 3600 * 24));
-                          setFormData({...formData, start_date: start, duration_days: Math.max(0, diff).toString()});
+                          setFormData({...formData, start_date: start, duration_days: Math.max(0, diff + 1).toString()});
                         } else {
                           setFormData({...formData, start_date: start});
                         }
@@ -227,7 +227,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                           const s = new Date(formData.start_date);
                           const e_date = new Date(end);
                           const diff = Math.ceil((e_date.getTime() - s.getTime()) / (1000 * 3600 * 24));
-                          setFormData({...formData, end_date: end, duration_days: diff.toString()});
+                          setFormData({...formData, end_date: end, duration_days: (diff + 1).toString()});
                         } else {
                           setFormData({...formData, end_date: end});
                         }

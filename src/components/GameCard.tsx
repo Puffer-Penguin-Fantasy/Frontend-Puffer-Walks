@@ -15,6 +15,8 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
   const totalPool = ((parseFloat(game.prize_pool) + parseFloat(game.sponsored_pool)) / 100_000_000).toFixed(2);
   const startTime = new Date(parseInt(game.start_time) * 1000);
   const endTime = new Date(parseInt(game.end_time) * 1000);
+  // Subtract 1 second to get the last active day (e.g., if it ends at 00:00 on the 13th, the last active day is the 12th)
+  const displayEndDate = new Date(endTime.getTime() - 1000);
   const now = new Date();
 
   // Standardize address for comparison
@@ -60,7 +62,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
                 {totalPool} Move
               </span>
               {game.is_sponsored && (
-                <span className="bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-md text-[9px] font-semibold tracking-tight border border-amber-100/50">Sponsored</span>
+                <span className="bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-md text-[9px] font-semibold tracking-tight">Sponsored</span>
               )}
               {!game.is_public && (
                 <span className="bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded-md text-[9px] font-normal tracking-tight">Private</span>
@@ -103,12 +105,22 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
           )}
           {isEnded && (
             isJoined ? (
-              <button
-                onClick={(e) => { e.stopPropagation(); onClaim(game.id); }}
-                className="px-4 py-2 rounded-xl bg-green-600 text-white text-[11px] font-normal transition-all active:scale-95 shadow-sm hover:bg-green-700"
-              >
-                Claim All
-              </button>
+              game.isClaimed ? (
+                <div className="px-4 py-2 rounded-xl bg-gray-50 text-gray-400 border border-gray-100 text-[11px] font-normal flex items-center justify-center gap-1.5 cursor-default">
+                   <div className="w-1.5 h-1.5 bg-gray-300 rounded-full" /> Claimed
+                </div>
+              ) : (game.userCompletedDays === 0) ? (
+                 <div className="px-4 py-2 rounded-xl bg-gray-50 text-gray-400 border border-gray-100 text-[11px] font-normal flex items-center justify-center gap-1.5 cursor-default">
+                    0 days hit
+                 </div>
+              ) : (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onClaim(game.id); }}
+                  className="px-4 py-2 rounded-xl bg-green-600 text-white text-[11px] font-normal transition-all active:scale-95 shadow-sm hover:bg-green-700 hover:shadow-green-100"
+                >
+                  Claim All
+                </button>
+              )
             ) : (
               <div className="flex items-center gap-1 bg-gray-50 text-gray-400 px-3 py-2 rounded-xl text-[11px] font-normal border border-gray-100 cursor-default">
                  Ended
@@ -127,7 +139,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
       {/* Stats Row: The "Internal Card" (Flush, Darker, Taller) */}
       <div className="bg-gray-100 p-7 px-5 grid grid-cols-4 gap-2 items-center border-t border-gray-100 rounded-t-xl mt-auto relative overflow-hidden">
         {game.is_sponsored && game.sponsor_image_url && (
-          <div className="absolute top-0 right-0 p-1 px-3 bg-amber-100/50 rounded-bl-xl flex items-center gap-1.5 border-l border-b border-amber-200 ring-1 ring-amber-200/50">
+          <div className="absolute top-0 right-0 p-1 px-3 bg-amber-100/50 rounded-bl-xl flex items-center gap-1.5">
             <span className="text-[8px] font-medium text-amber-700 lowercase tracking-tight">sponsored by</span>
             <img src={game.sponsor_image_url} alt={game.sponsor_name} className="w-3.5 h-3.5 rounded-full object-cover" />
             <span className="text-[9px] font-semibold text-amber-900 leading-none">{game.sponsor_name}</span>
@@ -146,7 +158,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
         </div>
         <div className="flex flex-col items-center border-l border-gray-200 pl-1">
           <span className="text-[9px] text-gray-500 font-normal lowercase tracking-tight mb-0.5">{game.no_of_days} days</span>
-          <span className="text-[10px] font-normal text-gray-700">{startTime.getMonth() + 1}/{startTime.getDate()} - {endTime.getMonth() + 1}/{endTime.getDate()}</span>
+          <span className="text-[10px] font-normal text-gray-700">{startTime.getUTCMonth() + 1}/{startTime.getUTCDate()} - {displayEndDate.getUTCDate() === startTime.getUTCDate() && game.no_of_days === "1" ? "" : `${displayEndDate.getUTCMonth() + 1}/`}{displayEndDate.getUTCDate()}</span>
         </div>
         <div className="flex flex-col items-center border-l border-gray-200 pl-1">
           <span className="text-[9px] text-gray-500 font-normal lowercase tracking-tight mb-0.5">steps</span>

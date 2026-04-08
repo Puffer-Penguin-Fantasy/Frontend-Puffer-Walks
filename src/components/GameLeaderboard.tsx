@@ -132,7 +132,13 @@ export function GameLeaderboard({
   }, [gameId]);
 
   const startDate = startTime;
-  const endDate = new Date(startTime.getTime() + numDays * 24 * 60 * 60 * 1000);
+  const endDate = new Date(startTime.getTime() + (numDays - 1) * 24 * 60 * 60 * 1000);
+  
+  // Format dates strictly in UTC to match contract logic
+  const startDay = startDate.getUTCDate();
+  const startMonth = startDate.getUTCMonth() + 1;
+  const endDay = endDate.getUTCDate();
+  const endMonth = endDate.getUTCMonth() + 1;
   const dayColumns = Array.from({ length: numDays }, (_, i) => i + 1);
 
   const ranked: RankedParticipant[] = participants
@@ -378,7 +384,7 @@ export function GameLeaderboard({
             <div className="flex flex-col gap-1 text-center border-r border-gray-100 px-1">
               <span className="text-[9px] md:text-[10px] text-gray-400 lowercase whitespace-nowrap">{numDays} days</span>
               <span className="text-gray-900 text-sm md:text-lg font-normal tabular-nums leading-none flex items-center justify-center h-[28px]">
-                {startDate.getMonth() + 1}/{startDate.getDate()} <span className="text-gray-300 text-[10px] mx-1"> - </span> {endDate.getMonth() + 1}/{endDate.getDate()}
+                {startMonth}/{startDay} <span className="text-gray-300 text-[10px] mx-1"> - </span> {endMonth}/{endDay}
               </span>
             </div>
             <div className="flex flex-col gap-1 text-center border-r border-gray-100 px-1">
