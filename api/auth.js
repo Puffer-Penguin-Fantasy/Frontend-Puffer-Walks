@@ -227,6 +227,27 @@ app.post(["/fitbit/disconnect", "/auth/fitbit/disconnect"], async (req, res) => 
   if (!wallet) return res.status(400).json({ error: "wallet required" });
   const db = admin.firestore();
 
+  try {
+    const docSnap = await db.collection("fitbit_tokens").doc(wallet.toLowerCase()).get();
+    if (docSnap.exists) {
+      const { access_token, refresh_token } = docSnap.data();
+      const token = refresh_token || access_token;
+      if (token) {
+        const credentials = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
+        await fetch("https://api.fitbit.com/oauth2/revoke", {
+          method: "POST",
+          headers: {
+            "Authorization": `Basic ${credentials}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({ token }),
+        }).catch(err => console.error("Token revoke failed:", err));
+      }
+    }
+  } catch (err) {
+    console.error("Error during disconnect token revoke:", err);
+  }
+
   await db.collection("fitbit_tokens").doc(wallet).set({ connected: false }, { merge: true });
   res.json({ success: true });
 });

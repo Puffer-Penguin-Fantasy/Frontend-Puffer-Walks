@@ -69,13 +69,13 @@ export default function LeaderboardPage() {
       if (!game || !myAddress || !isConnected || steps === null) return;
       try {
         const gameStart = new Date(parseInt(game.start_time) * 1000);
-        gameStart.setHours(0, 0, 0, 0);
+        gameStart.setUTCHours(0, 0, 0, 0);
         
         const gameEnd = new Date(parseInt(game.end_time) * 1000);
-        gameEnd.setHours(0, 0, 0, 0);
+        gameEnd.setUTCHours(0, 0, 0, 0);
 
         const now = new Date();
-        now.setHours(0, 0, 0, 0);
+        now.setUTCHours(0, 0, 0, 0);
 
         // ONLY sync if the game is currently active
         if (now < gameStart || now >= gameEnd) return;
