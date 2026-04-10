@@ -87,7 +87,7 @@ function ParticipantProfile({ address, fallbackName, isMe, isPodium, rank }: {
         )}
       </div>
       <div className="min-w-0">
-        <div className={`text-xs font-normal truncate max-w-[120px] ${isMe ? "text-blue-600" : "text-gray-800"}`}>
+        <div className={`text-xs font-medium truncate max-w-[120px] ${isMe ? "text-blue-600" : "text-gray-800"}`}>
           {username}
         </div>
       </div>
@@ -244,7 +244,7 @@ export function GameLeaderboard({
         const steps = cell.getValue() as number | null;
         const hitTarget = (steps || 0) >= minDailySteps;
         return (
-          <span className={`text-[11px] tabular-nums font-normal ${hitTarget ? 'text-blue-500' : 'text-gray-300'}`}>
+          <span className={`text-[12px] tabular-nums font-medium ${hitTarget ? 'text-blue-600' : 'text-gray-500'}`}>
             {steps ? steps.toLocaleString() : "—"}
           </span>
         );
@@ -282,9 +282,9 @@ export function GameLeaderboard({
     }),
     muiTableHeadCellProps: {
       sx: {
-        fontSize: '10px',
+        fontSize: '11px',
         fontWeight: '700',
-        color: '#374151',
+        color: '#111827',
         textTransform: 'none',
         padding: '12px 12px',
         backgroundColor: '#f9fafb',
@@ -293,9 +293,9 @@ export function GameLeaderboard({
     },
     muiTableBodyCellProps: {
       sx: {
-        padding: '6px 12px',
+        padding: '8px 12px',
         borderBottom: 'none',
-        fontSize: '11px',
+        fontSize: '12px',
       },
     },
     muiTableContainerProps: {
