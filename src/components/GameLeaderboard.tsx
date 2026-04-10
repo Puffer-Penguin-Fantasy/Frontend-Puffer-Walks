@@ -245,7 +245,7 @@ export function GameLeaderboard({
         const hitTarget = (steps || 0) >= minDailySteps;
         return (
           <span className={`text-[12px] tabular-nums font-medium ${hitTarget ? 'text-blue-600' : 'text-gray-500'}`}>
-            {steps ? steps.toLocaleString() : "—"}
+            {(steps !== null && steps !== undefined) ? steps.toLocaleString() : "—"}
           </span>
         );
       },
