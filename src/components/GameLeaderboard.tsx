@@ -181,6 +181,14 @@ export function GameLeaderboard({
   const shortAddr = (addr: string) =>
     addr ? addr.slice(0, 6) + "…" + addr.slice(-4) : "--";
 
+  const currentDayIdx = useMemo(() => {
+    const s = new Date(startTime);
+    s.setUTCHours(0, 0, 0, 0);
+    const n = new Date();
+    const diff = n.getTime() - s.getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  }, [startTime]);
+
   const columns = useMemo<MRT_ColumnDef<RankedParticipant>[]>(() => [
     {
       accessorKey: 'rank',
@@ -227,11 +235,11 @@ export function GameLeaderboard({
       },
       Cell: ({ row }) => (
         <ParticipantProfile
-          address={row.original.walletAddress}
-          fallbackName={row.original.username || shortAddr(row.original.walletAddress)}
-          isMe={row.original.walletAddress.toLowerCase() === myAddress}
-          isPodium={row.original.rank <= 3}
-          rank={row.original.rank}
+            address={row.original.walletAddress}
+            fallbackName={row.original.username || shortAddr(row.original.walletAddress)}
+            isMe={row.original.walletAddress.toLowerCase() === myAddress}
+            isPodium={row.original.rank <= 3}
+            rank={row.original.rank}
         />
       ),
     },
@@ -243,14 +251,21 @@ export function GameLeaderboard({
       Cell: ({ cell }: { cell: any }) => {
         const steps = cell.getValue() as number | null;
         const hitTarget = (steps || 0) >= minDailySteps;
+        const isPastDay = (d - 1) < currentDayIdx;
+        const isFailed = isPastDay && !hitTarget;
+
+        let textColor = 'text-gray-500';
+        if (hitTarget) textColor = 'text-blue-600';
+        else if (isFailed) textColor = 'text-red-500';
+
         return (
-          <span className={`text-[12px] tabular-nums font-medium ${hitTarget ? 'text-blue-600' : 'text-gray-500'}`}>
+          <span className={`text-[12px] tabular-nums font-medium ${textColor}`}>
             {(steps !== null && steps !== undefined) ? steps.toLocaleString() : "—"}
           </span>
         );
       },
     })),
-  ], [dayColumns, minDailySteps, myAddress]);
+  ], [dayColumns, minDailySteps, myAddress, currentDayIdx]);
 
   const table = useMaterialReactTable({
     columns,
