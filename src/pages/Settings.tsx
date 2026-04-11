@@ -44,7 +44,7 @@ export default function SettingsPage() {
     });
 
     return (
-        <div className="min-h-screen bg-[#f8f9fa] text-foreground font-sans selection:bg-blue-600/20">
+        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-blue-600/20">
             {/* Shared Header Component */}
             <Header onOpenWallet={() => setIsPanelOpen(true)} onOpenAdmin={() => setIsAdminPanelOpen(true)} />
 
@@ -52,10 +52,10 @@ export default function SettingsPage() {
                 {/* Hero Section */}
                 <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
-                        <h1 className="text-2xl text-gray-800 mb-2 tracking-tight">
+                        <h1 className="text-2xl text-foreground mb-2 tracking-tight">
                             Active Competitions
                         </h1>
-                        <p className="text-gray-400 text-sm tracking-tight">
+                        <p className="text-muted-foreground text-sm tracking-tight">
                             Stake your steps, outwalk the rest, and earn rewards through Movement Network.
                         </p>
                     </div>
@@ -65,7 +65,7 @@ export default function SettingsPage() {
                             placeholder="Enter Join Code"
                             value={discoverCode}
                             onChange={e => setDiscoverCode(e.target.value)}
-                            className="w-full md:w-auto h-10 px-4 bg-white border border-gray-200 rounded-xl text-sm placeholder:text-gray-400 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-all"
+                            className="w-full md:w-auto h-10 px-4 bg-muted border border-border rounded-xl text-sm placeholder:text-muted-foreground outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 transition-all"
                         />
                         {isAdmin && (
                             <button 
@@ -109,13 +109,13 @@ export default function SettingsPage() {
                             />
                         ))
                     ) : (
-                        <div className="col-span-full py-20 flex flex-col items-center justify-center bg-white rounded-[40px] border border-dashed border-gray-200">
-                            <Trophy className="w-16 h-16 text-gray-200 mb-6" />
-                            <h3 className="text-2xl font-normal text-gray-400 mb-2">No Active Battles</h3>
-                            <p className="text-gray-400 text-sm mb-6">Games created on Movement Network will appear here.</p>
+                        <div className="col-span-full py-20 flex flex-col items-center justify-center bg-card rounded-[40px] border border-dashed border-border">
+                            <Trophy className="w-16 h-16 text-muted/30 mb-6" />
+                            <h3 className="text-2xl font-normal text-muted-foreground mb-2 lowercase tracking-tighter">No Active Battles</h3>
+                            <p className="text-muted-foreground/60 text-sm mb-6 lowercase">Games created on Movement Network will appear here.</p>
                             <button 
                                 onClick={refreshGames}
-                                className="px-6 py-2 rounded-full border border-blue-100 text-blue-600 text-sm font-medium hover:bg-blue-50 transition-colors"
+                                className="px-6 py-2 rounded-full bg-muted border border-border text-foreground text-sm font-medium hover:bg-muted/80 transition-colors"
                             >
                                 Reload List
                             </button>

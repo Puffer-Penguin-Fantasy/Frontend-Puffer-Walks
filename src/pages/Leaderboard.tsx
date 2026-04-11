@@ -97,37 +97,37 @@ export default function LeaderboardPage() {
 
   if (gamesLoading) {
     return (
-      <div className="min-h-screen bg-[#f8f9fa]">
+      <div className="min-h-screen bg-background">
         <Header onOpenWallet={() => setIsWalletOpen(true)} />
         <main className="container mx-auto px-4 pt-24 max-w-5xl">
-          <div className="w-16 h-4 bg-gray-200 rounded animate-pulse mb-6" />
+          <div className="w-16 h-4 bg-muted rounded animate-pulse mb-6" />
           
           <div className="flex flex-col gap-4">
             {/* Sponsor Card Skeleton */}
-            <div className="h-32 bg-gray-200 rounded-2xl animate-pulse w-full" />
+            <div className="h-32 bg-muted rounded-2xl animate-pulse w-full" />
             
             {/* Main Content Skeleton */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm overflow-hidden">
+            <div className="bg-card rounded-2xl border-2 border-border p-6 shadow-sm overflow-hidden">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-16 h-16 rounded-full bg-gray-100 animate-pulse" />
+                <div className="w-16 h-16 rounded-full bg-muted animate-pulse" />
                 <div className="flex-1">
-                  <div className="w-1/3 h-6 bg-gray-100 rounded animate-pulse mb-2" />
-                  <div className="w-1/4 h-3 bg-gray-50 rounded animate-pulse" />
+                  <div className="w-1/3 h-6 bg-muted rounded animate-pulse mb-2" />
+                  <div className="w-1/4 h-3 bg-muted rounded animate-pulse" />
                 </div>
               </div>
               
-              <div className="grid grid-cols-4 gap-4 py-6 border-y border-gray-50 mb-8">
+              <div className="grid grid-cols-4 gap-4 py-6 border-y border-border mb-8">
                 {[1, 2, 3, 4].map(i => (
                   <div key={i} className="flex flex-col items-center gap-2">
-                    <div className="w-10 h-2 bg-gray-50 rounded animate-pulse" />
-                    <div className="w-12 h-5 bg-gray-100 rounded animate-pulse" />
+                    <div className="w-10 h-2 bg-muted rounded animate-pulse" />
+                    <div className="w-12 h-5 bg-muted rounded animate-pulse" />
                   </div>
                 ))}
               </div>
               
               <div className="space-y-4">
                 {[1, 2, 3, 4, 5].map(i => (
-                  <div key={i} className="h-10 bg-gray-50 rounded animate-pulse w-full" />
+                  <div key={i} className="h-10 bg-muted rounded animate-pulse w-full" />
                 ))}
               </div>
             </div>
@@ -139,11 +139,11 @@ export default function LeaderboardPage() {
 
   if (!game) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] p-6">
-        <div className="text-center bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm max-w-sm w-full">
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="text-center bg-card p-8 rounded-[32px] border border-border shadow-sm max-w-sm w-full">
           <Trophy size={48} className="mx-auto text-amber-500 mb-4" />
-          <h1 className="text-xl font-semibold mb-2">Game Not Found</h1>
-          <button onClick={() => navigate("/")} className="w-full py-4 mt-4 bg-gray-900 text-white rounded-2xl text-sm font-medium">back home</button>
+          <h1 className="text-xl font-semibold mb-2 text-foreground">Game Not Found</h1>
+          <button onClick={() => navigate("/")} className="w-full py-4 mt-4 bg-primary text-primary-foreground rounded-2xl text-sm font-medium">back home</button>
         </div>
       </div>
     );
@@ -153,14 +153,14 @@ export default function LeaderboardPage() {
   
   if (!game.is_public && !isJoined) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] p-6 px-4">
-        <div className="text-center bg-white p-10 rounded-[40px] border border-gray-100 shadow-xl shadow-black/5 max-w-sm w-full">
-          <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Lock size={36} className="text-gray-400" />
+      <div className="min-h-screen flex items-center justify-center bg-background p-6 px-4">
+        <div className="text-center bg-card p-10 rounded-[40px] border border-border shadow-xl shadow-black/5 max-w-sm w-full">
+          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+            <Lock size={36} className="text-muted-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold text-gray-900 mb-3 lowercase tracking-tight">Private Battle</h1>
-          <p className="text-gray-400 text-sm mb-10 lowercase leading-relaxed">This competition is invite-only. You must join through the main dashboard using a code to access the results.</p>
-          <button onClick={() => navigate("/")} className="w-full py-4 bg-gray-900 text-white rounded-2xl text-sm font-medium transition-all active:scale-95 shadow-lg shadow-black/10">Back to Dashboard</button>
+          <h1 className="text-2xl font-semibold text-foreground mb-3 lowercase tracking-tight">Private Battle</h1>
+          <p className="text-muted-foreground text-sm mb-10 lowercase leading-relaxed">This competition is invite-only. You must join through the main dashboard using a code to access the results.</p>
+          <button onClick={() => navigate("/")} className="w-full py-4 bg-primary text-primary-foreground rounded-2xl text-sm font-medium transition-all active:scale-95 shadow-lg shadow-black/10">Back to Dashboard</button>
         </div>
       </div>
     );
@@ -179,13 +179,13 @@ export default function LeaderboardPage() {
   else if (isSummarising) status = 'summarising';
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] pb-20">
+    <div className="min-h-screen bg-background pb-20">
       <Header onOpenWallet={() => setIsWalletOpen(true)} />
 
       <main className="container mx-auto px-4 pt-24 max-w-5xl">
         <button 
           onClick={() => navigate("/")} 
-          className="flex items-center gap-1 text-gray-400 text-sm hover:text-gray-900 transition-colors lowercase mb-6"
+          className="flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground transition-colors lowercase mb-6"
         >
           <ArrowLeft size={16} /> back
         </button>

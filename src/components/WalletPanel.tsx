@@ -215,7 +215,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "spring", damping: 30, stiffness: 300, duration: 0.3 }}
-                        className="relative w-full max-w-md bg-[#f8f9fa] shadow-2xl flex flex-col h-full overflow-hidden border-l border-gray-200"
+                        className="relative w-full max-w-md bg-background shadow-2xl flex flex-col h-full overflow-hidden border-l border-border"
                     >
                         <div className="absolute top-7 right-8 z-10 flex flex-col items-end gap-2">
                             <button 
@@ -223,10 +223,10 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 disabled={isSaving || isLoading || (!arcticData.hasNFT && !isEditing)}
                                 className={`text-[11px] font-bold transition-all px-4 py-1.5 rounded-full border flex items-center gap-2 ${
                                     isEditing 
-                                        ? "bg-black text-white" 
+                                        ? "bg-primary text-primary-foreground border-primary" 
                                         : !arcticData.hasNFT 
-                                            ? "bg-gray-100 border-gray-100 text-gray-400 cursor-not-allowed" 
-                                            : "bg-white border-gray-200 text-blue-600 hover:border-blue-100 hover:bg-blue-50/50"
+                                            ? "bg-muted border-border text-muted-foreground cursor-not-allowed" 
+                                            : "bg-background border-border text-accent hover:border-accent/40 hover:bg-accent/5"
                                 }`}
                             >
                                 {isSaving ? <Loader2 size={12} className="animate-spin" /> : null}
@@ -237,7 +237,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 <button 
                                     onClick={saveOnChain}
                                     disabled={isSavingOnChain || isLoading}
-                                    className="text-[10px] font-bold bg-blue-600 text-white px-4 py-1.5 rounded-full hover:bg-blue-700 transition-all flex items-center gap-2 shadow-sm"
+                                    className="text-[10px] font-bold bg-accent text-accent-foreground px-4 py-1.5 rounded-full hover:bg-accent/90 transition-all flex items-center gap-2 shadow-sm"
                                 >
                                     {isSavingOnChain ? <Loader2 size={10} className="animate-spin" /> : null}
                                     Save Profile On-chain
@@ -246,17 +246,17 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                         </div>
 
                         <div className="p-8 overflow-y-auto flex-1 font-roboto space-y-2">
-                            <div className="border-b border-gray-200 pb-2">
+                            <div className="border-b border-border pb-2">
                                 <button 
                                     onClick={() => setExpandedKey(expandedKey === "profile" ? null : "profile")}
                                     className="w-full flex items-center justify-between py-6 group"
                                 >
-                                    <span className={`text-[17px] font-medium transition-all duration-300 ${expandedKey === "profile" ? "text-gray-900 border-b-2 border-gray-900" : "text-gray-900 hover:text-gray-600"}`}>
+                                    <span className={`text-[17px] font-medium transition-all duration-300 ${expandedKey === "profile" ? "text-foreground border-b-2 border-primary" : "text-foreground hover:text-muted-foreground"}`}>
                                         Wallet Profile
                                     </span>
                                     <motion.div
                                         animate={{ rotate: expandedKey === "profile" ? 180 : 0 }}
-                                        className="text-gray-400 group-hover:text-gray-900 transition-colors"
+                                        className="text-muted-foreground group-hover:text-foreground transition-colors"
                                     >
                                         <ChevronDown size={22} strokeWidth={1} />
                                     </motion.div>
@@ -275,7 +275,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                     className={`relative group ${isEditing ? "cursor-pointer" : ""}`}
                                                     onClick={handlePfpClick}
                                                 >
-                                                    <div className="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center text-4xl font-bold border-4 border-[#f8f9fa] shadow-md overflow-hidden relative">
+                                                    <div className="w-24 h-24 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-4xl font-bold border-4 border-background shadow-md overflow-hidden relative">
                                                         {isLoading ? (
                                                             <Loader2 size={32} className="animate-spin opacity-40" />
                                                         ) : profileImage ? (
@@ -298,18 +298,18 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                                 type="text"
                                                                 value={profileName}
                                                                 onChange={(e) => setProfileName(e.target.value)}
-                                                                className="w-full bg-transparent border-b-2 border-blue-600 text-center font-bold text-xl text-gray-900 outline-none pb-2 placeholder:text-gray-300"
+                                                                className="w-full bg-transparent border-b-2 border-accent text-center font-bold text-xl text-foreground outline-none pb-2 placeholder:text-muted-foreground"
                                                                 autoFocus
                                                                 placeholder="Choose a name"
                                                             />
-                                                            <div className="absolute bottom-0 left-0 right-0 text-[10px] text-blue-600 font-bold tracking-tight">Enter Username</div>
+                                                            <div className="absolute bottom-0 left-0 right-0 text-[10px] text-accent font-bold tracking-tight">Enter Username</div>
                                                         </div>
                                                     ) : (
-                                                        <div className="text-xl font-bold text-gray-900 leading-tight">
+                                                        <div className="text-xl font-bold text-foreground leading-tight">
                                                             {isLoading ? "Loading..." : profileName}
                                                         </div>
                                                     )}
-                                                    <div className="text-[11px] font-mono text-gray-400 opacity-60 px-4 py-1 bg-gray-50 rounded-full border border-gray-200/50">
+                                                    <div className="text-[11px] font-mono text-muted-foreground opacity-60 px-4 py-1 bg-muted rounded-full border border-border">
                                                         {shortAddress}
                                                     </div>
                                                 </div>
@@ -319,17 +319,17 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 </AnimatePresence>
                             </div>
 
-                            <div className="border-b border-gray-200/60">
+                            <div className="border-b border-border">
                                 <button 
                                     onClick={() => setExpandedKey(expandedKey === "nft" ? null : "nft")}
                                     className="w-full flex items-center justify-between py-7 group"
                                 >
-                                    <span className={`text-[17px] font-medium transition-all duration-300 ${expandedKey === "nft" ? "text-gray-900 border-b-2 border-gray-900" : "text-gray-900 hover:text-gray-600"}`}>
+                                    <span className={`text-[17px] font-medium transition-all duration-300 ${expandedKey === "nft" ? "text-foreground border-b-2 border-primary" : "text-foreground hover:text-muted-foreground"}`}>
                                         NFT Verify
                                     </span>
                                     <motion.div
                                         animate={{ rotate: expandedKey === "nft" ? 180 : 0 }}
-                                        className="text-gray-400 group-hover:text-gray-900 transition-colors"
+                                        className="text-muted-foreground group-hover:text-foreground transition-colors"
                                     >
                                         <ChevronDown size={22} strokeWidth={1} />
                                     </motion.div>
@@ -350,26 +350,26 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                         <span className="text-sm">Verifying assets...</span>
                                                     </div>
                                                 ) : arcticData.hasNFT ? (
-                                                    <div className="bg-green-50/50 border border-green-100 rounded-xl p-4 flex items-center gap-4">
-                                                        <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
+                                                    <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 flex items-center gap-4">
+                                                        <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center text-green-500">
                                                             <Check size={24} />
                                                         </div>
                                                         <div className="flex-1">
-                                                            <div className="text-sm font-bold text-green-800">Verified Holder</div>
-                                                            <div className="text-xs text-green-600">{arcticData.nftDetails?.name || "Arctic Penguin"}</div>
+                                                            <div className="text-sm font-bold text-green-500">Verified Holder</div>
+                                                            <div className="text-xs text-green-500/80">{arcticData.nftDetails?.name || "Arctic Penguin"}</div>
                                                         </div>
                                                         {arcticData.nftDetails?.image && (
                                                             <img src={arcticData.nftDetails.image} alt="NFT" className="w-10 h-10 rounded-md object-cover shadow-sm" />
                                                         )}
                                                     </div>
                                                 ) : (
-                                                    <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 flex items-center gap-4">
-                                                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 font-bold text-xs uppercase">
+                                                    <div className="bg-muted border border-border rounded-xl p-4 flex items-center gap-4">
+                                                        <div className="w-12 h-12 rounded-lg bg-background flex items-center justify-center text-muted-foreground font-bold text-xs uppercase">
                                                             NFT
                                                         </div>
                                                         <div>
-                                                            <div className="text-sm font-bold text-gray-900">No NFT Found</div>
-                                                            <div className="text-xs text-gray-500">Hold an Arctic Penguin to unlock perks.</div>
+                                                            <div className="text-sm font-bold text-foreground">No NFT Found</div>
+                                                            <div className="text-xs text-muted-foreground">Hold an Arctic Penguin to unlock perks.</div>
                                                         </div>
                                                     </div>
                                                 )}
@@ -379,17 +379,17 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 </AnimatePresence>
                             </div>
 
-                            <div className="border-b border-gray-200/60">
+                            <div className="border-b border-border">
                                 <button 
                                     onClick={() => setExpandedKey(expandedKey === "connections" ? null : "connections")}
                                     className="w-full flex items-center justify-between py-7 group"
                                 >
-                                    <span className={`text-[17px] font-medium transition-all duration-300 ${expandedKey === "connections" ? "text-gray-900 border-b-2 border-gray-900" : "text-gray-900 hover:text-gray-600"}`}>
+                                    <span className={`text-[17px] font-medium transition-all duration-300 ${expandedKey === "connections" ? "text-foreground border-b-2 border-primary" : "text-foreground hover:text-muted-foreground"}`}>
                                         Device Connections
                                     </span>
                                     <motion.div
                                         animate={{ rotate: expandedKey === "connections" ? 180 : 0 }}
-                                        className="text-gray-400 group-hover:text-gray-900 transition-colors"
+                                        className="text-muted-foreground group-hover:text-foreground transition-colors"
                                     >
                                         <ChevronDown size={22} strokeWidth={1} />
                                     </motion.div>
@@ -405,7 +405,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                         >
                                             <div className="pt-2">
                                                 <FitbitConnector variant="row" />
-                                                <p className="text-xs text-gray-400 mt-4 pr-12 leading-relaxed">
+                                                <p className="text-xs text-muted-foreground mt-4 pr-12 leading-relaxed">
                                                     Seamlessly sync your activity data from Fitbit to track progress and unlock rewards.
                                                 </p>
                                             </div>
@@ -414,13 +414,12 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 </AnimatePresence>
                             </div>
 
-                            <div className="border-b border-gray-200/60" />
-                        </div>
+                            </div>
 
-                        <div className="p-8 space-y-4 font-roboto">
+                        <div className="p-8 space-y-4 font-sans">
                             <button 
                                 onClick={handleLogout}
-                                className="w-full py-4 rounded-2xl bg-white border border-gray-100 text-sm font-bold text-red-500 hover:bg-red-50 hover:border-red-100 transition-all flex items-center justify-center gap-3 shadow-sm group"
+                                className="w-full py-4 rounded-2xl bg-card border border-border text-sm font-bold text-red-500 hover:bg-red-500/10 hover:border-red-500/20 transition-all flex items-center justify-center gap-3 shadow-sm group"
                             >
                                 <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                 Sign out of Puffer Walks
@@ -428,7 +427,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                             
                             <button 
                                 onClick={onClose}
-                                className="w-full text-[11px] font-bold text-gray-300 hover:text-gray-900 transition-colors tracking-tight"
+                                className="w-full text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors tracking-tight"
                             >
                                 Close Sidebar
                             </button>

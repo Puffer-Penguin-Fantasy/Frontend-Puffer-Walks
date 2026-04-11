@@ -47,11 +47,11 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
         : '';
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-[1000] bg-white border-b border-gray-200 h-16 flex items-center px-4 md:px-6">
+        <header className="fixed top-0 left-0 right-0 z-[1000] bg-background/80 backdrop-blur-md border-b border-border h-16 flex items-center px-4 md:px-6">
             <div className="w-full flex justify-between items-center max-w-6xl mx-auto">
                 <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => window.location.href = "/"}>
-                        <span className="text-[22px] font-medium text-gray-600 tracking-tight">Puffer Walks</span>
+                        <span className="text-[22px] font-medium text-foreground tracking-tight">Puffer Walks</span>
                     </div>
                 </div>
 
@@ -59,10 +59,10 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
                     {isConnected && (
                         <button
                             onClick={onOpenWallet}
-                            className="hidden sm:flex px-4 py-1.5 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-all items-center gap-2 mr-2 group"
+                            className="hidden sm:flex px-4 py-1.5 rounded-full bg-muted hover:bg-muted/80 border border-border transition-all items-center gap-2 mr-2 group"
                         >
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                            <span className="text-sm font-semibold text-gray-700 font-mono tracking-tight group-hover:text-blue-600 transition-colors">
+                            <span className="text-sm font-semibold text-muted-foreground font-mono tracking-tight group-hover:text-accent transition-colors">
                                 {shortAddress}
                             </span>
                         </button>
@@ -71,7 +71,7 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
                     {isAdmin && onOpenAdmin && (
                         <button
                             onClick={onOpenAdmin}
-                            className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center hover:bg-blue-100 transition-all mr-2 shadow-sm"
+                            className="w-10 h-10 rounded-full bg-muted text-foreground border border-border flex items-center justify-center hover:bg-muted/80 transition-all mr-2 shadow-sm"
                             title="Admin Protocol Settings"
                         >
                             <SettingsIcon className="w-5 h-5" />
@@ -80,7 +80,7 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
 
                     <button
                         onClick={onOpenWallet}
-                        className="ml-1 w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm border-2 border-white shadow-sm ring-1 ring-gray-100 overflow-hidden hover:scale-105 transition-transform"
+                        className="ml-1 w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm border-2 border-border shadow-sm ring-1 ring-border overflow-hidden hover:scale-105 transition-transform"
                     >
                         {profileImage ? (
                             <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />

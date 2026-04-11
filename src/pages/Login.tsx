@@ -3,12 +3,12 @@ import { motion } from "framer-motion"
 
 export default function LoginPage() {
     return (
-        <div className="min-h-screen bg-white text-gray-900 font-sans flex flex-col items-center justify-center p-4 selection:bg-blue-100 selection:text-blue-600">
-            <div className="w-full max-w-[450px] bg-white border border-gray-200 rounded-3xl shadow-xl overflow-hidden p-8 md:p-12">
+        <div className="min-h-screen bg-background text-foreground font-sans flex flex-col items-center justify-center p-4 selection:bg-accent/20 selection:text-accent">
+            <div className="w-full max-w-[450px] bg-card border border-border rounded-3xl shadow-xl overflow-hidden p-8 md:p-12">
                 <div className="flex flex-col items-center text-center space-y-6 mb-10">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Sign in</h1>
-                        <p className="text-gray-500 mt-2 font-medium">to continue to Puffer Walks</p>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">Sign in</h1>
+                        <p className="text-muted-foreground mt-2 font-medium">to continue to Puffer Walks</p>
                     </div>
                 </div>
 
@@ -22,7 +22,7 @@ export default function LoginPage() {
                     </div>
 
                     <div className="text-center">
-                        <p className="text-xs text-gray-400 font-medium leading-relaxed">
+                        <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                             By continuing, Puffer Walks will share your name and email address with the Movement Protocol.
                         </p>
                     </div>

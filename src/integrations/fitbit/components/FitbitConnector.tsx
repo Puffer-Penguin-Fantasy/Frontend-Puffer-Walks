@@ -45,12 +45,12 @@ export function FitbitConnector({ variant = "row" }: FitbitConnectorProps) {
     return (
         <div className="flex items-center justify-between py-2 group transition-all w-full">
             <div className="flex flex-col text-left">
-                <span className="text-sm font-bold text-gray-900">Fitbit</span>
-                <span className="text-[10px] text-gray-500">{isConnected ? 'Connected' : 'Not connected'}</span>
+                <span className="text-sm font-bold text-foreground">Fitbit</span>
+                <span className="text-[10px] text-muted-foreground font-medium">{isConnected ? 'Connected' : 'Not connected'}</span>
             </div>
             <button
                 onClick={handleToggle}
-                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isConnected ? 'border-[#fcc61f]' : 'border-gray-200'}`}
+                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isConnected ? 'border-[#fcc61f]' : 'border-border'}`}
             >
                 <div className={`w-3 h-3 rounded-full transition-all duration-300 ${isConnected ? 'bg-[#fcc61f] scale-100' : 'bg-transparent scale-0'}`} />
             </button>

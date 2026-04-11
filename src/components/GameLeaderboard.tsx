@@ -75,24 +75,24 @@ function ParticipantProfile({ address, fallbackName, isMe, isPodium, rank }: {
   return (
     <div className="flex items-center gap-2">
       <div
-        className={`w-7 h-7 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center text-[10px] font-normal ring-2 ${isMe ? "ring-blue-200" : isPodium ? `bg-gradient-to-br ${RANK_COLORS[rank - 1]} ring-transparent` : "ring-gray-100 bg-gray-50"
+        className={`w-7 h-7 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center text-[10px] font-normal ${isMe ? "" : isPodium ? `bg-gradient-to-br ${RANK_COLORS[rank - 1]}` : "bg-muted"
           }`}
       >
         {pfp ? (
           <img src={pfp} alt={username} className="w-full h-full object-cover" />
         ) : (
-          <span className={isPodium ? "text-white" : "text-gray-400"}>
+          <span className={isPodium ? "text-white" : "text-muted-foreground"}>
             {username?.[0]?.toUpperCase() || "?"}
           </span>
         )}
       </div>
       <div className="min-w-0">
-        <div className={`text-xs font-medium truncate max-w-[120px] ${isMe ? "text-blue-600" : "text-gray-800"}`}>
+        <div className={`text-xs font-semibold truncate max-w-[120px] ${isMe ? "text-blue-400" : "text-foreground"}`}>
           {username}
         </div>
       </div>
       {isMe && (
-        <span className="ml-1 text-[8px] bg-blue-50 text-blue-600 font-normal px-1.5 py-0.5 rounded-full shrink-0 lowercase">
+        <span className="ml-1 text-[8px] bg-blue-400/20 text-blue-400 font-bold px-1.5 py-0.5 rounded-full shrink-0 lowercase border border-blue-400/30">
           you
         </span>
       )}
@@ -200,8 +200,9 @@ export function GameLeaderboard({
           paddingRight: '4px',
           textAlign: 'left',
           fontWeight: '700',
-          color: '#111827',
+          color: 'var(--color-foreground)',
           fontSize: '11px',
+          backgroundColor: 'var(--color-muted)',
         },
       },
       muiTableBodyCellProps: {
@@ -209,10 +210,12 @@ export function GameLeaderboard({
           paddingLeft: '24px',
           paddingRight: '4px',
           textAlign: 'left',
+          color: 'var(--color-foreground)',
+          borderBottom: 'none',
         },
       },
       Cell: ({ cell }) => (
-        <span className={`text-[12px] font-bold ${cell.row.original.walletAddress.toLowerCase() === myAddress ? 'text-blue-500' : 'text-gray-900'}`}>
+        <span className={`text-[12px] font-bold ${cell.row.original.walletAddress.toLowerCase() === myAddress ? 'text-blue-400' : 'text-foreground'}`}>
           {cell.getValue<number>()}
         </span>
       ),
@@ -225,12 +228,15 @@ export function GameLeaderboard({
         sx: {
           paddingLeft: '0px',
           fontWeight: '700',
-          color: '#111827',
+          color: 'var(--color-foreground)',
+          backgroundColor: 'var(--color-muted)',
         },
       },
       muiTableBodyCellProps: {
         sx: {
           paddingLeft: '0px',
+          color: 'var(--color-foreground)',
+          borderBottom: 'none',
         },
       },
       Cell: ({ row }) => (
@@ -248,18 +254,25 @@ export function GameLeaderboard({
       accessorFn: (row) => row.days ? row.days[`day${d}`] : undefined,
       header: `Day ${d}`,
       size: 90,
+      muiTableHeadCellProps: {
+        sx: {
+          backgroundColor: 'var(--color-muted)',
+          color: 'var(--color-foreground)',
+          fontWeight: '700',
+        },
+      },
       Cell: ({ cell }: { cell: any }) => {
         const steps = cell.getValue() as number | null;
         const hitTarget = (steps || 0) >= minDailySteps;
         const isPastDay = (d - 1) < currentDayIdx;
         const isFailed = isPastDay && !hitTarget;
 
-        let textColor = 'text-gray-500';
-        if (hitTarget) textColor = 'text-blue-600';
+        let textColor = 'text-muted-foreground/60';
+        if (hitTarget) textColor = 'text-blue-400';
         else if (isFailed) textColor = 'text-red-500';
 
         return (
-          <span className={`text-[12px] tabular-nums font-medium ${textColor}`}>
+          <span className={`text-[12px] tabular-nums font-semibold ${textColor}`}>
             {(steps !== null && steps !== undefined) ? steps.toLocaleString() : "—"}
           </span>
         );
@@ -284,44 +297,61 @@ export function GameLeaderboard({
         backgroundColor: 'transparent',
       },
     },
+    muiTableProps: {
+      sx: {
+        border: 'none',
+        '& td, & th': {
+          border: 'none !important',
+        },
+      },
+    },
+    muiTableHeadProps: {
+      sx: {
+        border: 'none',
+      },
+    },
     muiTableBodyRowProps: ({ row }) => ({
       hover: false,
       sx: {
-        backgroundColor: row.original.walletAddress.toLowerCase() === myAddress ? 'rgba(239, 246, 255, 0.5)' : 'transparent',
+        backgroundColor: row.original.walletAddress.toLowerCase() === myAddress ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
         '&:hover': {
-          backgroundColor: row.original.walletAddress.toLowerCase() === myAddress ? 'rgba(239, 246, 255, 0.5)' : 'transparent',
+          backgroundColor: row.original.walletAddress.toLowerCase() === myAddress ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
         },
-        border: 'none',
+        border: 'none !important',
         transition: 'none',
+        color: 'var(--color-foreground)',
       },
     }),
     muiTableHeadCellProps: {
       sx: {
         fontSize: '11px',
         fontWeight: '700',
-        color: '#111827',
-        textTransform: 'none',
-        padding: '12px 12px',
-        backgroundColor: '#f9fafb',
-        borderBottom: '1px solid #f3f4f6',
+        color: 'var(--color-foreground)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        padding: '16px 12px',
+        backgroundColor: 'var(--color-muted)',
+        border: 'none !important',
       },
     },
     muiTableBodyCellProps: {
       sx: {
         padding: '8px 12px',
-        borderBottom: 'none',
+        border: 'none !important',
         fontSize: '12px',
+        color: 'var(--color-foreground)',
       },
     },
     muiTableContainerProps: {
       sx: {
         maxHeight: 'none',
+        backgroundColor: 'transparent',
       },
     },
     renderEmptyRowsFallback: () => (
       <div className="py-24 flex flex-col items-center justify-center gap-2">
-        <Users size={32} className="text-gray-200" />
-        <p className="text-[11px] text-gray-300 lowercase">no participants found</p>
+        <Users size={32} className="text-muted-foreground/30" />
+        <p className="text-[11px] text-muted-foreground lowercase">no participants found</p>
       </div>
     ),
   });
@@ -329,8 +359,8 @@ export function GameLeaderboard({
   if (isLoading) {
     return (
       <div className="py-24 flex flex-col items-center justify-center gap-4">
-        <div className="w-8 h-8 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-        <span className="text-[11px] text-gray-400 lowercase italic">syncing competition data…</span>
+        <div className="w-8 h-8 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
+        <span className="text-[11px] text-muted-foreground lowercase italic">syncing competition data…</span>
       </div>
     );
   }
@@ -343,15 +373,15 @@ export function GameLeaderboard({
           <div className="flex items-center gap-3 py-4 px-6 rounded-3xl transition-all">
             <div className="w-10 h-10 flex items-center justify-center overflow-hidden flex-shrink-0">
               {sponsorImageUrl ? (
-                <img src={sponsorImageUrl} alt={sponsorName} className="w-full h-full object-contain grayscale opacity-80" />
+                <img src={sponsorImageUrl} alt={sponsorName} className="w-full h-full object-contain grayscale opacity-60 invert" />
               ) : (
-                <Trophy className="text-gray-300" size={20} />
+                <Trophy className="text-muted-foreground/30" size={20} />
               )}
             </div>
             
             <div className="flex flex-col">
-              <span className="text-gray-400 text-[10px] font-normal lowercase tracking-wide mb-0.5">sponsored by</span>
-              <h4 className="text-gray-900 text-sm md:text-md font-medium tracking-tight whitespace-nowrap lowercase">
+              <span className="text-muted-foreground text-[10px] font-normal lowercase tracking-wide mb-0.5">sponsored by</span>
+              <h4 className="text-foreground text-sm md:text-md font-medium tracking-tight whitespace-nowrap lowercase">
                 {sponsorName}
               </h4>
             </div>
@@ -360,85 +390,85 @@ export function GameLeaderboard({
       )}
 
       {/* Main Container Card */}
-      <div className="bg-white rounded-2xl border border-gray-100 flex flex-col w-full overflow-hidden relative shadow-sm">
+      <div className="bg-card rounded-2xl border-2 border-border flex flex-col w-full overflow-hidden relative shadow-sm">
         {/* Header Hero Area */}
         <div className="p-6 pb-2">
           <div className="flex items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3 overflow-hidden flex-1">
-              <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border border-gray-100 ring-4 ring-gray-50">
+              <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
                 {imageUrl ? (
                   <img src={imageUrl} alt={gameName} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-blue-50 flex items-center justify-center text-blue-500 font-normal text-xl uppercase">
+                  <div className="w-full h-full bg-muted flex items-center justify-center text-accent font-normal text-xl uppercase">
                     {gameName?.[0]}
                   </div>
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-xl md:text-2xl font-medium text-gray-900 leading-tight mb-1">
+                <h3 className="text-lg md:text-xl font-medium text-foreground leading-tight mb-1">
                   {gameName}
                 </h3>
               </div>
             </div>
 
             {status === 'upcoming' && (
-              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-blue-50 border-blue-100 text-blue-600">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-accent/10 border-accent/20 text-accent">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent" />
                 upcoming
               </div>
             )}
             {status === 'live' && (
-              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-green-50 border-green-100 text-green-600">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-emerald-500/10 border-emerald-500/20 text-emerald-500">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 live
               </div>
             )}
             {status === 'summarising' && (
               <div className="flex flex-col items-end">
-                <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-[11px] font-medium border border-amber-100/50 cursor-default transition-all shadow-sm">
-                  <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
+                <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 px-4 py-2 rounded-xl text-[11px] font-medium border border-amber-500/20 cursor-default transition-all shadow-sm">
+                  <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
                   Summarising
                 </div>
                 <span className="text-[8px] text-amber-500/60 mt-1 uppercase font-bold tracking-tighter">Finalizing steps...</span>
               </div>
             )}
             {status === 'ended' && (
-              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-gray-50 border-gray-200 text-gray-500">
+              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-muted border-border text-muted-foreground">
                 ended
               </div>
             )}
           </div>
-          <div className="grid grid-cols-4 gap-2 md:gap-4 py-4 border-t border-gray-100">
-            <div className="flex flex-col gap-1 text-center border-r border-gray-100 px-1">
-              <span className="text-[9px] md:text-[10px] text-gray-400 lowercase whitespace-nowrap">entry fee</span>
-              <div className="flex items-center justify-center gap-1 md:gap-1.5 h-[28px]">
-                <div className="text-gray-900 text-sm md:text-lg font-medium tabular-nums leading-none">
+          <div className="grid grid-cols-4 gap-2 md:gap-4 py-4 border-t border-border">
+            <div className="flex flex-col gap-1 text-center border-r border-border px-1">
+              <span className="text-[9px] md:text-[10px] text-muted-foreground lowercase whitespace-nowrap">entry fee</span>
+              <div className="flex items-center justify-center gap-1 md:gap-1.5 h-[24px]">
+                <div className="text-foreground text-xs md:text-base font-medium tabular-nums leading-none">
                   {Math.floor(entryDeposit || 0)}
                 </div>
-                <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-4 h-4 md:w-5 md:h-5 rounded-full" alt="MOVE" />
-                <span className="text-blue-500 text-[10px] font-bold">+10</span>
+                <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3.5 h-3.5 md:w-4 md:h-4 rounded-full" alt="MOVE" />
+                <span className="text-accent text-[9px] font-bold">+10</span>
               </div>
             </div>
-            <div className="flex flex-col gap-1 text-center border-r border-gray-100 px-1">
-              <span className="text-[9px] md:text-[10px] text-gray-400 lowercase whitespace-nowrap">{numDays} days</span>
-              <span className="text-gray-900 text-sm md:text-lg font-normal tabular-nums leading-none flex items-center justify-center h-[28px]">
-                {startMonth}/{startDay} <span className="text-gray-300 text-[10px] mx-1"> - </span> {endMonth}/{endDay}
+            <div className="flex flex-col gap-1 text-center border-r border-border px-1">
+              <span className="text-[9px] md:text-[10px] text-muted-foreground lowercase whitespace-nowrap">{numDays} days</span>
+              <span className="text-foreground text-xs md:text-base font-normal tabular-nums leading-none flex items-center justify-center h-[24px]">
+                {startMonth}/{startDay} <span className="text-muted-foreground text-[8px] mx-1"> - </span> {endMonth}/{endDay}
               </span>
             </div>
-            <div className="flex flex-col gap-1 text-center border-r border-gray-100 px-1">
-              <span className="text-[9px] md:text-[10px] text-gray-400 lowercase whitespace-nowrap">steps</span>
-              <span className="text-gray-900 text-sm md:text-lg font-normal flex items-center justify-center h-[28px]">{(minDailySteps / 1000).toFixed(0)}k</span>
+            <div className="flex flex-col gap-1 text-center border-r border-border px-1">
+              <span className="text-[9px] md:text-[10px] text-muted-foreground lowercase whitespace-nowrap">steps</span>
+              <span className="text-foreground text-xs md:text-base font-normal flex items-center justify-center h-[24px]">{(minDailySteps / 1000).toFixed(0)}k</span>
             </div>
             <div className="flex flex-col gap-1 text-center px-1">
-              <span className="text-[9px] md:text-[10px] text-gray-400 lowercase whitespace-nowrap">players</span>
-              <span className="text-gray-900 text-sm md:text-lg font-normal tabular-nums flex items-center justify-center h-[28px]">{participants.length}</span>
+              <span className="text-[9px] md:text-[10px] text-muted-foreground lowercase whitespace-nowrap">players</span>
+              <span className="text-foreground text-xs md:text-base font-normal tabular-nums flex items-center justify-center h-[24px]">{participants.length}</span>
             </div>
           </div>
 
         </div>
 
-        {/* Nested Table Card */}
-        <div className="border-t border-gray-100 flex-1 min-h-[400px]">
+        {/* Nested Table Card Area */}
+        <div className="flex-1 min-h-[400px] bg-black">
           <div className="overflow-x-auto scrollbar-hide">
             <MaterialReactTable table={table} />
           </div>

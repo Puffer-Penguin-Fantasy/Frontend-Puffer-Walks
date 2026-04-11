@@ -3,29 +3,29 @@
 
 @theme {
   --font-roboto: "Roboto", sans-serif;
-  --color-background: #f8fafd;
-  --color-foreground: #1f1f1f;
-  --color-muted: #f1f3f4;
-  --color-muted-foreground: #5f6368;
-  --color-accent: #1a73e8;
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  --color-muted: #1a1a1a;
+  --color-muted-foreground: #a1a1aa;
+  --color-accent: #3b82f6;
   --color-accent-foreground: #ffffff;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #1f1f1f;
-  --color-border: #dadce0;
-  --color-input: #ffffff;
-  --color-card: #ffffff;
-  --color-card-foreground: #1f1f1f;
-  --color-primary: #1a73e8;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #f1f3f4;
-  --color-secondary-foreground: #3c4043;
-  --color-destructive: #d93025;
+  --color-popover: #09090b;
+  --color-popover-foreground: #ffffff;
+  --color-border: #111111;
+  --color-input: #09090b;
+  --color-card: #09090b;
+  --color-card-foreground: #ffffff;
+  --color-primary: #ffffff;
+  --color-primary-foreground: #000000;
+  --color-secondary: #27272a;
+  --color-secondary-foreground: #ffffff;
+  --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
-  --color-ring: #1a73e8;
+  --color-ring: #3b82f6;
 
-  --radius-lg: 1.5rem;
-  --radius-md: 0.75rem;
-  --radius-sm: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-md: 0.5rem;
+  --radius-sm: 0.25rem;
 }
 
 @layer base {
@@ -34,7 +34,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-roboto;
+    @apply bg-black text-white font-sans antialiased;
   }
 }
 

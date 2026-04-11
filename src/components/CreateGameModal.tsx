@@ -110,16 +110,16 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
             initial={{ scale: 0.95, opacity: 0, y: 15 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
-            className="relative w-full max-w-xl bg-white rounded-2xl shadow-none overflow-hidden flex flex-col max-h-[90vh] border border-gray-100"
+            className="relative w-full max-w-xl bg-background rounded-2xl shadow-none overflow-hidden flex flex-col max-h-[90vh] border border-border"
           >
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+            <div className="p-6 border-b border-border flex justify-between items-center bg-muted shrink-0">
               <div>
-                <h2 className="text-xl font-normal text-gray-800 lowercase">launch competition</h2>
-                <p className="text-gray-400 text-sm font-normal lowercase">configure a new on-chain walking battle.</p>
+                <h2 className="text-xl font-normal text-foreground lowercase">launch competition</h2>
+                <p className="text-muted-foreground text-sm font-normal lowercase">configure a new on-chain walking battle.</p>
               </div>
-              <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center transition-colors">
-                <X size={18} className="text-gray-400" />
+              <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-muted/80 flex items-center justify-center transition-colors">
+                <X size={18} className="text-muted-foreground" />
               </button>
             </div>
 
@@ -127,14 +127,14 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
             <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5">
               <div className="grid grid-cols-2 gap-5">
                 <div className="col-span-2">
-                  <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">competition name</label>
+                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">competition name</label>
                   <div className="relative">
-                    <Trophy className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400/60" size={16} />
+                    <Trophy className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                     <input 
                       required
                       type="text"
                       placeholder="e.g. arctic sprint 2024"
-                      className="w-full h-11 pl-11 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 transition-all text-xs text-gray-800"
+                      className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground placeholder:text-muted-foreground/40"
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
                     />
@@ -142,13 +142,13 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                 </div>
 
                 <div className="col-span-2">
-                  <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">banner image</label>
+                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">banner image</label>
                   <div className="relative flex items-center">
-                    <ImageIcon className="absolute left-4 text-gray-400/60 pointer-events-none" size={16} />
+                    <ImageIcon className="absolute left-4 text-muted-foreground/60 pointer-events-none" size={16} />
                     <input 
                       type="file"
                       accept="image/*,video/*"
-                      className="w-full h-11 pl-11 py-2 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl text-xs text-gray-600 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-normal file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 transition-all cursor-pointer"
+                      className="w-full h-11 pl-11 py-2 pr-4 bg-muted border border-border rounded-xl text-xs text-foreground file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-normal file:bg-accent/10 file:text-accent hover:file:bg-accent/20 transition-all cursor-pointer"
                       onChange={e => {
                         if (e.target.files && e.target.files[0]) {
                           setImageFile(e.target.files[0]);
@@ -159,14 +159,14 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">entry deposit (move)</label>
+                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">entry deposit (move)</label>
                   <div className="relative">
-                    <Coins className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400/60" size={16} />
+                    <Coins className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                     <input 
                       required
                       type="number"
                       step="0.1"
-                      className="w-full h-11 pl-11 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 transition-all text-xs text-gray-800"
+                      className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground"
                       value={formData.deposit}
                       onChange={e => setFormData({...formData, deposit: e.target.value})}
                     />
@@ -174,13 +174,13 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">min daily steps</label>
+                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">min daily steps</label>
                   <div className="relative">
-                    <Footprints className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400/60" size={16} />
+                    <Footprints className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                     <input 
                       required
                       type="number"
-                      className="w-full h-11 pl-11 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 transition-all text-xs text-gray-800"
+                      className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground"
                       value={formData.min_steps}
                       onChange={e => setFormData({...formData, min_steps: e.target.value})}
                     />
@@ -188,13 +188,13 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                 </div>
 
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">start date</label>
+                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">start date</label>
                   <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400/60" size={16} />
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                     <input 
                       required
                       type="date"
-                      className="w-full h-11 pl-11 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 transition-all text-xs text-gray-800"
+                      className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground"
                       value={formData.start_date}
                       onChange={e => {
                         const start = e.target.value;
@@ -212,14 +212,14 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                 </div>
 
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">end date</label>
+                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">end date</label>
                   <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400/60" size={16} />
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                     <input 
                       required
                       type="date"
                       min={formData.start_date}
-                      className="w-full h-11 pl-11 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 transition-all text-xs text-gray-800"
+                      className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground"
                       value={formData.end_date}
                       onChange={e => {
                         const end = e.target.value;
@@ -237,51 +237,51 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                 </div>
 
                 {formData.start_date && (
-                  <div className="col-span-2 p-4 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-between group transition-all hover:bg-blue-50/30 hover:border-blue-100">
+                  <div className="col-span-2 p-4 bg-muted/30 border border-border rounded-2xl flex items-center justify-between group transition-all hover:bg-accent/5 hover:border-accent/20">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform">
+                      <div className="w-10 h-10 rounded-full bg-background border border-border flex items-center justify-center text-accent shadow-sm group-hover:scale-110 transition-transform">
                         <Footprints size={18} />
                       </div>
                       <div>
-                        <p className="text-[10px] text-gray-400 lowercase font-normal">competition duration</p>
-                        <p className="text-sm text-gray-900 font-medium lowercase">
+                        <p className="text-[10px] text-muted-foreground lowercase font-normal">competition duration</p>
+                        <p className="text-sm text-foreground font-medium lowercase">
                           {formData.duration_days || "—"} days
                         </p>
                       </div>
                     </div>
                     {formData.end_date && (
                       <div className="text-right">
-                        <p className="text-[10px] text-gray-400 lowercase font-normal">time window (utc)</p>
-                        <p className="text-[10px] text-blue-600 font-medium">12:00 AM — 12:00 AM</p>
+                        <p className="text-[10px] text-muted-foreground lowercase font-normal">time window (utc)</p>
+                        <p className="text-[10px] text-accent font-medium">12:00 AM — 12:00 AM</p>
                       </div>
                     )}
                   </div>
                 )}
 
                 <div>
-                  <label className="text-[11px] font-normal text-gray-400 mb-2 block ml-1 lowercase">visibility</label>
+                  <label className="text-[11px] font-normal text-muted-foreground mb-2 block ml-1 lowercase">visibility</label>
                   <div className="flex gap-4 items-center h-11">
-                    <label className="flex items-center gap-2 cursor-pointer group">
+                    <label className="flex items-center gap-2 cursor-pointer group text-foreground">
                       <input 
                         type="radio" 
                         name="visibility" 
                         checked={formData.is_public === true}
                         onChange={() => setFormData({...formData, is_public: true, code: ""})}
-                        className="w-4 h-4 text-blue-600 border-gray-200 focus:ring-blue-200 cursor-pointer"
+                        className="w-4 h-4 text-accent border-border bg-card focus:ring-accent/20 cursor-pointer"
                       />
-                      <div className="flex items-center gap-1.5 text-xs text-gray-400 group-hover:text-blue-600 transition-colors lowercase">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-accent transition-colors lowercase">
                         <Globe size={14} /> public
                       </div>
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer group">
+                    <label className="flex items-center gap-2 cursor-pointer group text-foreground">
                       <input 
                         type="radio" 
                         name="visibility" 
                         checked={formData.is_public === false}
                         onChange={() => setFormData({...formData, is_public: false})}
-                        className="w-4 h-4 text-blue-600 border-gray-200 focus:ring-blue-200 cursor-pointer"
+                        className="w-4 h-4 text-accent border-border bg-card focus:ring-accent/20 cursor-pointer"
                       />
-                      <div className="flex items-center gap-1.5 text-xs text-gray-400 group-hover:text-blue-600 transition-colors lowercase">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-accent transition-colors lowercase">
                         <Lock size={14} /> private
                       </div>
                     </label>
@@ -290,14 +290,14 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
 
                 {!formData.is_public && (
                   <div className="col-span-2">
-                    <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">join code</label>
+                    <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">join code</label>
                     <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400/60" size={16} />
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                       <input
                         required={!formData.is_public}
                         type="text"
                         placeholder="secret code"
-                        className="w-full h-11 pl-11 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 transition-all text-xs text-gray-800"
+                        className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground placeholder:text-muted-foreground/40"
                         value={formData.code}
                         onChange={e => setFormData({...formData, code: e.target.value})}
                       />
@@ -305,31 +305,31 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                   </div>
                 )}
 
-                <div className="col-span-2 pt-4 border-t border-gray-100">
+                <div className="col-span-2 pt-4 border-t border-border">
                   <div className="flex items-center gap-2 mb-4">
-                    <ShieldCheck size={16} className="text-blue-600/60" />
-                    <h4 className="text-[11px] font-normal text-gray-400 lowercase">initial protocol sponsor (optional)</h4>
+                    <ShieldCheck size={16} className="text-accent/60" />
+                    <h4 className="text-[11px] font-normal text-muted-foreground lowercase">initial protocol sponsor (optional)</h4>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-5">
                     <div className="col-span-2 sm:col-span-1">
-                      <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">sponsor name</label>
+                      <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">sponsor name</label>
                       <input 
                         type="text"
                         placeholder="e.g. movement labs"
-                        className="w-full h-11 px-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 text-xs text-gray-800"
+                        className="w-full h-11 px-4 bg-muted border border-border rounded-xl outline-none focus:border-accent text-xs text-foreground placeholder:text-muted-foreground/40"
                         value={formData.sponsor_name}
                         onChange={e => setFormData({...formData, sponsor_name: e.target.value})}
                       />
                     </div>
                     <div className="col-span-2 sm:col-span-1">
-                      <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">sponsor logo</label>
+                      <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">sponsor logo</label>
                       <div className="relative flex items-center">
-                        <ImageIcon className="absolute left-4 text-gray-400/60 pointer-events-none" size={16} />
+                        <ImageIcon className="absolute left-4 text-muted-foreground/60 pointer-events-none" size={16} />
                         <input 
                           type="file"
                           accept="image/*"
-                          className="w-full h-11 pl-11 py-2 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl text-xs text-gray-600 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-normal file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 transition-all cursor-pointer"
+                          className="w-full h-11 pl-11 py-2 pr-4 bg-muted border border-border rounded-xl text-xs text-foreground file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-normal file:bg-accent/10 file:text-accent hover:file:bg-accent/20 transition-all cursor-pointer"
                           onChange={e => {
                             if (e.target.files && e.target.files[0]) {
                               setSponsorLogoFile(e.target.files[0]);
@@ -339,14 +339,14 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                       </div>
                     </div>
                     <div className="col-span-2 sm:col-span-1">
-                      <label className="text-[11px] font-normal text-gray-400 mb-1.5 block ml-1 lowercase">sponsor deposit (move)</label>
+                      <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">sponsor deposit (move)</label>
                       <div className="relative">
-                        <Coins className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400/60" size={16} />
+                        <Coins className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                         <input 
                           type="number"
                           step="0.1"
                           placeholder="0.0"
-                          className="w-full h-11 pl-11 pr-4 bg-gray-50/50 border border-gray-100 rounded-xl outline-none focus:border-blue-200 text-xs text-gray-800"
+                          className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent text-xs text-foreground placeholder:text-muted-foreground/40"
                           value={formData.sponsor_amount}
                           onChange={e => setFormData({...formData, sponsor_amount: e.target.value})}
                         />
@@ -359,7 +359,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
               <div className="pt-4 shrink-0">
                 <button 
                   disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-xl bg-blue-600 text-white font-normal text-sm hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 lowercase"
+                  className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 lowercase"
                 >
                   {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : null}
                   {isSubmitting ? "launching..." : "launch competition"}
