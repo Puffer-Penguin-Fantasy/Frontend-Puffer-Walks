@@ -356,14 +356,6 @@ export function GameLeaderboard({
     ),
   });
 
-  if (isLoading) {
-    return (
-      <div className="py-24 flex flex-col items-center justify-center gap-4">
-        <div className="w-8 h-8 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
-        <span className="text-[11px] text-muted-foreground lowercase italic">syncing competition data…</span>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-5 w-full max-w-5xl mx-auto">
