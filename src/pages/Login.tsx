@@ -17,8 +17,10 @@ export default function LoginPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="space-y-8"
                 >
-                    <div className="pt-4 flex flex-col items-center gap-4">
-                        <ConnectButton />
+                    <div className="pt-4 w-full flex justify-center">
+                        <div className="w-full max-w-sm [&_button]:!w-full [&_button]:!bg-white [&_button]:!text-black [&_button]:!rounded-2xl [&_button]:!h-14 [&_button]:!font-bold [&_button]:!text-base [&_button]:hover:!bg-white/90 [&_button]:!transition-all [&_button]:!border-none [&_button]:!shadow-lg [&_button]:!flex [&_button]:!justify-center [&_button]:!items-center [&_button]:!mx-auto">
+                            <ConnectButton label="Connect Wallet" />
+                        </div>
                     </div>
 
                     <div className="text-center">
