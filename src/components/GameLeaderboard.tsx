@@ -114,7 +114,6 @@ export function GameLeaderboard({
 }: GameLeaderboardProps) {
   const { address } = useAccount();
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const myAddress = address?.toLowerCase();
 
   useEffect(() => {
@@ -124,7 +123,6 @@ export function GameLeaderboard({
       next: async (snap) => {
         const data = snap.docs.map((d) => d.data() as Participant);
         setParticipants(data);
-        setIsLoading(false);
 
         // Backfill: ensure all existing participants have a full days template
         const backfills = snap.docs
@@ -147,8 +145,7 @@ export function GameLeaderboard({
             );
           });
         if (backfills.length > 0) await Promise.all(backfills);
-      },
-      error: () => setIsLoading(false)
+      }
     });
     return () => unsub();
   }, [gameId, numDays]);
