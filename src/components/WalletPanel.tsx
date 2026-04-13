@@ -201,7 +201,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 <button 
                                     onClick={() => { playClick(); toggleEdit(); }}
                                     disabled={isSaving || isLoading || (!arcticData.hasNFT && !isEditing)}
-                                    className={`text-[11px] font-bold transition-all px-4 py-1.5 rounded-full border flex items-center gap-2 ${
+                                    className={`text-[10px] font-xirod transition-all px-4 py-1.5 rounded-full border flex items-center gap-2 ${
                                         isEditing 
                                             ? "bg-primary text-primary-foreground border-primary" 
                                             : !arcticData.hasNFT 
@@ -220,7 +220,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                         onClick={() => { playClick(); setExpandedKey(expandedKey === "profile" ? null : "profile"); }}
                                         className="w-full flex items-center justify-between py-6 group"
                                     >
-                                        <span className={`text-[17px] font-bold transition-all duration-300 ${expandedKey === "profile" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
+                                        <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "profile" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
                                             Wallet Profile
                                         </span>
                                         <motion.div
@@ -268,13 +268,13 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                                     type="text"
                                                                     value={profileName}
                                                                     onChange={(e) => setProfileName(e.target.value)}
-                                                                    className="w-full bg-transparent border-b-2 border-white text-center font-bold text-xl text-white outline-none pb-2 placeholder:text-white/40"
+                                                                    className="w-full bg-transparent border-b-2 border-white text-center font-xirod text-sm text-white outline-none pb-2 placeholder:text-white/40"
                                                                     autoFocus
                                                                     placeholder="Choose a name"
                                                                 />
                                                             </div>
                                                         ) : (
-                                                            <div className="text-xl font-bold text-white leading-tight">
+                                                            <div className="text-sm font-xirod text-white leading-tight">
                                                                 {isLoading ? "Loading..." : profileName}
                                                             </div>
                                                         )}
@@ -293,7 +293,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                         onClick={() => { playClick(); setExpandedKey(expandedKey === "nft" ? null : "nft"); }}
                                         className="w-full flex items-center justify-between py-7 group"
                                     >
-                                        <span className={`text-[17px] font-bold transition-all duration-300 ${expandedKey === "nft" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
+                                        <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "nft" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
                                             NFT Verify
                                         </span>
                                         <motion.div
@@ -350,7 +350,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                         onClick={() => { playClick(); setExpandedKey(expandedKey === "connections" ? null : "connections"); }}
                                         className="w-full flex items-center justify-between py-7 group"
                                     >
-                                        <span className={`text-[17px] font-bold transition-all duration-300 ${expandedKey === "connections" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
+                                        <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "connections" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
                                             Connections
                                         </span>
                                         <motion.div
@@ -382,7 +382,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 <button 
                                     onClick={handleLogout}
                                     style={buttonStyle}
-                                    className="w-full h-16 text-black font-bold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-3"
+                                    className="w-full h-16 text-black font-xirod text-xs hover:opacity-90 transition-all flex items-center justify-center gap-3"
                                 >
                                     <LogOut className="w-5 h-5" />
                                     Sign out
