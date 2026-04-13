@@ -123,7 +123,6 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
                   return pAddr.toLowerCase() === userAddrNorm;
                 });
                 const isEnded = parseInt(g.end_time) < Math.floor(Date.now() / 1000);
-                
                 if (isJoined && isEnded) {
                   try {
                     const progress = await aptosClient.getTableItem({
@@ -135,36 +134,37 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
                       }
                     }) as any;
                     
-                    const compCount = Array.isArray(progress.days_completed) 
+                    const compCount = Array.isArray(progress?.days_completed) 
                       ? progress.days_completed.filter((met: boolean) => met).length 
                       : 0;
 
                     return { 
                       ...g, 
-                      isClaimed: progress.has_withdrawn === true || progress.has_withdrawn === "true",
+                      isClaimed: progress?.has_withdrawn === true || progress?.has_withdrawn === "true",
                       userCompletedDays: compCount,
-                      userMissedDays: parseInt(progress.missed_days || "0")
+                      userMissedDays: parseInt(progress?.missed_days || "0")
                     };
                   } catch (err) {
-                    return g;
+                    return { ...g, isClaimed: false, userCompletedDays: 0, userMissedDays: 0 };
                   }
                 }
-                return g;
+                return { ...g, isClaimed: false };
               }));
             }
           } catch (e) { }
         }
       }
 
-      const finalGames = await Promise.all(gamesWithClaimStatus.map(async (g) => {
+      const finalGames = await Promise.all(results.map(async (g) => {
+        const itemWithClaim = gamesWithClaimStatus.find(gw => gw.id === g.id) || { ...g, isClaimed: false };
         try {
           const metaRef = doc(db, "game_metadata", g.id);
           const metaSnap = await getDoc(metaRef);
-          if (metaSnap.exists()) return { ...g, joinCode: metaSnap.data().joinCode };
+          if (metaSnap.exists()) return { ...itemWithClaim, joinCode: metaSnap.data().joinCode };
         } catch (e) {
           console.warn(`Could not fetch metadata for ${g.id}:`, e);
         }
-        return g;
+        return itemWithClaim;
       }));
   
       setGames(finalGames.filter(g => g.id !== "unknown"));
