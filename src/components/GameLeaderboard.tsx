@@ -58,7 +58,9 @@ function ParticipantProfile({ address, fallbackName, isMe, isPodium, rank }: {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const userSnap = await getDoc(doc(db, "users", address.toLowerCase()));
+        const addr = address?.toLowerCase();
+        if (!addr) return;
+        const userSnap = await getDoc(doc(db, "users", addr));
         if (userSnap.exists()) {
           setProfile(userSnap.data() as any);
         }
@@ -198,8 +200,9 @@ export function GameLeaderboard({
           textAlign: 'left',
           fontWeight: '700',
           color: 'var(--color-foreground)',
-          fontSize: '11px',
-          backgroundColor: 'var(--color-muted)',
+          fontSize: '10px',
+          backgroundColor: '#071226 !important',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1) !important',
         },
       },
       muiTableBodyCellProps: {
@@ -211,8 +214,8 @@ export function GameLeaderboard({
           borderBottom: 'none',
         },
       },
-      Cell: ({ cell }) => (
-        <span className={`text-[12px] font-bold ${cell.row.original.walletAddress.toLowerCase() === myAddress ? 'text-blue-400' : 'text-foreground'}`}>
+      Cell: ({ cell, row }) => (
+        <span className={`text-[12px] font-bold ${(row.original.walletAddress?.toLowerCase() === myAddress) ? 'text-blue-400' : 'text-foreground'}`}>
           {cell.getValue<number>()}
         </span>
       ),
@@ -226,7 +229,8 @@ export function GameLeaderboard({
           paddingLeft: '0px',
           fontWeight: '700',
           color: 'var(--color-foreground)',
-          backgroundColor: 'var(--color-muted)',
+          backgroundColor: '#071226 !important',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1) !important',
         },
       },
       muiTableBodyCellProps: {
@@ -240,7 +244,7 @@ export function GameLeaderboard({
         <ParticipantProfile
             address={row.original.walletAddress}
             fallbackName={row.original.username || shortAddr(row.original.walletAddress)}
-            isMe={row.original.walletAddress.toLowerCase() === myAddress}
+            isMe={row.original.walletAddress?.toLowerCase() === myAddress}
             isPodium={row.original.rank <= 3}
             rank={row.original.rank}
         />
@@ -253,9 +257,10 @@ export function GameLeaderboard({
       size: 90,
       muiTableHeadCellProps: {
         sx: {
-          backgroundColor: 'var(--color-muted)',
+          backgroundColor: '#071226 !important',
           color: 'var(--color-foreground)',
           fontWeight: '700',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1) !important',
         },
       },
       Cell: ({ cell }: { cell: any }) => {
@@ -305,30 +310,34 @@ export function GameLeaderboard({
     muiTableHeadProps: {
       sx: {
         border: 'none',
+        backgroundColor: '#071226 !important',
       },
     },
-    muiTableBodyRowProps: ({ row }) => ({
-      hover: false,
-      sx: {
-        backgroundColor: row.original.walletAddress.toLowerCase() === myAddress ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-        '&:hover': {
-          backgroundColor: row.original.walletAddress.toLowerCase() === myAddress ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+    muiTableBodyRowProps: ({ row }) => {
+      const isMe = row.original.walletAddress?.toLowerCase() === myAddress;
+      return {
+        hover: false,
+        sx: {
+          backgroundColor: isMe ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+          '&:hover': {
+            backgroundColor: isMe ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+          },
+          border: 'none !important',
+          transition: 'none',
+          color: 'var(--color-foreground)',
         },
-        border: 'none !important',
-        transition: 'none',
-        color: 'var(--color-foreground)',
-      },
-    }),
+      };
+    },
     muiTableHeadCellProps: {
       sx: {
-        fontSize: '11px',
+        fontSize: '10px',
         fontWeight: '700',
-        color: 'var(--color-foreground)',
+        color: 'rgba(255, 255, 255, 0.5)',
         textTransform: 'uppercase',
-        letterSpacing: '0.05em',
+        letterSpacing: '0.1em',
         padding: '16px 12px',
-        backgroundColor: 'var(--color-muted)',
-        border: 'none !important',
+        backgroundColor: '#071226 !important',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1) !important',
       },
     },
     muiTableBodyCellProps: {
@@ -379,82 +388,82 @@ export function GameLeaderboard({
       )}
 
       {/* Main Container Card */}
-      <div className="bg-card rounded-2xl border-2 border-border flex flex-col w-full overflow-hidden relative shadow-sm">
+      <div className="bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 flex flex-col w-full overflow-hidden relative shadow-2xl">
         {/* Header Hero Area */}
         <div className="p-6 pb-2">
           <div className="flex items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3 overflow-hidden flex-1">
-              <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
+              <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border border-white/10">
                 {imageUrl ? (
                   <img src={imageUrl} alt={gameName} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center text-accent font-normal text-xl uppercase">
+                  <div className="w-full h-full bg-white/5 flex items-center justify-center text-white font-bold text-xl uppercase">
                     {gameName?.[0]}
                   </div>
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-lg md:text-xl font-medium text-foreground leading-tight mb-1">
+                <h3 className="text-lg md:text-xl font-bold text-white leading-tight mb-1">
                   {gameName}
                 </h3>
               </div>
             </div>
 
             {status === 'upcoming' && (
-              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-accent/10 border-accent/20 text-accent">
-                <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+              <div className="px-4 py-2 rounded-2xl border text-[10px] font-bold lowercase flex items-center gap-2 bg-blue-400/10 border-blue-400/20 text-blue-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                 upcoming
               </div>
             )}
             {status === 'live' && (
-              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-emerald-500/10 border-emerald-500/20 text-emerald-500">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="px-4 py-2 rounded-2xl border text-[10px] font-bold lowercase flex items-center gap-2 bg-emerald-400/10 border-emerald-400/20 text-emerald-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 live
               </div>
             )}
             {status === 'summarising' && (
-              <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 px-3 py-1.5 rounded-xl text-[10px] font-medium border border-amber-500/20 cursor-default transition-all shadow-sm">
+              <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 px-3 py-1.5 rounded-xl text-[10px] font-bold border border-amber-500/20 cursor-default transition-all shadow-sm">
                 <div className="w-1 h-1 bg-amber-500 rounded-full animate-pulse" />
                 summarising
               </div>
             )}
             {status === 'ended' && (
-              <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-muted border-border text-muted-foreground">
+              <div className="px-4 py-2 rounded-2xl border text-[10px] font-bold lowercase flex items-center gap-2 bg-white/5 border-white/10 text-white/40">
                 ended
               </div>
             )}
           </div>
-          <div className="grid grid-cols-4 gap-2 md:gap-4 py-4 border-t border-border">
-            <div className="flex flex-col gap-1 text-center border-r border-border px-1">
-              <span className="text-[9px] md:text-[10px] text-muted-foreground lowercase whitespace-nowrap">entry fee</span>
+          <div className="grid grid-cols-4 gap-2 md:gap-4 py-4 border-t border-white/10">
+            <div className="flex flex-col gap-1 text-center border-r border-white/10 px-1">
+              <span className="text-[9px] md:text-[10px] text-white/40 lowercase whitespace-nowrap">entry fee</span>
               <div className="flex items-center justify-center gap-1 md:gap-1.5 h-[24px]">
-                <div className="text-foreground text-xs md:text-base font-medium tabular-nums leading-none">
+                <div className="text-white text-xs md:text-base font-bold tabular-nums leading-none">
                   {Math.floor(entryDeposit || 0)}
                 </div>
                 <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3.5 h-3.5 md:w-4 md:h-4 rounded-full" alt="MOVE" />
-                <span className="text-accent text-[9px] font-bold">+10</span>
+                <span className="text-blue-400 text-[9px] font-bold">+10</span>
               </div>
             </div>
-            <div className="flex flex-col gap-1 text-center border-r border-border px-1">
-              <span className="text-[9px] md:text-[10px] text-muted-foreground lowercase whitespace-nowrap">{numDays} days</span>
-              <span className="text-foreground text-xs md:text-base font-normal tabular-nums leading-none flex items-center justify-center h-[24px]">
-                {startMonth}/{startDay} <span className="text-muted-foreground text-[8px] mx-1"> - </span> {endMonth}/{endDay}
+            <div className="flex flex-col gap-1 text-center border-r border-white/10 px-1">
+              <span className="text-[9px] md:text-[10px] text-white/40 lowercase whitespace-nowrap">{numDays} days</span>
+              <span className="text-white text-xs md:text-base font-normal tabular-nums leading-none flex items-center justify-center h-[24px]">
+                {startMonth}/{startDay} <span className="text-white/20 text-[8px] mx-1"> - </span> {endMonth}/{endDay}
               </span>
             </div>
-            <div className="flex flex-col gap-1 text-center border-r border-border px-1">
-              <span className="text-[9px] md:text-[10px] text-muted-foreground lowercase whitespace-nowrap">steps</span>
-              <span className="text-foreground text-xs md:text-base font-normal flex items-center justify-center h-[24px]">{(minDailySteps / 1000).toFixed(0)}k</span>
+            <div className="flex flex-col gap-1 text-center border-r border-white/10 px-1">
+              <span className="text-[9px] md:text-[10px] text-white/40 lowercase whitespace-nowrap">steps</span>
+              <span className="text-white text-xs md:text-base font-normal flex items-center justify-center h-[24px]">{(minDailySteps / 1000).toFixed(0)}k</span>
             </div>
             <div className="flex flex-col gap-1 text-center px-1">
-              <span className="text-[9px] md:text-[10px] text-muted-foreground lowercase whitespace-nowrap">players</span>
-              <span className="text-foreground text-xs md:text-base font-normal tabular-nums flex items-center justify-center h-[24px]">{participants.length}</span>
+              <span className="text-[9px] md:text-[10px] text-white/40 lowercase whitespace-nowrap">players</span>
+              <span className="text-white text-xs md:text-base font-bold tabular-nums flex items-center justify-center h-[24px]">{participants.length}</span>
             </div>
           </div>
 
         </div>
 
         {/* Nested Table Card Area */}
-        <div className="flex-1 min-h-[400px] bg-black">
+        <div className="flex-1 min-h-[400px] bg-white/5">
           <div className="overflow-x-auto scrollbar-hide">
             <MaterialReactTable table={table} />
           </div>

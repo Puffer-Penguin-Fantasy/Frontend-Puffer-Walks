@@ -8,10 +8,13 @@ import { GameCardSkeleton } from "../components/GameCardSkeleton"
 import { CreateGameModal } from "../components/CreateGameModal"
 import { AdminPanel } from "../components/AdminPanel"
 import { Header } from "../components/Header"
+import { useSound } from "../hooks/useSound"
 import 'ol/ol.css'
+import blueBackground from "../assets/blue.jpg"
 
 export default function SettingsPage() {
     const { address: rawAddress } = useAccount()
+    const { playClick } = useSound()
     const [isPanelOpen, setIsPanelOpen] = React.useState(false)
     const [isAdminPanelOpen, setIsAdminPanelOpen] = React.useState(false)
     const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
@@ -44,9 +47,12 @@ export default function SettingsPage() {
     });
 
     return (
-        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-blue-600/20">
+        <div 
+            className="min-h-screen bg-cover bg-center bg-fixed text-foreground font-sans selection:bg-blue-600/20"
+            style={{ backgroundImage: `url(${blueBackground})` }}
+        >
             {/* Shared Header Component */}
-            <Header onOpenWallet={() => setIsPanelOpen(true)} onOpenAdmin={() => setIsAdminPanelOpen(true)} />
+            <Header onOpenWallet={() => { playClick(); setIsPanelOpen(true); }} onOpenAdmin={() => { playClick(); setIsAdminPanelOpen(true); }} />
 
             <div className="container mx-auto px-4 pt-24 pb-20 max-w-6xl">
                 {/* Hero Section */}
@@ -65,11 +71,11 @@ export default function SettingsPage() {
                             placeholder="Enter Join Code"
                             value={discoverCode}
                             onChange={e => setDiscoverCode(e.target.value)}
-                            className="w-full md:w-auto h-10 px-4 bg-muted border border-border rounded-xl text-sm placeholder:text-muted-foreground outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 transition-all"
+                            className="w-full md:w-auto h-10 px-6 bg-muted border border-border rounded-full text-sm placeholder:text-muted-foreground outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 transition-all font-medium"
                         />
                         {isAdmin && (
                             <button 
-                                onClick={() => setIsCreateModalOpen(true)}
+                                onClick={() => { playClick(); setIsCreateModalOpen(true); }}
                                 className="hidden md:flex flex-shrink-0 items-center justify-center gap-2 px-4 h-10 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-all active:scale-95 shadow-sm whitespace-nowrap"
                             >
                                 <Plus size={16} /> New Game
@@ -114,7 +120,7 @@ export default function SettingsPage() {
                             <h3 className="text-2xl font-normal text-muted-foreground mb-2 lowercase tracking-tighter">No Active Battles</h3>
                             <p className="text-muted-foreground/60 text-sm mb-6 lowercase">Games created on Movement Network will appear here.</p>
                             <button 
-                                onClick={refreshGames}
+                                onClick={() => { playClick(); refreshGames(); }}
                                 className="px-6 py-2 rounded-full bg-muted border border-border text-foreground text-sm font-medium hover:bg-muted/80 transition-colors"
                             >
                                 Reload List
@@ -126,7 +132,7 @@ export default function SettingsPage() {
                 {isAdmin && (
                     <div className="mt-8 md:hidden">
                         <button 
-                            onClick={() => setIsCreateModalOpen(true)}
+                            onClick={() => { playClick(); setIsCreateModalOpen(true); }}
                             className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-black text-white text-sm hover:bg-gray-800 transition-all"
                         >
                             <Plus size={16} /> Create New Game

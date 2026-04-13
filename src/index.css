@@ -1,7 +1,15 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
+@font-face {
+  font-family: 'Xirod';
+  src: url('/Xirod.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @theme {
+  --font-xirod: "Xirod", sans-serif;
   --font-roboto: "Roboto", sans-serif;
   --color-background: transparent;
   --color-foreground: #ffffff;
@@ -35,19 +43,6 @@
 
   body {
     @apply bg-black text-white font-sans antialiased;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    /* Mobile background */
-    background-image: url('./assets/Bacgroundmobile.png');
-  }
-
-  /* Desktop background (MD breakpoint) */
-  @media (min-width: 768px) {
-    body {
-      background-image: url('./assets/Backgrounddesktop.png');
-    }
   }
 }
 

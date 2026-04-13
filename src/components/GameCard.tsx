@@ -1,6 +1,8 @@
 import { CheckCircle } from "lucide-react";
 import type { Game } from "../types/game";
 import { useAccount } from "@razorlabs/razorkit";
+import { useSound } from "../hooks/useSound";
+import { useNavigate } from "react-router-dom";
 
 interface GameCardProps {
   game: Game;
@@ -11,6 +13,8 @@ interface GameCardProps {
 
 export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProps) {
   const { address: rawAddress } = useAccount();
+  const { playClick } = useSound();
+  const navigate = useNavigate();
   const depositInMove = (parseFloat(game.deposit_amount) / 100_000_000).toFixed(2);
   const totalPool = ((parseFloat(game.prize_pool) + parseFloat(game.sponsored_pool)) / 100_000_000).toFixed(2);
   const startTime = new Date(parseInt(game.start_time) * 1000);
@@ -38,14 +42,17 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
 
   return (
     <div 
-      onClick={() => window.location.href = `/leaderboard/${game.slug}`}
-      className="bg-card rounded-[24px] border-2 border-border transition-all duration-300 group cursor-pointer flex flex-col w-full overflow-hidden shadow-sm hover:shadow-md"
+      onClick={() => {
+        playClick();
+        navigate(`/leaderboard/${game.slug}`);
+      }}
+      className="bg-black/40 backdrop-blur-xl rounded-[24px] border border-white/10 transition-all duration-300 group cursor-pointer flex flex-col w-full overflow-hidden shadow-xl hover:shadow-2xl hover:border-white/20"
     >
       {/* Header Row: Avatar | Title | Button */}
       <div className="flex items-center justify-between gap-3 p-5">
         <div className="flex items-center gap-3 overflow-hidden flex-1">
           {game.image_url && (
-            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-white/10">
                <img 
                   src={game.image_url} 
                   alt={game.name} 
@@ -54,18 +61,18 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
             </div>
           )}
           <div className="min-w-0 pr-2 flex-1">
-            <h3 className="text-base font-medium text-foreground leading-tight">
+            <h3 className="text-base font-bold text-white leading-tight">
               {game.name}
             </h3>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] font-normal text-accent">
+              <span className="text-[11px] font-bold text-blue-400">
                 {totalPool} Move
               </span>
               {game.is_sponsored && (
                 <span className="bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-md text-[9px] font-semibold tracking-tight">Sponsored</span>
               )}
               {!game.is_public && (
-                <span className="bg-accent/10 text-accent px-1.5 py-0.5 rounded-md text-[9px] font-normal tracking-tight">Private</span>
+                <span className="bg-white/10 text-white/50 px-1.5 py-0.5 rounded-md text-[9px] font-normal tracking-tight">Private</span>
               )}
             </div>
           </div>
@@ -76,18 +83,22 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
           {isUpcoming && (
             isJoined ? (
               <div
-                className="px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[11px] font-normal flex items-center justify-center gap-1.5 cursor-default"
+                className="px-4 py-2 rounded-xl bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 text-[11px] font-normal flex items-center justify-center gap-1.5 cursor-default"
               >
                 <CheckCircle size={14} /> Joined
               </div>
             ) : (
               <button
-                onClick={(e) => { e.stopPropagation(); onJoin(game.id, globalJoinCode || ""); }}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  playClick();
+                  onJoin(game.id, globalJoinCode || ""); 
+                }}
                 disabled={!game.is_public && !globalJoinCode}
-                className={`px-6 py-2 rounded-xl text-[11px] font-normal tracking-tight transition-all active:scale-95 ${
+                className={`px-6 py-2 rounded-xl text-[11px] font-bold uppercase tracking-tight transition-all active:scale-95 ${
                   !game.is_public && !globalJoinCode
-                    ? "bg-muted text-muted-foreground cursor-not-allowed"
-                    : "bg-accent text-accent-foreground"
+                    ? "bg-white/5 text-white/20 cursor-not-allowed"
+                    : "bg-white text-black hover:bg-white/90"
                 }`}
               >
                 Join
@@ -103,30 +114,34 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
           {isPostGame && (
             isJoined ? (
               game.isClaimed ? (
-                <div className="px-4 py-2 rounded-xl bg-muted text-muted-foreground border border-border text-[11px] font-normal flex items-center justify-center gap-1.5 cursor-default">
-                  <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full" /> Claimed
+                <div className="px-4 py-2 rounded-xl bg-white/5 text-white/40 border border-white/10 text-[11px] font-normal flex items-center justify-center gap-1.5 cursor-default">
+                  <div className="w-1.5 h-1.5 bg-white/20 rounded-full" /> Claimed
                 </div>
               ) : (game.userCompletedDays === 0) ? (
-                <div className="px-4 py-2 rounded-xl bg-muted text-muted-foreground border border-border text-[11px] font-normal flex items-center justify-center gap-1.5 cursor-default">
+                <div className="px-4 py-2 rounded-xl bg-white/5 text-white/40 border border-white/10 text-[11px] font-normal flex items-center justify-center gap-1.5 cursor-default">
                     0 days hit
                 </div>
               ) : (
                 <button
-                  onClick={(e) => { e.stopPropagation(); onClaim(game.id); }}
-                  className="px-4 py-2 rounded-xl bg-green-600 text-white text-[11px] font-normal transition-all active:scale-95 shadow-sm hover:bg-green-700"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    playClick();
+                    onClaim(game.id); 
+                  }}
+                  className="px-4 py-2 rounded-xl bg-blue-500 text-white text-[11px] font-bold transition-all active:scale-95 shadow-sm hover:bg-blue-600"
                 >
                   Claim All
                 </button>
               )
             ) : (
-              <div className="flex items-center gap-1 bg-muted text-muted-foreground px-3 py-2 rounded-xl text-[11px] font-normal border border-border cursor-default">
+              <div className="flex items-center gap-1 bg-white/5 text-white/40 px-3 py-2 rounded-xl text-[11px] font-normal border border-white/10 cursor-default">
                 Ended
               </div>
             )
           )}
           {isActive && (
-            <div className="flex items-center gap-1 bg-green-500/10 text-green-500 px-3 py-2 rounded-xl text-[11px] font-normal border border-green-500/20">
-               <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+            <div className="flex items-center gap-1 bg-green-400/10 text-green-400 px-3 py-2 rounded-xl text-[11px] font-normal border border-green-400/20">
+               <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
                Active
             </div>
           )}
@@ -134,7 +149,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
       </div>
 
       {/* Stats Row: The "Internal Card" (Flush, Darker, Taller) */}
-      <div className="bg-muted p-7 px-5 grid grid-cols-4 gap-2 items-center border-t border-border rounded-t-xl mt-auto relative overflow-hidden">
+      <div className="bg-white/5 p-7 px-5 grid grid-cols-4 gap-2 items-center border-t border-white/10 rounded-t-xl mt-auto relative overflow-hidden">
         {game.is_sponsored && game.sponsor_image_url && (
           <div className="absolute top-0 right-0 p-1 px-3 bg-amber-500/10 rounded-bl-xl flex items-center gap-1.5">
             <span className="text-[8px] font-medium text-amber-500 lowercase tracking-tight">sponsored by</span>
@@ -144,26 +159,26 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
         )}
         
         <div className="flex flex-col items-center min-w-0">
-          <span className="text-[9px] text-muted-foreground font-normal lowercase tracking-tight mb-0.5 whitespace-nowrap">entry fee</span>
+          <span className="text-[9px] text-white/40 font-normal lowercase tracking-tight mb-0.5 whitespace-nowrap">entry fee</span>
           <div className="flex items-center gap-1">
-             <span className="text-xs font-medium text-foreground">
+             <span className="text-sm font-bold text-white">
                {parseFloat(depositInMove).toFixed(0)}
              </span>
              <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3 h-3 rounded-full" alt="MOVE" />
-             <span className="text-[8px] text-accent font-medium whitespace-nowrap">+10</span>
+             <span className="text-[10px] text-blue-400 font-bold whitespace-nowrap">+10</span>
           </div>
         </div>
-        <div className="flex flex-col items-center border-l border-border pl-1">
-          <span className="text-[9px] text-muted-foreground font-normal lowercase tracking-tight mb-0.5">{game.no_of_days} days</span>
-          <span className="text-[10px] font-normal text-foreground">{startTime.getUTCMonth() + 1}/{startTime.getUTCDate()} - {displayEndDate.getUTCDate() === startTime.getUTCDate() && game.no_of_days === "1" ? "" : `${displayEndDate.getUTCMonth() + 1}/`}{displayEndDate.getUTCDate()}</span>
+        <div className="flex flex-col items-center border-l border-white/10 pl-1">
+          <span className="text-[9px] text-white/40 font-normal lowercase tracking-tight mb-0.5">{game.no_of_days} days</span>
+          <span className="text-[12px] font-medium text-white">{startTime.getUTCMonth() + 1}/{startTime.getUTCDate()} - {displayEndDate.getUTCDate() === startTime.getUTCDate() && game.no_of_days === "1" ? "" : `${displayEndDate.getUTCMonth() + 1}/`}{displayEndDate.getUTCDate()}</span>
         </div>
-        <div className="flex flex-col items-center border-l border-border pl-1">
-          <span className="text-[9px] text-muted-foreground font-normal lowercase tracking-tight mb-0.5">steps</span>
-          <span className="text-xs font-normal text-foreground">{parseInt(game.min_daily_steps) >= 1000 ? `${parseInt(game.min_daily_steps)/1000}k` : game.min_daily_steps}</span>
+        <div className="flex flex-col items-center border-l border-white/10 pl-1">
+          <span className="text-[9px] text-white/40 font-normal lowercase tracking-tight mb-0.5">steps</span>
+          <span className="text-sm font-medium text-white">{parseInt(game.min_daily_steps) >= 1000 ? `${parseInt(game.min_daily_steps)/1000}k` : game.min_daily_steps}</span>
         </div>
-        <div className="flex flex-col items-center border-l border-border pl-1">
-          <span className="text-[9px] text-muted-foreground font-normal lowercase tracking-tight mb-0.5">players</span>
-          <span className="text-xs font-normal text-foreground">
+        <div className="flex flex-col items-center border-l border-white/10 pl-1">
+          <span className="text-[9px] text-white/40 font-normal lowercase tracking-tight mb-0.5">players</span>
+          <span className="text-sm font-medium text-white">
             {game.participants?.length || game.participants_count || 0}
           </span>
         </div>
