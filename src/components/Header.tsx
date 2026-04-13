@@ -5,8 +5,6 @@ import { db } from "../lib/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { useGame } from "../hooks/useGame"
 import { useSound } from "../hooks/useSound"
-import { HelpCircle } from "lucide-react"
-import { HowToPlayModal } from "./HowToPlayModal"
 
 interface HeaderProps {
     onOpenWallet: () => void;
@@ -20,7 +18,6 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
     const { adminAddress } = useGame()
     const { playClick } = useSound()
     const [profileImage, setProfileImage] = React.useState<string | null>(null)
-    const [isHowToPlayOpen, setIsHowToPlayOpen] = React.useState(false)
 
     const normalizedAddress = address?.toLowerCase();
 
@@ -100,19 +97,6 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
                     </div>
                 </div>
 
-                <button
-                    onClick={() => { playClick(); setIsHowToPlayOpen(true); }}
-                    className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-blue-500 text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-[2000]"
-                    title="How to Play"
-                >
-                    <HelpCircle size={24} />
-                </button>
-                
-                <HowToPlayModal 
-                    isOpen={isHowToPlayOpen} 
-                    onClose={() => setIsHowToPlayOpen(false)} 
-                />
-                </div>
             </div>
         </header>
     )

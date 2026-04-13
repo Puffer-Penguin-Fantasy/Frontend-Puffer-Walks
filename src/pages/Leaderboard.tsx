@@ -3,6 +3,7 @@ import { useGame } from "../hooks/useGame";
 import { useAccount } from "@razorlabs/razorkit";
 import { GameLeaderboard } from "../components/GameLeaderboard";
 import { Header } from "../components/Header";
+import { Footer } from "../components/Footer";
 import { WalletPanel } from "../components/WalletPanel";
 import { ArrowLeft, Trophy, Lock } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
@@ -189,6 +190,8 @@ export default function LeaderboardPage() {
       </main>
 
       <WalletPanel isOpen={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
+      
+      <Footer />
     </div>
   );
 }

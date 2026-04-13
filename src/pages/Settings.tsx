@@ -8,6 +8,7 @@ import { GameCardSkeleton } from "../components/GameCardSkeleton"
 import { CreateGameModal } from "../components/CreateGameModal"
 import { AdminPanel } from "../components/AdminPanel"
 import { Header } from "../components/Header"
+import { Footer } from "../components/Footer"
 import { useSound } from "../hooks/useSound"
 import 'ol/ol.css'
 import blueBackground from "../assets/blue.jpg"
@@ -148,6 +149,8 @@ export default function SettingsPage() {
                 onClose={() => setIsCreateModalOpen(false)} 
                 onSubmit={createGame} 
             />
+
+            <Footer />
         </div>
     )
 }
