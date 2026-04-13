@@ -1,16 +1,22 @@
 import { ConnectButton } from "@razorlabs/razorkit"
 import { motion, AnimatePresence } from "framer-motion"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSound } from "../hooks/useSound"
 import buttonImg from "../assets/gameframe/button.png"
-import pfpImg from "../assets/gameframe/pfpframe.png"
-import userAvatar from "../assets/user-avatar.png"
 import bgMobile from "../assets/Bacgroundmobile.png"
 import bgDesktop from "../assets/Backgrounddesktop.png"
 
 export default function LoginPage() {
     const [activeModal, setActiveModal] = useState<string | null>(null)
+    const [isMobile, setIsMobile] = useState(false)
     const { playClick } = useSound()
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768)
+        checkMobile()
+        window.addEventListener('resize', checkMobile)
+        return () => window.removeEventListener('resize', checkMobile)
+    }, [])
 
     const modalContent: Record<string, { title: string; content: string }> = {
         privacy: {
@@ -33,15 +39,6 @@ export default function LoginPage() {
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
     }
-
-    const pfpStyle = {
-        backgroundImage: `url(${pfpImg})`,
-        backgroundSize: '100% 100%',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
-    }
-
-    const [isMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
     const backgroundStyle = {
         backgroundImage: `url(${isMobile ? bgMobile : bgDesktop})`,

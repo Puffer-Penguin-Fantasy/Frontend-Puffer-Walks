@@ -40,11 +40,6 @@ export default function SettingsPage() {
 
     const isAdmin = address && adminAddress && standardize(address) === standardize(adminAddress);
     
-    console.log("🛠️ Admin Check:", { 
-        yourAddress: standardize(address), 
-        onChainAdmin: standardize(adminAddress), 
-        isMatch: isAdmin 
-    });
 
     return (
         <div 
@@ -71,7 +66,7 @@ export default function SettingsPage() {
                             placeholder="Enter Join Code"
                             value={discoverCode}
                             onChange={e => setDiscoverCode(e.target.value)}
-                            className="w-full md:w-auto h-10 px-6 bg-muted border border-border rounded-full text-sm placeholder:text-muted-foreground outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 transition-all font-medium"
+                            className="w-full md:w-auto h-10 px-6 bg-muted border border-border rounded-full text-xs placeholder:text-muted-foreground outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 transition-all font-bold"
                         />
                         {isAdmin && (
                             <button 
