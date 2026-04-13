@@ -33,8 +33,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
 
   const isUpcoming = startTime > now;
   const isActive = startTime <= now && endTime > now;
-  const isSummarising = endTime <= now && now.getTime() < endTime.getTime() + 48 * 60 * 60 * 1000;
-  const isEnded = endTime <= now && !isSummarising;
+  const isEnded = endTime <= now;
 
   return (
     <div 
@@ -93,15 +92,6 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
                 Join
               </button>
             )
-          )}
-          {isSummarising && (
-            <div className="flex flex-col items-end">
-               <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 px-4 py-2 rounded-xl text-[11px] font-medium border border-amber-500/20 cursor-default transition-all shadow-sm">
-                  <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
-                  Summarising
-               </div>
-               <span className="text-[8px] text-amber-500/60 mt-1 uppercase font-bold tracking-tighter">Finalizing steps...</span>
-            </div>
           )}
           {isEnded && (
             isJoined ? (
