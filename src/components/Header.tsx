@@ -5,6 +5,8 @@ import { db } from "../lib/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { useGame } from "../hooks/useGame"
 import { useSound } from "../hooks/useSound"
+import { HelpCircle } from "lucide-react"
+import { HowToPlayModal } from "./HowToPlayModal"
 
 interface HeaderProps {
     onOpenWallet: () => void;
@@ -18,6 +20,7 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
     const { adminAddress } = useGame()
     const { playClick } = useSound()
     const [profileImage, setProfileImage] = React.useState<string | null>(null)
+    const [isHowToPlayOpen, setIsHowToPlayOpen] = React.useState(false)
 
     const normalizedAddress = address?.toLowerCase();
 
@@ -53,10 +56,24 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
     return (
         <header className="fixed top-0 left-0 right-0 z-[1000] bg-background/80 backdrop-blur-md h-16 flex items-center px-4 md:px-6">
             <div className="w-full flex justify-between items-center max-w-6xl mx-auto">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => { playClick(); window.location.href = "/"; }}>
                         <span className="text-[18px] md:text-[22px] font-xirod text-foreground tracking-tight">Puffer Walks</span>
                     </div>
+                    
+                    <button
+                        onClick={() => { playClick(); setIsHowToPlayOpen(true); }}
+                        className="flex items-center gap-1.5 text-white/40 hover:text-white transition-colors group"
+                        title="How to Play"
+                    >
+                        <HelpCircle size={18} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline group-hover:text-blue-400 transition-colors">How to Play</span>
+                    </button>
+                    
+                    <HowToPlayModal 
+                        isOpen={isHowToPlayOpen} 
+                        onClose={() => setIsHowToPlayOpen(false)} 
+                    />
                 </div>
 
                 <div className="flex items-center gap-1.5 md:gap-2.5">
