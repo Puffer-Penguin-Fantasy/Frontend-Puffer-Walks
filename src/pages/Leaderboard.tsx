@@ -63,38 +63,6 @@ export default function LeaderboardPage() {
     if (game && game.participants?.length > 0) syncData();
   }, [game]);
 
-  // Live Step Sync (No history, current day only)
-  useEffect(() => {
-    const syncTodaySteps = async () => {
-      if (!game || !myAddress || !isConnected || steps === null) return;
-      try {
-        const gameStart = new Date(parseInt(game.start_time) * 1000);
-        gameStart.setUTCHours(0, 0, 0, 0);
-        
-        const gameEnd = new Date(parseInt(game.end_time) * 1000);
-        gameEnd.setUTCHours(0, 0, 0, 0);
-
-        const now = new Date();
-        now.setUTCHours(0, 0, 0, 0);
-
-        // ONLY sync if the game is currently active
-        if (now < gameStart || now >= gameEnd) return;
-
-        const diffTime = now.getTime() - gameStart.getTime();
-        const currentDayIdx = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        const dayKey = `day${currentDayIdx + 1}`;
-        
-        const pRef = doc(db, "games", game.id, "participants", myAddress);
-        await updateDoc(pRef, { [`days.${dayKey}`]: steps, lastUpdated: new Date().toISOString() });
-      } catch (err) {
-        console.error("Live sync failed:", err);
-      }
-    };
-    const interval = setTimeout(syncTodaySteps, 2000);
-    return () => clearTimeout(interval);
-  }, [steps, isConnected, game, myAddress]);
-
-
   if (gamesLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -171,12 +139,11 @@ export default function LeaderboardPage() {
   const now = new Date();
   const isUpcoming = startTime > now;
   const isActive = startTime <= now && endTime > now;
-  const isSummarising = endTime <= now && now.getTime() < endTime.getTime() + 48 * 60 * 60 * 1000;
   
   let status: 'upcoming' | 'live' | 'summarising' | 'ended' = 'ended';
   if (isUpcoming) status = 'upcoming';
   else if (isActive) status = 'live';
-  else if (isSummarising) status = 'summarising';
+  else status = 'ended';
 
   return (
     <div className="min-h-screen bg-background pb-20">
