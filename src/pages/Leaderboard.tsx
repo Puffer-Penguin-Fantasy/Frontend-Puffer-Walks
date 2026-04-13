@@ -137,10 +137,12 @@ export default function LeaderboardPage() {
   const now = new Date();
   const isUpcoming = startTime > now;
   const isActive = startTime <= now && endTime > now;
+  const isSummarising = endTime <= now && now.getTime() < endTime.getTime() + 48 * 60 * 60 * 1000;
   
   let status: 'upcoming' | 'live' | 'summarising' | 'ended' = 'ended';
   if (isUpcoming) status = 'upcoming';
   else if (isActive) status = 'live';
+  else if (isSummarising) status = 'summarising';
   else status = 'ended';
 
   return (

@@ -412,6 +412,12 @@ export function GameLeaderboard({
                 live
               </div>
             )}
+            {status === 'summarising' && (
+              <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 px-3 py-1.5 rounded-xl text-[10px] font-medium border border-amber-500/20 cursor-default transition-all shadow-sm">
+                <div className="w-1 h-1 bg-amber-500 rounded-full animate-pulse" />
+                summarising
+              </div>
+            )}
             {status === 'ended' && (
               <div className="px-4 py-2 rounded-2xl border text-[10px] font-normal lowercase flex items-center gap-2 bg-muted border-border text-muted-foreground">
                 ended

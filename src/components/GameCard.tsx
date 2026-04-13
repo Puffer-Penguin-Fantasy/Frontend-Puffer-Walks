@@ -33,7 +33,8 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
 
   const isUpcoming = startTime > now;
   const isActive = startTime <= now && endTime > now;
-  const isEnded = endTime <= now;
+  const isSummarising = endTime <= now && now.getTime() < endTime.getTime() + (48 * 60 * 60 * 1000);
+  const isPostGame = endTime <= now && !isSummarising;
 
   return (
     <div 
@@ -93,16 +94,22 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
               </button>
             )
           )}
-          {isEnded && (
+          {isSummarising && (
+            <div className="px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-medium flex items-center gap-1.5 cursor-default">
+              <div className="w-1 h-1 bg-amber-500 rounded-full animate-pulse" />
+              summarising
+            </div>
+          )}
+          {isPostGame && (
             isJoined ? (
               game.isClaimed ? (
                 <div className="px-4 py-2 rounded-xl bg-muted text-muted-foreground border border-border text-[11px] font-normal flex items-center justify-center gap-1.5 cursor-default">
-                   <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full" /> Claimed
+                  <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full" /> Claimed
                 </div>
               ) : (game.userCompletedDays === 0) ? (
                 <div className="px-4 py-2 rounded-xl bg-muted text-muted-foreground border border-border text-[11px] font-normal flex items-center justify-center gap-1.5 cursor-default">
                     0 days hit
-                 </div>
+                </div>
               ) : (
                 <button
                   onClick={(e) => { e.stopPropagation(); onClaim(game.id); }}
@@ -113,7 +120,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
               )
             ) : (
               <div className="flex items-center gap-1 bg-muted text-muted-foreground px-3 py-2 rounded-xl text-[11px] font-normal border border-border cursor-default">
-                 Ended
+                Ended
               </div>
             )
           )}
