@@ -45,7 +45,6 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     const isLoading = profileLoading || arcticLoading;
 
     const shortAddress = address?.slice(0, 6) + '...' + address?.slice(-4);
-    const addressPrefix = "0x";
 
     // Sync state with hook data
     useEffect(() => {
