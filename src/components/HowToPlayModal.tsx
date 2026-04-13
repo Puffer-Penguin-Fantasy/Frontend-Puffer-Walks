@@ -111,18 +111,10 @@ export function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps) {
             </button>
           </div>
 
-          {/* Carousel */}
-          <div className="p-6 space-y-6">
-            <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-white font-xirod tracking-tighter">
-                {steps[currentStep].title}
-              </h3>
-              <p className="text-white/60 text-sm leading-relaxed max-w-md">
-                {steps[currentStep].description}
-              </p>
-            </div>
-
-            <div className="relative group">
+          {/* Carousel Body */}
+          <div className="p-6 space-y-8">
+            {/* Visual Content (Top) */}
+            <div className="relative group max-w-lg mx-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStep}
@@ -139,16 +131,26 @@ export function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps) {
               {/* Navigation Arrows */}
               <button 
                 onClick={prevStep}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+                className="absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-blue-500 text-white shadow-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity active:scale-90 z-10"
               >
                 <ChevronLeft size={20} />
               </button>
               <button 
                 onClick={nextStep}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+                className="absolute -right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-blue-500 text-white shadow-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity active:scale-90 z-10"
               >
                 <ChevronRight size={20} />
               </button>
+            </div>
+
+            {/* Writeup (Bottom) */}
+            <div className="space-y-3 text-center px-4">
+              <h3 className="text-2xl font-bold text-white font-xirod tracking-tight uppercase">
+                {steps[currentStep].title}
+              </h3>
+              <p className="text-white/60 text-sm leading-relaxed max-w-md mx-auto">
+                {steps[currentStep].description}
+              </p>
             </div>
           </div>
 

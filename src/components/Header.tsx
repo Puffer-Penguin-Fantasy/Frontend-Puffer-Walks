@@ -56,24 +56,10 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
     return (
         <header className="fixed top-0 left-0 right-0 z-[1000] bg-background/80 backdrop-blur-md h-16 flex items-center px-4 md:px-6">
             <div className="w-full flex justify-between items-center max-w-6xl mx-auto">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => { playClick(); window.location.href = "/"; }}>
                         <span className="text-[18px] md:text-[22px] font-xirod text-foreground tracking-tight">Puffer Walks</span>
                     </div>
-                    
-                    <button
-                        onClick={() => { playClick(); setIsHowToPlayOpen(true); }}
-                        className="flex items-center gap-1.5 text-white/40 hover:text-white transition-colors group"
-                        title="How to Play"
-                    >
-                        <HelpCircle size={18} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline group-hover:text-blue-400 transition-colors">How to Play</span>
-                    </button>
-                    
-                    <HowToPlayModal 
-                        isOpen={isHowToPlayOpen} 
-                        onClose={() => setIsHowToPlayOpen(false)} 
-                    />
                 </div>
 
                 <div className="flex items-center gap-1.5 md:gap-2.5">
@@ -112,6 +98,20 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
                             )}
                         </div>
                     </div>
+                </div>
+
+                <button
+                    onClick={() => { playClick(); setIsHowToPlayOpen(true); }}
+                    className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-blue-500 text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-[2000]"
+                    title="How to Play"
+                >
+                    <HelpCircle size={24} />
+                </button>
+                
+                <HowToPlayModal 
+                    isOpen={isHowToPlayOpen} 
+                    onClose={() => setIsHowToPlayOpen(false)} 
+                />
                 </div>
             </div>
         </header>
