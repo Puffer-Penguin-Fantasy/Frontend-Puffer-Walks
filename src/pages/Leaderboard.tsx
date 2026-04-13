@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useGame } from "@/hooks/useGame";
-import { useFitbit } from "@/integrations/fitbit/hooks/useFitbit";
 import { useAccount } from "@razorlabs/razorkit";
 import { GameLeaderboard } from "@/components/GameLeaderboard";
 import { Header } from "@/components/Header";
@@ -8,14 +7,13 @@ import { WalletPanel } from "@/components/WalletPanel";
 import { ArrowLeft, Trophy, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 export default function LeaderboardPage() {
   const { gameId: gameSlug } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
   const { games, isLoading: gamesLoading } = useGame();
   const { address: rawAddress } = useAccount();
-  const { steps, isConnected } = useFitbit();
   const [isSyncing, setIsSyncing] = useState(false);
   const [isWalletOpen, setIsWalletOpen] = useState(false);
 
