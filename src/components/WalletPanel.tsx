@@ -16,7 +16,9 @@ interface WalletPanelProps {
 }
 import pfpFrame from "../assets/gameframe/pfpframe.png";
 import buttonBg from "../assets/gameframe/button.png";
+import cancelBg from "../assets/gameframe/cancel.png";
 import blueBg from "../assets/blue.jpg";
+import userAvatar from "../assets/user-avatar.png";
 
 export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     const { address: rawAddress } = useAccount();
@@ -197,6 +199,20 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                         <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px] z-0" />
 
                         <div className="relative z-10 flex flex-col h-full flex-1">
+                            <div className="absolute top-7 left-8 z-20">
+                                <button 
+                                    onClick={() => { playClick(); onClose(); }}
+                                    className="w-10 h-10 flex items-center justify-center text-black font-xirod text-xs hover:opacity-80 transition-opacity"
+                                    style={{ 
+                                        backgroundImage: `url(${cancelBg})`,
+                                        backgroundSize: '100% 100%',
+                                        backgroundRepeat: 'no-repeat'
+                                    }}
+                                >
+                                    X
+                                </button>
+                            </div>
+
                             <div className="absolute top-7 right-8 z-10 flex flex-col items-end gap-2">
                                 <button 
                                     onClick={() => { playClick(); toggleEdit(); }}
@@ -214,7 +230,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 </button>
                             </div>
 
-                            <div className="p-8 overflow-y-auto flex-1 space-y-2 no-scrollbar">
+                            <div className="p-8 overflow-y-auto flex-1 space-y-2 no-scrollbar pt-20">
                                 <div className="border-b border-white/10 pb-2">
                                     <button 
                                         onClick={() => { playClick(); setExpandedKey(expandedKey === "profile" ? null : "profile"); }}
@@ -251,7 +267,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                             ) : profileImage ? (
                                                                 <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                                                             ) : (
-                                                                <span className="text-2xl font-bold text-white opacity-80">{addressPrefix}</span>
+                                                                <img src={userAvatar} alt="Default Avatar" className="w-full h-full object-cover opacity-50" />
                                                             )}
                                                             
                                                             {isEditing && !isLoading && (

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 import { useSound } from "../hooks/useSound"
 import buttonImg from "../assets/gameframe/button.png"
-import bgMobile from "../assets/Bacgroundmobile.png"
+import bgMobile from "../assets/Backgroundmobile.png"
 import bgDesktop from "../assets/Backgrounddesktop.png"
 
 export default function LoginPage() {
