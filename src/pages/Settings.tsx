@@ -20,7 +20,8 @@ export default function SettingsPage() {
     const [isAdminPanelOpen, setIsAdminPanelOpen] = React.useState(false)
     const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
     const [discoverCode, setDiscoverCode] = React.useState("")
-    const { games, adminAddress, isLoading: gamesLoading, refresh: refreshGames, joinGame, claimRewards, createGame } = useGame()
+    const [discoverCodeHash, setDiscoverCodeHash] = React.useState<number[] | null>(null)
+    const { games, adminAddress, isLoading: gamesLoading, refresh: refreshGames, joinGame, claimRewards, createGame, hashString } = useGame()
     
     const address = rawAddress?.toLowerCase();
     React.useEffect(() => {
@@ -40,6 +41,18 @@ export default function SettingsPage() {
     };
 
     const isAdmin = address && adminAddress && standardize(address) === standardize(adminAddress);
+    
+    React.useEffect(() => {
+        const updateHash = async () => {
+            if (discoverCode.length > 2) {
+                const h = await hashString(discoverCode);
+                setDiscoverCodeHash(h);
+            } else {
+                setDiscoverCodeHash(null);
+            }
+        };
+        updateHash();
+    }, [discoverCode, hashString]);
     
 
     return (
@@ -89,16 +102,21 @@ export default function SettingsPage() {
                         games
                         .filter(game => {
                             const isSearchTermLongEnough = discoverCode.length > 2;
-                            const isCodeMatch = isSearchTermLongEnough && game.joinCode === discoverCode;
+                            
+                            // Hash Match Logic: compare the local search hash to the blockchain's stored hash
+                            const isCodeMatch = isSearchTermLongEnough && 
+                                               discoverCodeHash && 
+                                               Array.isArray(game.join_code_hash) &&
+                                               game.join_code_hash.length === 32 &&
+                                               game.join_code_hash.every((v, i) => v === discoverCodeHash[i]);
+
                             const isNameMatch = isSearchTermLongEnough && game.name.toLowerCase().includes(discoverCode.toLowerCase());
                             const isJoined = game.participants?.some(p => standardize(p) === standardize(address));
                             
-                            // Public games: Always show (but filter by name if searching)
                             if (game.is_public) {
                                 return isSearchTermLongEnough ? isNameMatch : true;
                             }
                             
-                            // Private games: ONLY show if exact code matches OR user is already joined
                             return isCodeMatch || isJoined;
                         })
                         .map((game) => (

@@ -27,6 +27,7 @@ interface GamesContextType {
   claimPinFees: (amount: number) => Promise<any>;
   claimLegacyPinFees: () => Promise<any>;
   getPinTreasuryBalance: () => Promise<number>;
+  hashString: (input: string) => Promise<number[]>;
 }
 
 const GamesContext = createContext<GamesContextType | undefined>(undefined);
@@ -40,6 +41,26 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
   const [oracleAddress, setOracleAddress] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const hasLoadedOnce = useRef(false);
+
+  const hexToBytes = (hex: string): number[] => {
+    if (!hex) return [];
+    let cleanHex = hex.startsWith('0x') ? hex.slice(2) : hex;
+    // Handle Aptos resource format if it's already an array
+    if (Array.isArray(hex)) return hex;
+    const bytes = [];
+    for (let i = 0; i < cleanHex.length; i += 2) {
+      bytes.push(parseInt(cleanHex.substr(i, 2), 16));
+    }
+    return bytes;
+  };
+
+  // Helper to hash strings for blockchain privacy (SHA-256)
+  const hashString = async (input: string): Promise<number[]> => {
+    if (!input) return Array(32).fill(0);
+    const msgUint8 = new TextEncoder().encode(input);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+    return Array.from(new Uint8Array(hashBuffer));
+  };
 
   const fetchGames = useCallback(async () => {
     try {
@@ -105,6 +126,8 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
           daily_forfeited_pool: Array.isArray(g.daily_forfeited_pool) ? g.daily_forfeited_pool : (g.daily_forfeited_pool?.value || []),
           day_winners_count: Array.isArray(g.day_winners_count) ? g.day_winners_count : (g.day_winners_count?.value || []),
           perfect_winners_count: g.perfect_winners_count || "0",
+          admin_claimed: g.admin_claimed || false,
+          join_code_hash: hexToBytes(typeof g.join_code === "object" ? g.join_code.value : (g.join_code || "")),
         };
       });
 
@@ -166,17 +189,10 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      const finalGames = await Promise.all(results.map(async (g) => {
-        const itemWithClaim = gamesWithClaimStatus.find(gw => gw.id === g.id) || { ...g, isClaimed: false };
-        try {
-          const metaRef = doc(db, "game_metadata", g.id);
-          const metaSnap = await getDoc(metaRef);
-          if (metaSnap.exists()) return { ...itemWithClaim, joinCode: metaSnap.data().joinCode };
-        } catch (e) {
-          console.warn(`Could not fetch metadata for ${g.id}:`, e);
-        }
-        return itemWithClaim;
-      }));
+      const finalGames = results.map(g => {
+        const withStatus = gamesWithClaimStatus.find(gw => gw.id === g.id);
+        return { ...g, ...withStatus };
+      });
   
       setGames(finalGames.filter(g => g.id !== "unknown"));
       return finalGames;
@@ -202,12 +218,13 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
   const joinGame = async (gameId: string, joinCode: string = "") => {
     if (!rawAddress) return;
     try {
+      const hashedCode = await hashString(joinCode);
       const response = await signAndSubmitTransaction({
         payload: {
           function: `${MODULE_ADDRESS}::game::join_game`,
           functionArguments: [
             gameId, 
-            Array.from(new TextEncoder().encode(joinCode)), 
+            hashedCode, 
             "0x0000000000000000000000000000000000000000000000000000000000000000"
           ],
         }
@@ -269,6 +286,7 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
   const createGame = async (params: any) => {
     if (!rawAddress) return;
     try {
+      const hashedCode = await hashString(params.join_code || "");
       const response = await signAndSubmitTransaction({
         payload: {
           function: `${MODULE_ADDRESS}::game::create_game`,
@@ -281,7 +299,7 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
             params.start_time + (params.no_of_days * 86400),
             params.is_public,
             params.required_nft || "0x0",
-            Array.from(new TextEncoder().encode(params.join_code || "")),
+            hashedCode,
             Math.floor((params.sponsor_amount || 0) * 100_000_000),
             Array.from(new TextEncoder().encode(params.sponsor_name || "")),
             Array.from(new TextEncoder().encode(params.sponsor_image_url || ""))
@@ -289,8 +307,11 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
         }
       });
       const hash = detectHash(response);
-      if (hash) await aptosClient.waitForTransaction({ transactionHash: hash });
-      else await new Promise(r => setTimeout(r, 2000));
+      if (hash) {
+        await aptosClient.waitForTransaction({ transactionHash: hash });
+      } else {
+        await new Promise(r => setTimeout(r, 2000));
+      }
       await fetchGames();
       return response;
     } catch (err) {
@@ -489,7 +510,8 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       pinUser,
       claimPinFees,
       claimLegacyPinFees,
-      getPinTreasuryBalance
+      getPinTreasuryBalance,
+      hashString
     }}>
       {children}
     </GamesContext.Provider>

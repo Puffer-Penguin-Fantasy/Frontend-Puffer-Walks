@@ -57,7 +57,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   };
 
   const now = Math.floor(Date.now() / 1000);
-  const endedGames = games.filter(g => parseInt(g.end_time) < now);
+  const endedGames = games.filter(g => parseInt(g.end_time) < now && !g.admin_claimed);
   const activeGames = games.filter(g => parseInt(g.end_time) >= now);
 
   const toggle = (key: string) => {

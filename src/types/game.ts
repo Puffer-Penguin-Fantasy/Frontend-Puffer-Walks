@@ -19,8 +19,9 @@ export interface Game {
   sponsor_name: string;
   sponsor_amount: string;
   sponsor_image_url: string;
-  joinCode?: string;
+  join_code_hash?: number[];
   isClaimed?: boolean;
+  admin_claimed?: boolean;
   userCompletedDays?: number;
   userMissedDays?: number;
   daily_stake_standard: string;
