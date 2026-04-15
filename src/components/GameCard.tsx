@@ -1,4 +1,5 @@
-import { CheckCircle } from "lucide-react";
+import React from "react";
+import { CheckCircle, Loader2 } from "lucide-react";
 import type { Game } from "../types/game";
 import { useAccount } from "@razorlabs/razorkit";
 import { useSound } from "../hooks/useSound";
@@ -15,6 +16,8 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
   const { address: rawAddress } = useAccount();
   const { playClick } = useSound();
   const navigate = useNavigate();
+  const [isJoining, setIsJoining] = React.useState(false);
+  const [isClaiming, setIsClaiming] = React.useState(false);
   const depositInMove = (parseFloat(game.deposit_amount) / 100_000_000).toFixed(2);
   const totalPool = ((parseFloat(game.prize_pool) + parseFloat(game.sponsored_pool)) / 100_000_000).toFixed(2);
   const startTime = new Date(parseInt(game.start_time) * 1000);
@@ -71,6 +74,32 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
 
   const claimableReward = calculateClaimableReward();
 
+  const handleJoin = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsJoining(true);
+    try {
+      playClick();
+      await onJoin(game.id, globalJoinCode || "");
+    } catch (err) {
+      console.error("Join failed:", err);
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const handleClaim = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsClaiming(true);
+    try {
+      playClick();
+      await onClaim(game.id);
+    } catch (err) {
+      console.error("Claim failed:", err);
+    } finally {
+      setIsClaiming(false);
+    }
+  };
+
   return (
     <div 
       onClick={() => {
@@ -120,19 +149,20 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
               </div>
             ) : (
               <button
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  playClick();
-                  onJoin(game.id, globalJoinCode || ""); 
-                }}
-                disabled={!game.is_public && !globalJoinCode}
-                className={`px-6 py-2 rounded-xl text-[11px] font-bold uppercase tracking-tight transition-all active:scale-95 ${
-                  !game.is_public && !globalJoinCode
+                onClick={handleJoin}
+                disabled={(!game.is_public && !globalJoinCode) || isJoining}
+                className={`flex items-center justify-center gap-1.5 px-6 py-2 rounded-xl text-[11px] font-bold uppercase tracking-tight transition-all active:scale-95 ${
+                  (!game.is_public && !globalJoinCode) || isJoining
                     ? "bg-white/5 text-white/20 cursor-not-allowed"
                     : "bg-white text-black hover:bg-white/90"
                 }`}
               >
-                Join
+                {isJoining ? (
+                  <>
+                    <Loader2 size={12} className="animate-spin" />
+                    joining...
+                  </>
+                ) : "Join"}
               </button>
             )
           )}
@@ -154,15 +184,20 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
                 </div>
               ) : (
                 <button
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    playClick();
-                    onClaim(game.id); 
-                  }}
-                  className="px-4 py-2 rounded-xl bg-blue-500 text-white text-[11px] font-bold transition-all active:scale-95 shadow-sm hover:bg-blue-600 flex items-center gap-1.5"
+                  onClick={handleClaim}
+                  disabled={isClaiming}
+                  className="px-4 py-2 rounded-xl bg-blue-500 text-white text-[11px] font-bold transition-all active:scale-95 shadow-sm hover:bg-blue-600 flex items-center justify-center gap-1.5 min-w-[80px]"
                 >
-                  {claimableReward}
-                  <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3 h-3 rounded-full" alt="MOVE" />
+                  {isClaiming ? (
+                    <>
+                      <Loader2 size={12} className="animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      {claimableReward}
+                      <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3 h-3 rounded-full" alt="MOVE" />
+                    </>
+                  )}
                 </button>
               )
             ) : (
