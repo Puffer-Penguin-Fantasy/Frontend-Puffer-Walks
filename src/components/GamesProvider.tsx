@@ -22,6 +22,8 @@ interface GamesContextType {
   deleteGame: (gameId: string) => Promise<any>;
   updateSecondaryAdmin: (newAdmin: string) => Promise<any>;
   updateOracleAddress: (newOracle: string) => Promise<any>;
+  claimAdminFees: (gameId: string) => Promise<any>;
+  pinUser: (gameId: string) => Promise<any>;
 }
 
 const GamesContext = createContext<GamesContextType | undefined>(undefined);
@@ -95,6 +97,11 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
           no_of_days: g.no_of_days || "0",
           is_paused: g.is_paused || false,
           required_nft: typeof g.required_nft === "object" ? g.required_nft.value : (g.required_nft || "0x0"),
+          daily_stake_standard: g.daily_stake_standard || "0",
+          daily_stake_final: g.daily_stake_final || "0",
+          daily_forfeited_pool: Array.isArray(g.daily_forfeited_pool) ? g.daily_forfeited_pool : (g.daily_forfeited_pool?.value || []),
+          day_winners_count: Array.isArray(g.day_winners_count) ? g.day_winners_count : (g.day_winners_count?.value || []),
+          perfect_winners_count: g.perfect_winners_count || "0",
         };
       });
 
@@ -142,7 +149,8 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
                       ...g, 
                       isClaimed: progress?.has_withdrawn === true || progress?.has_withdrawn === "true",
                       userCompletedDays: compCount,
-                      userMissedDays: parseInt(progress?.missed_days || "0")
+                      userMissedDays: parseInt(progress?.missed_days || "0"),
+                      days_completed: progress?.days_completed || []
                     };
                   } catch (err) {
                     return { ...g, isClaimed: false, userCompletedDays: 0, userMissedDays: 0 };
@@ -260,17 +268,20 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await signAndSubmitTransaction({
         payload: {
-          function: `${MODULE_ADDRESS}::game::publish_game`,
+          function: `${MODULE_ADDRESS}::game::create_game`,
           functionArguments: [
             Array.from(new TextEncoder().encode(params.name)),
             Array.from(new TextEncoder().encode(params.image_url)),
             Math.floor(params.deposit_amount * 100_000_000),
             params.min_daily_steps,
             params.start_time,
-            params.no_of_days,
+            params.start_time + (params.no_of_days * 86400),
             params.is_public,
-            Array.from(new TextEncoder().encode(params.join_code)),
-            params.required_nft || "0x0"
+            params.required_nft || "0x0",
+            Array.from(new TextEncoder().encode(params.join_code || "")),
+            Math.floor((params.sponsor_amount || 0) * 100_000_000),
+            Array.from(new TextEncoder().encode(params.sponsor_name || "")),
+            Array.from(new TextEncoder().encode(params.sponsor_image_url || ""))
           ],
         }
       });
@@ -342,6 +353,56 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const claimAdminFees = async (gameId: string) => {
+    if (!rawAddress) return;
+    try {
+      const response = await signAndSubmitTransaction({
+        payload: {
+          function: `${MODULE_ADDRESS}::game::claim_admin_fees`,
+          functionArguments: [gameId],
+        }
+      });
+      const hash = detectHash(response);
+      if (hash) await aptosClient.waitForTransaction({ transactionHash: hash });
+      else await new Promise(r => setTimeout(r, 2000));
+      await fetchGames();
+      return response;
+    } catch (err) {
+      console.error("Error claiming admin fees:", err);
+      throw err;
+    }
+  };
+
+  const pinUser = async (gameId: string) => {
+    if (!rawAddress) return;
+    try {
+      // 1. Call the contract
+      const response = await signAndSubmitTransaction({
+        payload: {
+          function: `${MODULE_ADDRESS}::leaderboard_pins::pin_user`,
+          functionArguments: [gameId],
+        }
+      });
+      const hash = detectHash(response);
+      if (hash) await aptosClient.waitForTransaction({ transactionHash: hash });
+      else await new Promise(r => setTimeout(r, 2000));
+
+      // 2. Update Firestore with a 3-week expiration
+      const THREE_WEEKS_IN_MS = 21 * 24 * 60 * 60 * 1000;
+      const pinnedUntil = Date.now() + THREE_WEEKS_IN_MS;
+
+      await setDoc(doc(db, "games", gameId, "participants", rawAddress.toLowerCase()), {
+        isPinned: true,
+        pinnedUntil: pinnedUntil
+      }, { merge: true });
+
+      return response;
+    } catch (err) {
+      console.error("Error pinning user:", err);
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchGames();
   }, [fetchGames]);
@@ -359,7 +420,9 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       createGame,
       deleteGame,
       updateSecondaryAdmin,
-      updateOracleAddress
+      updateOracleAddress,
+      claimAdminFees,
+      pinUser
     }}>
       {children}
     </GamesContext.Provider>

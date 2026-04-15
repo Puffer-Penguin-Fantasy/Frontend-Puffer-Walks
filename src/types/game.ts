@@ -23,4 +23,10 @@ export interface Game {
   isClaimed?: boolean;
   userCompletedDays?: number;
   userMissedDays?: number;
+  daily_stake_standard: string;
+  daily_stake_final: string;
+  daily_forfeited_pool: string[];
+  day_winners_count: string[];
+  perfect_winners_count: string;
+  days_completed?: boolean[];
 }

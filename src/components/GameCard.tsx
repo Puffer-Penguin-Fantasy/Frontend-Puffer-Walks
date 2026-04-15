@@ -40,6 +40,37 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
   const isSummarising = endTime <= now && now.getTime() < endTime.getTime() + (48 * 60 * 60 * 1000);
   const isPostGame = endTime <= now && !isSummarising;
 
+  const calculateClaimableReward = () => {
+    if (!game.days_completed) return "0.00";
+    
+    let payout = 0;
+    const noOfDays = parseInt(game.no_of_days);
+    
+    for (let i = 0; i < noOfDays; i++) {
+        const met = game.days_completed[i];
+        if (met) {
+            const dayStake = (i === noOfDays - 1) ? parseInt(game.daily_stake_final) : parseInt(game.daily_stake_standard);
+            payout += dayStake;
+            
+            const dayWinners = parseInt(game.day_winners_count[i] || "0");
+            const forfeitedPool = parseInt(game.daily_forfeited_pool[i] || "0");
+            if (dayWinners > 0) {
+                payout += Math.floor(forfeitedPool / dayWinners);
+            }
+        }
+    }
+    
+    let perfectBonus = 0;
+    if (game.userMissedDays === 0 && parseInt(game.perfect_winners_count) > 0) {
+        const sponsoredVault = parseInt(game.sponsored_pool);
+        perfectBonus = Math.floor(sponsoredVault / parseInt(game.perfect_winners_count));
+    }
+    
+    return ((payout + perfectBonus) / 100_000_000).toFixed(2);
+  };
+
+  const claimableReward = calculateClaimableReward();
+
   return (
     <div 
       onClick={() => {
@@ -128,9 +159,10 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
                     playClick();
                     onClaim(game.id); 
                   }}
-                  className="px-4 py-2 rounded-xl bg-blue-500 text-white text-[11px] font-bold transition-all active:scale-95 shadow-sm hover:bg-blue-600"
+                  className="px-4 py-2 rounded-xl bg-blue-500 text-white text-[11px] font-bold transition-all active:scale-95 shadow-sm hover:bg-blue-600 flex items-center gap-1.5"
                 >
-                  Claim All
+                  {claimableReward}
+                  <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3 h-3 rounded-full" alt="MOVE" />
                 </button>
               )
             ) : (

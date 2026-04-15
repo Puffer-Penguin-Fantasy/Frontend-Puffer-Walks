@@ -3,9 +3,12 @@ import { useEffect, useState, useMemo } from "react";
 import { db } from "../lib/firebase";
 import { collection, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore";
 import { useAccount } from "@razorlabs/razorkit";
+import { useGame } from "../hooks/useGame";
 import {
   Users,
-  Trophy
+  Trophy,
+  Pin,
+  Loader2
 } from "lucide-react";
 import {
   MaterialReactTable,
@@ -19,6 +22,8 @@ interface Participant {
   profileImage: string | null;
   joinedAt: any;
   days: Record<string, number | null>;
+  isPinned?: boolean;
+  pinnedUntil?: number;
 }
 
 interface RankedParticipant extends Participant {
@@ -46,12 +51,13 @@ const RANK_COLORS = [
   "from-amber-600 to-amber-700",     // 3rd
 ];
 
-function ParticipantProfile({ address, fallbackName, isMe, isPodium, rank }: {
+function ParticipantProfile({ address, fallbackName, isMe, isPodium, rank, isPinned }: {
   address: string,
   fallbackName: string,
   isMe: boolean,
   isPodium: boolean,
-  rank: number
+  rank: number,
+  isPinned?: boolean
 }) {
   const [profile, setProfile] = useState<{ username: string | null, profileImage: string | null } | null>(null);
 
@@ -88,10 +94,11 @@ function ParticipantProfile({ address, fallbackName, isMe, isPodium, rank }: {
           </span>
         )}
       </div>
-      <div className="min-w-0">
+      <div className="min-w-0 flex items-center gap-1.5">
         <div className={`text-xs font-semibold truncate max-w-[120px] ${isMe ? "text-blue-400" : "text-foreground"}`}>
           {username}
         </div>
+        {isPinned && <Pin size={10} className="text-amber-400 fill-amber-400/50" />}
       </div>
       {isMe && (
         <span className="ml-1 text-[8px] bg-blue-400/20 text-blue-400 font-bold px-1.5 py-0.5 rounded-full shrink-0 lowercase border border-blue-400/30">
@@ -115,6 +122,8 @@ export function GameLeaderboard({
   gameId,
 }: GameLeaderboardProps) {
   const { address } = useAccount();
+  const { pinUser } = useGame();
+  const [isPinning, setIsPinning] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const myAddress = address?.toLowerCase();
 
@@ -172,9 +181,17 @@ export function GameLeaderboard({
         const s = p.days?.[`day${d}`];
         return typeof s === "number" && s >= minDailySteps;
       }).length;
-      return { ...p, totalSteps, daysHitTarget, rank: 0 };
+
+      // Check if pin is still valid (casting to strict boolean to fix TS error)
+      const hasValidPin = !!(p.isPinned && p.pinnedUntil && p.pinnedUntil > Date.now());
+
+      return { ...p, totalSteps, daysHitTarget, rank: 0, isPinned: hasValidPin };
     })
-    .sort((a, b) => b.totalSteps - a.totalSteps || b.daysHitTarget - a.daysHitTarget)
+    .sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return b.totalSteps - a.totalSteps || b.daysHitTarget - a.daysHitTarget;
+    })
     .map((p, i) => ({ ...p, rank: i + 1 }));
 
   const shortAddr = (addr: string) =>
@@ -247,6 +264,7 @@ export function GameLeaderboard({
             isMe={row.original.walletAddress?.toLowerCase() === myAddress}
             isPodium={row.original.rank <= 3}
             rank={row.original.rank}
+            isPinned={row.original.isPinned}
         />
       ),
     },
@@ -431,6 +449,30 @@ export function GameLeaderboard({
               <div className="px-4 py-2 rounded-2xl border text-[10px] font-bold lowercase flex items-center gap-2 bg-white/5 border-white/10 text-white/40">
                 ended
               </div>
+            )}
+            {myAddress && participants.some(p => {
+              const isMe = p.walletAddress.toLowerCase() === myAddress;
+              const hasActivePin = p.isPinned && p.pinnedUntil && p.pinnedUntil > Date.now();
+              return isMe && !hasActivePin;
+            }) && (
+              <button 
+                onClick={async () => {
+                  if (isPinning) return;
+                  try {
+                    setIsPinning(true);
+                    await pinUser(gameId);
+                  } catch(e) {
+                    alert("Failed to pin. Consult console.");
+                  } finally {
+                    setIsPinning(false);
+                  }
+                }}
+                disabled={isPinning}
+                className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-500 text-[10px] font-bold tracking-tight transition-all active:scale-95 flex items-center gap-1.5 shadow-sm ml-auto mr-1 disabled:opacity-50"
+              >
+                {isPinning ? <Loader2 size={12} className="animate-spin" /> : <Pin size={12} />}
+                Pin Me (200 Move)
+              </button>
             )}
           </div>
           <div className="grid grid-cols-4 gap-2 md:gap-4 py-4 border-t border-white/10">

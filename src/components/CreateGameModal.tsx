@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { X, Calendar, Trophy, Coins, Footprints, Image as ImageIcon, Lock, Globe, Loader2, ShieldCheck } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { X, Calendar, Trophy, Footprints, Lock, Globe, Loader2, ShieldCheck, Upload, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface CreateGameModalProps {
@@ -11,80 +11,109 @@ interface CreateGameModalProps {
 export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [sponsorLogoFile, setSponsorLogoFile] = useState<File | null>(null);
-  
+  const [sponsorLogoPreview, setSponsorLogoPreview] = useState<string | null>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const sponsorLogoInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState({
     name: "",
-    deposit: "1.0",
-    min_steps: "5000",
+    deposit: "10",
+    min_steps: "3000",
     start_date: "",
     end_date: "",
-    duration_days: "7",
+    duration_days: 0,
     is_public: true,
     code: "",
     sponsor_name: "",
-    sponsor_amount: "0.0",
-    sponsor_image_url: "",
+    sponsor_amount: "0",
   });
 
   const uploadToPinata = async (file: File) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const token = import.meta.env.VITE_PINATA_JWT;
-      if (!token) throw new Error("Pinata JWT not found.");
-      
-      const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-      });
-      if (!res.ok) throw new Error(`Pinata error: ${res.status}`);
-      const data = await res.json();
-      return `https://gateway.pinata.cloud/ipfs/${data.IpfsHash}`;
-    } catch (error) {
-      console.error("Failed to upload to Pinata:", error);
-      throw error;
+    const fd = new FormData();
+    fd.append("file", file);
+    const token = import.meta.env.VITE_PINATA_JWT;
+    if (!token) throw new Error("Pinata JWT not found.");
+    const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: fd,
+    });
+    if (!res.ok) throw new Error(`Pinata error: ${res.status}`);
+    const data = await res.json();
+    return `https://gateway.pinata.cloud/ipfs/${data.IpfsHash}`;
+  };
+
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
     }
   };
 
+  const handleSponsorLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSponsorLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setSponsorLogoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const computeDays = (start: string, end: string) => {
+    if (!start || !end) return 0;
+    const s = new Date(start);
+    const e = new Date(end);
+    const diff = Math.ceil((e.getTime() - s.getTime()) / (1000 * 3600 * 24));
+    return Math.max(0, diff + 1);
+  };
+
+  const deposit = parseFloat(formData.deposit) || 0;
+  const sponsorAmt = parseFloat(formData.sponsor_amount) || 0;
+  const protocolFee = 10; // 10 MOVE game fee
+  const sponsorProtocolCut = sponsorAmt > 0 ? +(sponsorAmt * 0.2).toFixed(2) : 0;
+  const totalCost = deposit + protocolFee + sponsorAmt;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.start_date) return alert("Please select a start date.");
+    if (formData.duration_days <= 0) return alert("End date must be after start date.");
     setIsSubmitting(true);
     try {
       let image_url = "";
       let sponsor_image_url = "";
-      
-      if (imageFile) {
-        image_url = await uploadToPinata(imageFile);
-      }
-      if (sponsorLogoFile) {
-        sponsor_image_url = await uploadToPinata(sponsorLogoFile);
-      }
+      if (imageFile) image_url = await uploadToPinata(imageFile);
+      if (sponsorLogoFile) sponsor_image_url = await uploadToPinata(sponsorLogoFile);
 
-
-      // Calculate start time as Midnight UTC of the selected date
-      // We use the date string "YYYY-MM-DD" and create a UTC date at 00:00:00
       const [year, month, day] = formData.start_date.split("-").map(Number);
       const startUtc = Date.UTC(year, month - 1, day, 0, 0, 0);
-      const start = Math.floor(startUtc / 1000);
-      
-      // Calculate end time based on start + (days * 86400)
-      // This ensures the competition ends exactly at Midnight UTC on the day after the last day
-      const durationSeconds = parseInt(formData.duration_days) * 86400;
-      const end = start + durationSeconds;
+      const start_time = Math.floor(startUtc / 1000);
+      const no_of_days = formData.duration_days;
 
       await onSubmit({
-        ...formData,
+        name: formData.name,
         image_url,
+        deposit_amount: deposit,
+        min_daily_steps: parseInt(formData.min_steps),
+        start_time,
+        no_of_days,
+        is_public: formData.is_public,
+        join_code: formData.code,
+        sponsor_name: formData.sponsor_name,
+        sponsor_amount: sponsorAmt,
         sponsor_image_url,
-        deposit: parseFloat(formData.deposit),
-        min_steps: parseInt(formData.min_steps),
-        sponsor_amount: parseFloat(formData.sponsor_amount),
-        start: start,
-        end: end,
-        no_of_days: formData.duration_days,
+        required_nft: "0x0000000000000000000000000000000000000000000000000000000000000000",
       });
+
+      // Reset form
+      setFormData({ name: "", deposit: "10", min_steps: "3000", start_date: "", end_date: "", duration_days: 0, is_public: true, code: "", sponsor_name: "", sponsor_amount: "0" });
+      setImageFile(null); setImagePreview(null);
+      setSponsorLogoFile(null); setSponsorLogoPreview(null);
       onClose();
     } catch (err) {
       console.error(err);
@@ -98,271 +127,271 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
             onClick={onClose}
           />
 
           <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 15 }}
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 15 }}
-            className="relative w-full max-w-xl bg-background rounded-2xl shadow-none overflow-hidden flex flex-col max-h-[90vh] border border-border"
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative w-full max-w-2xl bg-[#0d1117] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-white/10"
           >
             {/* Header */}
-            <div className="p-6 border-b border-border flex justify-between items-center bg-muted shrink-0">
+            <div className="px-6 py-5 border-b border-white/10 flex justify-between items-center bg-white/5 shrink-0">
               <div>
-                <h2 className="text-xl font-normal text-foreground lowercase">launch competition</h2>
-                <p className="text-muted-foreground text-sm font-normal lowercase">configure a new on-chain walking battle.</p>
+                <h2 className="text-lg font-bold text-white tracking-tight">Launch Competition</h2>
+                <p className="text-white/40 text-xs mt-0.5">Configure a new on-chain walking battle</p>
               </div>
-              <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-muted/80 flex items-center justify-center transition-colors">
-                <X size={18} className="text-muted-foreground" />
+              <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                <X size={16} className="text-white/60" />
               </button>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5">
-              <div className="grid grid-cols-2 gap-5">
-                <div className="col-span-2">
-                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">competition name</label>
-                  <div className="relative">
-                    <Trophy className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
-                    <input 
-                      required
-                      type="text"
-                      placeholder="e.g. arctic sprint 2024"
-                      className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground placeholder:text-muted-foreground/40"
-                      value={formData.name}
-                      onChange={e => setFormData({...formData, name: e.target.value})}
-                    />
-                  </div>
-                </div>
+            <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 no-scrollbar">
+              <div className="p-6 space-y-6">
 
-                <div className="col-span-2">
-                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">banner image</label>
-                  <div className="relative flex items-center">
-                    <ImageIcon className="absolute left-4 text-muted-foreground/60 pointer-events-none" size={16} />
-                    <input 
-                      type="file"
-                      accept="image/*,video/*"
-                      className="w-full h-11 pl-11 py-2 pr-4 bg-muted border border-border rounded-xl text-xs text-foreground file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-normal file:bg-accent/10 file:text-accent hover:file:bg-accent/20 transition-all cursor-pointer"
-                      onChange={e => {
-                        if (e.target.files && e.target.files[0]) {
-                          setImageFile(e.target.files[0]);
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">entry deposit (move)</label>
-                  <div className="relative">
-                    <Coins className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
-                    <input 
-                      required
-                      type="number"
-                      step="0.1"
-                      className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground"
-                      value={formData.deposit}
-                      onChange={e => setFormData({...formData, deposit: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">min daily steps</label>
-                  <div className="relative">
-                    <Footprints className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
-                    <input 
-                      required
-                      type="number"
-                      className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground"
-                      value={formData.min_steps}
-                      onChange={e => setFormData({...formData, min_steps: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">start date</label>
-                  <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
-                    <input 
-                      required
-                      type="date"
-                      className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground"
-                      value={formData.start_date}
-                      onChange={e => {
-                        const start = e.target.value;
-                        if (start && formData.end_date) {
-                          const s = new Date(start);
-                          const e_date = new Date(formData.end_date);
-                          const diff = Math.ceil((e_date.getTime() - s.getTime()) / (1000 * 3600 * 24));
-                          setFormData({...formData, start_date: start, duration_days: Math.max(0, diff + 1).toString()});
-                        } else {
-                          setFormData({...formData, start_date: start});
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">end date</label>
-                  <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
-                    <input 
-                      required
-                      type="date"
-                      min={formData.start_date}
-                      className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground"
-                      value={formData.end_date}
-                      onChange={e => {
-                        const end = e.target.value;
-                        if (formData.start_date && end) {
-                          const s = new Date(formData.start_date);
-                          const e_date = new Date(end);
-                          const diff = Math.ceil((e_date.getTime() - s.getTime()) / (1000 * 3600 * 24));
-                          setFormData({...formData, end_date: end, duration_days: (diff + 1).toString()});
-                        } else {
-                          setFormData({...formData, end_date: end});
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {formData.start_date && (
-                  <div className="col-span-2 p-4 bg-muted/30 border border-border rounded-2xl flex items-center justify-between group transition-all hover:bg-accent/5 hover:border-accent/20">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-background border border-border flex items-center justify-center text-accent shadow-sm group-hover:scale-110 transition-transform">
-                        <Footprints size={18} />
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground lowercase font-normal">competition duration</p>
-                        <p className="text-sm text-foreground font-medium lowercase">
-                          {formData.duration_days || "—"} days
-                        </p>
-                      </div>
+                {/* Banner + Name row */}
+                <div className="grid grid-cols-[1fr_auto] gap-4 items-start">
+                  <div>
+                    <label className="text-[11px] font-medium text-white/40 mb-2 block uppercase tracking-widest">Competition Name</label>
+                    <div className="relative">
+                      <Trophy className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" size={15} />
+                      <input
+                        required type="text" placeholder="e.g. Arctic Sprint 2025"
+                        className="w-full h-11 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/20 outline-none focus:border-blue-500/50 focus:bg-white/8 transition-all"
+                        value={formData.name}
+                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                      />
                     </div>
-                    {formData.end_date && (
-                      <div className="text-right">
-                        <p className="text-[10px] text-muted-foreground lowercase font-normal">time window (utc)</p>
-                        <p className="text-[10px] text-accent font-medium">12:00 AM — 12:00 AM</p>
-                      </div>
-                    )}
+                  </div>
+
+                  {/* Banner Upload */}
+                  <div>
+                    <label className="text-[11px] font-medium text-white/40 mb-2 block uppercase tracking-widest">Banner</label>
+                    <div
+                      onClick={() => bannerInputRef.current?.click()}
+                      className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/40 flex items-center justify-center cursor-pointer overflow-hidden transition-all"
+                    >
+                      {imagePreview ? (
+                        <img src={imagePreview} alt="Banner" className="w-full h-full object-cover" />
+                      ) : (
+                        <Upload size={16} className="text-white/30" />
+                      )}
+                    </div>
+                    <input ref={bannerInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleBannerChange} />
+                  </div>
+                </div>
+
+                {/* Deposit + Steps */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] font-medium text-white/40 mb-2 block uppercase tracking-widest">Entry Deposit (MOVE)</label>
+                    <div className="relative">
+                      <img src="https://explorer.movementnetwork.xyz/logo.png" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" alt="MOVE" />
+                      <input
+                        required type="number" step="1" min="1"
+                        className="w-full h-11 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-blue-500/50 transition-all"
+                        value={formData.deposit}
+                        onChange={e => setFormData({ ...formData, deposit: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-medium text-white/40 mb-2 block uppercase tracking-widest">Min Daily Steps</label>
+                    <div className="relative">
+                      <Footprints className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" size={15} />
+                      <input
+                        required type="number" step="500"
+                        className="w-full h-11 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-blue-500/50 transition-all"
+                        value={formData.min_steps}
+                        onChange={e => setFormData({ ...formData, min_steps: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dates */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] font-medium text-white/40 mb-2 block uppercase tracking-widest">Start Date</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none z-10" size={15} />
+                      <input
+                        required type="date"
+                        className="w-full h-11 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-blue-500/50 transition-all [color-scheme:dark]"
+                        value={formData.start_date}
+                        onChange={e => {
+                          const start = e.target.value;
+                          const days = computeDays(start, formData.end_date);
+                          setFormData({ ...formData, start_date: start, duration_days: days });
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-medium text-white/40 mb-2 block uppercase tracking-widest">End Date</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none z-10" size={15} />
+                      <input
+                        required type="date" min={formData.start_date}
+                        className="w-full h-11 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-blue-500/50 transition-all [color-scheme:dark]"
+                        value={formData.end_date}
+                        onChange={e => {
+                          const end = e.target.value;
+                          const days = computeDays(formData.start_date, end);
+                          setFormData({ ...formData, end_date: end, duration_days: days });
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Duration pill */}
+                {formData.duration_days > 0 && (
+                  <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                    <Footprints size={14} className="text-blue-400 shrink-0" />
+                    <span className="text-sm text-blue-300 font-medium">{formData.duration_days} day competition</span>
+                    <span className="ml-auto text-xs text-blue-400/60">Midnight UTC → Midnight UTC</span>
                   </div>
                 )}
 
+                {/* Visibility */}
                 <div>
-                  <label className="text-[11px] font-normal text-muted-foreground mb-2 block ml-1 lowercase">visibility</label>
-                  <div className="flex gap-4 items-center h-11">
-                    <label className="flex items-center gap-2 cursor-pointer group text-foreground">
-                      <input 
-                        type="radio" 
-                        name="visibility" 
-                        checked={formData.is_public === true}
-                        onChange={() => setFormData({...formData, is_public: true, code: ""})}
-                        className="w-4 h-4 text-accent border-border bg-card focus:ring-accent/20 cursor-pointer"
-                      />
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-accent transition-colors lowercase">
-                        <Globe size={14} /> public
-                      </div>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer group text-foreground">
-                      <input 
-                        type="radio" 
-                        name="visibility" 
-                        checked={formData.is_public === false}
-                        onChange={() => setFormData({...formData, is_public: false})}
-                        className="w-4 h-4 text-accent border-border bg-card focus:ring-accent/20 cursor-pointer"
-                      />
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-accent transition-colors lowercase">
-                        <Lock size={14} /> private
-                      </div>
-                    </label>
+                  <label className="text-[11px] font-medium text-white/40 mb-3 block uppercase tracking-widest">Visibility</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { val: true, icon: <Globe size={14} />, label: "Public", desc: "Anyone can join" },
+                      { val: false, icon: <Lock size={14} />, label: "Private", desc: "Invite code required" },
+                    ].map(opt => (
+                      <button
+                        key={String(opt.val)} type="button"
+                        onClick={() => setFormData({ ...formData, is_public: opt.val, code: "" })}
+                        className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
+                          formData.is_public === opt.val
+                            ? "bg-blue-500/15 border-blue-500/40 text-blue-300"
+                            : "bg-white/5 border-white/10 text-white/50 hover:bg-white/8"
+                        }`}
+                      >
+                        {opt.icon}
+                        <div>
+                          <div className="text-xs font-semibold">{opt.label}</div>
+                          <div className="text-[10px] opacity-60">{opt.desc}</div>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
                 {!formData.is_public && (
-                  <div className="col-span-2">
-                    <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">join code</label>
+                  <div>
+                    <label className="text-[11px] font-medium text-white/40 mb-2 block uppercase tracking-widest">Join Code</label>
                     <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" size={15} />
                       <input
-                        required={!formData.is_public}
-                        type="text"
-                        placeholder="secret code"
-                        className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent transition-all text-xs text-foreground placeholder:text-muted-foreground/40"
+                        required={!formData.is_public} type="text" placeholder="Secret code"
+                        className="w-full h-11 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/20 outline-none focus:border-blue-500/50 transition-all"
                         value={formData.code}
-                        onChange={e => setFormData({...formData, code: e.target.value})}
+                        onChange={e => setFormData({ ...formData, code: e.target.value })}
                       />
                     </div>
                   </div>
                 )}
 
-                <div className="col-span-2 pt-4 border-t border-border">
+                {/* Sponsor Section */}
+                <div className="pt-4 border-t border-white/10">
                   <div className="flex items-center gap-2 mb-4">
-                    <ShieldCheck size={16} className="text-accent/60" />
-                    <h4 className="text-[11px] font-normal text-muted-foreground lowercase">initial protocol sponsor (optional)</h4>
+                    <ShieldCheck size={15} className="text-amber-400/60" />
+                    <span className="text-[11px] font-medium text-white/40 uppercase tracking-widest">Sponsorship (optional)</span>
+                    <div className="ml-auto flex items-center gap-1 text-[10px] text-amber-400/60">
+                      <Info size={11} />
+                      20% protocol fee
+                    </div>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-5">
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">sponsor name</label>
-                      <input 
-                        type="text"
-                        placeholder="e.g. movement labs"
-                        className="w-full h-11 px-4 bg-muted border border-border rounded-xl outline-none focus:border-accent text-xs text-foreground placeholder:text-muted-foreground/40"
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[11px] text-white/30 mb-1.5 block">Sponsor Name</label>
+                      <input
+                        type="text" placeholder="e.g. Movement Labs"
+                        className="w-full h-11 px-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/20 outline-none focus:border-amber-500/40 transition-all"
                         value={formData.sponsor_name}
-                        onChange={e => setFormData({...formData, sponsor_name: e.target.value})}
+                        onChange={e => setFormData({ ...formData, sponsor_name: e.target.value })}
                       />
                     </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">sponsor logo</label>
-                      <div className="relative flex items-center">
-                        <ImageIcon className="absolute left-4 text-muted-foreground/60 pointer-events-none" size={16} />
-                        <input 
-                          type="file"
-                          accept="image/*"
-                          className="w-full h-11 pl-11 py-2 pr-4 bg-muted border border-border rounded-xl text-xs text-foreground file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-normal file:bg-accent/10 file:text-accent hover:file:bg-accent/20 transition-all cursor-pointer"
-                          onChange={e => {
-                            if (e.target.files && e.target.files[0]) {
-                              setSponsorLogoFile(e.target.files[0]);
-                            }
-                          }}
-                        />
+                    <div>
+                      <label className="text-[11px] text-white/30 mb-1.5 block">Sponsor Logo</label>
+                      <div
+                        onClick={() => sponsorLogoInputRef.current?.click()}
+                        className="w-full h-11 px-4 bg-white/5 border border-white/10 rounded-xl flex items-center gap-2 cursor-pointer hover:border-amber-500/30 transition-all"
+                      >
+                        {sponsorLogoPreview ? (
+                          <img src={sponsorLogoPreview} alt="Logo" className="w-6 h-6 rounded-full object-cover" />
+                        ) : (
+                          <Upload size={14} className="text-white/30" />
+                        )}
+                        <span className="text-xs text-white/30">{sponsorLogoFile?.name || "Upload logo"}</span>
                       </div>
+                      <input ref={sponsorLogoInputRef} type="file" accept="image/*" className="hidden" onChange={handleSponsorLogoChange} />
                     </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="text-[11px] font-normal text-muted-foreground mb-1.5 block ml-1 lowercase">sponsor deposit (move)</label>
+                    <div className="col-span-2">
+                      <label className="text-[11px] text-white/30 mb-1.5 block">Sponsor Deposit (MOVE)</label>
                       <div className="relative">
-                        <Coins className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
-                        <input 
-                          type="number"
-                          step="0.1"
-                          placeholder="0.0"
-                          className="w-full h-11 pl-11 pr-4 bg-muted border border-border rounded-xl outline-none focus:border-accent text-xs text-foreground placeholder:text-muted-foreground/40"
+                        <img src="https://explorer.movementnetwork.xyz/logo.png" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" alt="MOVE" />
+                        <input
+                          type="number" step="1" min="0" placeholder="0"
+                          className="w-full h-11 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-amber-500/40 transition-all"
                           value={formData.sponsor_amount}
-                          onChange={e => setFormData({...formData, sponsor_amount: e.target.value})}
+                          onChange={e => setFormData({ ...formData, sponsor_amount: e.target.value })}
                         />
                       </div>
                     </div>
+                    {sponsorAmt > 0 && (
+                      <div className="col-span-2 grid grid-cols-2 gap-2 text-xs">
+                        <div className="p-2.5 bg-amber-500/5 border border-amber-500/15 rounded-lg">
+                          <div className="text-amber-400/50 text-[10px] mb-0.5">Protocol cut (20%)</div>
+                          <div className="text-amber-400 font-semibold">{sponsorProtocolCut} MOVE</div>
+                        </div>
+                        <div className="p-2.5 bg-green-500/5 border border-green-500/15 rounded-lg">
+                          <div className="text-green-400/50 text-[10px] mb-0.5">To prize pool (80%)</div>
+                          <div className="text-green-400 font-semibold">{+(sponsorAmt * 0.8).toFixed(2)} MOVE</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Cost Breakdown */}
+                <div className="p-4 bg-white/3 border border-white/8 rounded-xl space-y-2">
+                  <div className="text-[10px] text-white/30 uppercase tracking-widest mb-3">Cost Breakdown</div>
+                  {[
+                    { label: "Entry deposit (returned if game completes)", value: `${deposit} MOVE` },
+                    { label: "Protocol game fee (non-refundable)", value: `${protocolFee} MOVE` },
+                    ...(sponsorAmt > 0 ? [{ label: "Sponsor deposit", value: `${sponsorAmt} MOVE` }] : []),
+                  ].map(item => (
+                    <div key={item.label} className="flex justify-between text-xs">
+                      <span className="text-white/40">{item.label}</span>
+                      <span className="text-white/80 font-medium">{item.value}</span>
+                    </div>
+                  ))}
+                  <div className="pt-2 border-t border-white/10 flex justify-between text-sm font-semibold">
+                    <span className="text-white/60">Total</span>
+                    <span className="text-white">{totalCost} MOVE</span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4 shrink-0">
-                <button 
+              {/* Submit */}
+              <div className="px-6 pb-6 shrink-0">
+                <button
+                  type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 lowercase"
+                  className="w-full py-3.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-500 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : null}
-                  {isSubmitting ? "launching..." : "launch competition"}
+                  {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Launching…</> : "🚀 Launch Competition"}
                 </button>
               </div>
             </form>
