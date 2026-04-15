@@ -22,6 +22,8 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     updateSecondaryAdmin,
     updateOracleAddress,
     claimAdminFees,
+    claimPinFees,
+    getPinTreasuryBalance,
     deleteGame,
     refresh,
   } = useGame();
@@ -33,7 +35,19 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const [isUpdatingOracle, setIsUpdatingOracle] = React.useState(false);
   const [claimingGameId, setClaimingGameId] = React.useState<string | null>(null);
   const [deletingGameId, setDeletingGameId] = React.useState<string | null>(null);
+  const [isClaimingPin, setIsClaimingPin] = React.useState(false);
+  const [pinBalance, setPinBalance] = React.useState<number>(0);
+  const [pinWithdrawAmount, setPinWithdrawAmount] = React.useState<string>("");
   const [toast, setToast] = React.useState<{ msg: string; type: "success" | "error" } | null>(null);
+
+  const fetchPinBalance = React.useCallback(async () => {
+    const bal = await getPinTreasuryBalance();
+    setPinBalance(bal);
+  }, [getPinTreasuryBalance]);
+
+  React.useEffect(() => {
+    if (isOpen) fetchPinBalance();
+  }, [isOpen, fetchPinBalance]);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
     setToast({ msg, type });
@@ -82,10 +96,11 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   };
 
   const sections = [
-    { key: "fees", label: `Fee Collection (${endedGames.length} ended)` },
-    { key: "games", label: `Game Management (${activeGames.length} active)` },
-    { key: "treasury", label: "Treasury Wallet" },
-    { key: "oracle", label: "Oracle Authority" },
+    { key: "fees", label: `Game Fees (${endedGames.length} ended)` },
+    { key: "pins", label: "Premium Pin Treasury" },
+    { key: "games", label: `Manage Games (${activeGames.length} active)` },
+    { key: "treasury", label: "Recovery Wallet" },
+    { key: "oracle", label: "Oracle Control" },
   ];
 
   return (
@@ -187,29 +202,89 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
 
                             {/* Fee Collection */}
                             {key === "fees" && (
-                              endedGames.length === 0 ? (
-                                <p className="text-xs text-white/30 py-2">No ended games to collect from.</p>
-                              ) : (
-                                endedGames.map(game => (
-                                  <div key={game.id} className="flex items-center gap-3 p-3 bg-black/30 rounded-xl border border-white/10">
-                                    {game.image_url && (
-                                      <img src={game.image_url} alt={game.name} className="w-8 h-8 rounded-full object-cover shrink-0 border border-white/10" />
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                      <div className="text-xs font-xirod text-white truncate">{game.name}</div>
-                                      <div className="text-[10px] text-white/40">{game.participants_count} players</div>
+                              <>
+                                {endedGames.length === 0 ? (
+                                  <p className="text-xs text-white/30 py-2">No ended games to collect from.</p>
+                                ) : (
+                                  endedGames.map(game => (
+                                    <div key={game.id} className="flex items-center gap-3 p-3 bg-black/30 rounded-xl border border-white/10">
+                                      {game.image_url && (
+                                        <img src={game.image_url} alt={game.name} className="w-8 h-8 rounded-full object-cover shrink-0 border border-white/10" />
+                                      )}
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-xs font-xirod text-white truncate">{game.name}</div>
+                                        <div className="text-[10px] text-white/40">{game.participants_count} players</div>
+                                      </div>
+                                      <button
+                                        onClick={() => { playClick(); handleClaimFees(game.id); }}
+                                        disabled={claimingGameId === game.id}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-[11px] font-xirod rounded-lg transition-all active:scale-95 disabled:opacity-50 shrink-0"
+                                      >
+                                        {claimingGameId === game.id ? <Loader2 size={11} className="animate-spin" /> : <Coins size={11} />}
+                                        Claim
+                                      </button>
                                     </div>
-                                    <button
-                                      onClick={() => { playClick(); handleClaimFees(game.id); }}
-                                      disabled={claimingGameId === game.id}
-                                      className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-[11px] font-xirod rounded-lg transition-all active:scale-95 disabled:opacity-50 shrink-0"
+                                  ))
+                                )}
+                              </>
+                            )}
+
+                            {/* Premium Pins */}
+                            {key === "pins" && (
+                              <div className="space-y-4">
+                                <div className="p-4 bg-amber-400/10 border border-amber-400/20 rounded-2xl flex items-center justify-between">
+                                  <div className="flex flex-col">
+                                    <span className="text-[9px] font-xirod text-amber-400/60 uppercase tracking-widest mb-1">Treasury Balance</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xl font-bold text-amber-400 tabular-nums">{pinBalance.toLocaleString()}</span>
+                                      <span className="text-[10px] font-xirod text-amber-400">MOVE</span>
+                                    </div>
+                                  </div>
+                                  <div className="w-10 h-10 rounded-full bg-amber-400/10 flex items-center justify-center text-amber-400">
+                                    <Coins size={20} />
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <div className="relative">
+                                    <input
+                                      type="number"
+                                      placeholder="Amount to withdraw"
+                                      className="w-full px-4 h-12 bg-black/30 border border-white/10 rounded-xl text-xs font-mono text-white placeholder:text-white/20 outline-none focus:border-amber-400/30 transition-all pr-16"
+                                      value={pinWithdrawAmount}
+                                      onChange={e => setPinWithdrawAmount(e.target.value)}
+                                    />
+                                    <button 
+                                      onClick={() => setPinWithdrawAmount(pinBalance.toString())}
+                                      className="absolute right-2 top-2 px-2.5 py-1.5 bg-amber-400/10 hover:bg-amber-400/20 text-amber-400 text-[9px] font-xirod rounded-lg transition-all"
                                     >
-                                      {claimingGameId === game.id ? <Loader2 size={11} className="animate-spin" /> : <Coins size={11} />}
-                                      Claim
+                                      MAX
                                     </button>
                                   </div>
-                                ))
-                              )
+                                  
+                                  <button
+                                    onClick={async () => {
+                                      const amt = parseFloat(pinWithdrawAmount);
+                                      if (isNaN(amt) || amt <= 0) return showToast("Enter valid amount", "error");
+                                      playClick();
+                                      setIsClaimingPin(true);
+                                      try {
+                                        await claimPinFees(amt);
+                                        showToast(`Successfully withdrawn ${amt} MOVE`);
+                                        setPinWithdrawAmount("");
+                                        fetchPinBalance();
+                                      } catch { showToast("Withdrawal failed", "error"); }
+                                      finally { setIsClaimingPin(false); }
+                                    }}
+                                    disabled={isClaimingPin || !pinWithdrawAmount}
+                                    style={{ ...buttonStyle, filter: "hue-rotate(320deg) saturate(1.5)" }}
+                                    className="w-full h-14 text-black font-xirod text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-40"
+                                  >
+                                    {isClaimingPin ? <Loader2 size={12} className="animate-spin" /> : <Coins size={12} />}
+                                    Withdraw MOVE
+                                  </button>
+                                </div>
+                              </div>
                             )}
 
                             {/* Game Management */}

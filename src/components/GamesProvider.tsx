@@ -24,6 +24,8 @@ interface GamesContextType {
   updateOracleAddress: (newOracle: string) => Promise<any>;
   claimAdminFees: (gameId: string) => Promise<any>;
   pinUser: (gameId: string) => Promise<any>;
+  claimPinFees: (amount: number) => Promise<any>;
+  getPinTreasuryBalance: () => Promise<number>;
 }
 
 const GamesContext = createContext<GamesContextType | undefined>(undefined);
@@ -379,7 +381,7 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       // 1. Call the contract
       const response = await signAndSubmitTransaction({
         payload: {
-          function: `${MODULE_ADDRESS}::leaderboard_pins::pin_user`,
+          function: `${MODULE_ADDRESS}::puffer_pins::pin_user`,
           functionArguments: [gameId],
         }
       });
@@ -403,6 +405,43 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const claimPinFees = async (amount: number) => {
+    if (!rawAddress) return;
+    try {
+      // amount is in MOVE, converted to 8 decimals
+      const octas = Math.floor(amount * 100_000_000);
+      const response = await signAndSubmitTransaction({
+        payload: {
+          function: `${MODULE_ADDRESS}::puffer_pins::claim_treasury`,
+          functionArguments: [octas.toString()],
+        }
+      });
+      const hash = detectHash(response);
+      if (hash) await aptosClient.waitForTransaction({ transactionHash: hash });
+      else await new Promise(r => setTimeout(r, 2000));
+      return response;
+    } catch (err) {
+      console.error("Error claiming pin fees:", err);
+      throw err;
+    }
+  };
+
+  const getPinTreasuryBalance = async (): Promise<number> => {
+    try {
+      const result = await aptosClient.view({
+        payload: {
+          function: `${MODULE_ADDRESS}::puffer_pins::get_treasury_balance`,
+          functionArguments: [],
+        }
+      });
+      // Returns value in octas, convert to MOVE (8 decimals)
+      return (Number(result[0]) || 0) / 100_000_000;
+    } catch (err) {
+      console.error("Error fetching pin treasury balance:", err);
+      return 0;
+    }
+  };
+
   useEffect(() => {
     fetchGames();
   }, [fetchGames]);
@@ -422,7 +461,9 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       updateSecondaryAdmin,
       updateOracleAddress,
       claimAdminFees,
-      pinUser
+      pinUser,
+      claimPinFees,
+      getPinTreasuryBalance
     }}>
       {children}
     </GamesContext.Provider>
