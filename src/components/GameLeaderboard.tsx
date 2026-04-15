@@ -471,7 +471,8 @@ export function GameLeaderboard({
                 className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-500 text-[10px] font-bold tracking-tight transition-all active:scale-95 flex items-center gap-1.5 shadow-sm ml-auto mr-1 disabled:opacity-50"
               >
                 {isPinning ? <Loader2 size={12} className="animate-spin" /> : <Pin size={12} />}
-                Pin Me (200 Move)
+                <span className="hidden sm:inline">Pin Me (200 Move)</span>
+                <span className="sm:hidden">Pin (200)</span>
               </button>
             )}
           </div>
