@@ -1,12 +1,16 @@
 import { useEffect, useState, useMemo } from "react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
+import { FlickeringGrid } from "./FlickeringGrid";
 
 import { db } from "../lib/firebase";
 import { collection, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore";
 import { useAccount } from "@razorlabs/razorkit";
+import { useGame } from "../hooks/useGame";
 import {
   Users,
   Trophy,
-  Pin
+  Pin,
+  Info
 } from "lucide-react";
 import {
   MaterialReactTable,
@@ -120,11 +124,15 @@ export function GameLeaderboard({
   gameId,
 }: GameLeaderboardProps) {
   const { address } = useAccount();
+  const { pinUser, games } = useGame();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const myAddress = address?.toLowerCase();
+  const me = participants.find(p => p.walletAddress?.toLowerCase() === myAddress);
+  const hasActivePin = !!(me?.isPinned && me?.pinnedUntil && me?.pinnedUntil > Date.now());
 
   useEffect(() => {
     if (!gameId) return;
+    setParticipants([]); // Reset to avoid stale check across games
     const ref = collection(db, "games", gameId, "participants");
     const unsub = onSnapshot(ref, {
       next: async (snap) => {
@@ -228,9 +236,36 @@ export function GameLeaderboard({
         },
       },
       Cell: ({ cell, row }) => (
-        <span className={`text-[12px] font-bold ${(row.original.walletAddress?.toLowerCase() === myAddress) ? 'text-blue-400' : 'text-foreground'}`}>
-          {cell.getValue<number>()}
-        </span>
+        <div style={{ position: 'static' }}>
+          {row.original.isPinned && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              pointerEvents: 'none',
+              zIndex: 0,
+              opacity: 0.8,
+              overflow: 'hidden'
+            }}>
+              <FlickeringGrid
+                squareSize={3}
+                gridGap={5}
+                flickerChance={0.08}
+                color="251, 191, 36"
+                maxOpacity={0.3}
+                style={{ width: '100%', height: '100%' }}
+              />
+            </div>
+          )}
+          <span
+            style={{ position: 'relative', zIndex: 1 }}
+            className={`text-[12px] font-bold ${(row.original.walletAddress?.toLowerCase() === myAddress) ? 'text-blue-400' : 'text-foreground'}`}
+          >
+            {cell.getValue<number>()}
+          </span>
+        </div>
       ),
     },
     {
@@ -371,6 +406,7 @@ export function GameLeaderboard({
         backgroundColor: 'transparent',
       },
     },
+
     renderEmptyRowsFallback: () => (
       <div className="py-24 flex flex-col items-center justify-center gap-2">
         <Users size={32} className="text-muted-foreground/30" />
@@ -426,7 +462,62 @@ export function GameLeaderboard({
               </div>
             </div>
 
-            {status === 'upcoming' && (
+            <div className="flex items-center gap-3">
+              {/* Premium Pin Action Pill */}
+              {!hasActivePin && (
+                <div className="flex items-center gap-1 bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/20 rounded-full pl-0.5 pr-1.5 duration-300">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        onClick={async () => {
+                          const idToPin = games.find(g => g.name === gameName || g.id === gameId)?.id;
+                          if (!idToPin) return alert("Game not found.");
+                          try {
+                            await pinUser(idToPin);
+                          } catch (e: any) {
+                            const msg = e.message || "";
+                            if (msg.includes("simulation")) {
+                              alert("Transaction simulation failed. Please ensure you have enough MOVE tokens for the 200 MOVE fee.");
+                            } else {
+                              alert("Failed to pin. Please try again.");
+                            }
+                          }
+                        }}
+                        className="flex items-center gap-1 p-2 rounded-full text-amber-500 hover:scale-105 transition-all text-[10px] font-bold"
+                      >
+                        <Pin size={16} fill="currentColor" className="fill-amber-500/20" />
+                        <span className="tracking-tighter whitespace-nowrap ml-1 font-xirod text-[8px]">
+                          Pin Me
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-[#1c1602] border-amber-500/20 text-amber-200 text-xs max-w-[200px] p-3 z-[3000]">
+                      <div className="flex flex-col gap-1 text-left">
+                        <div className="font-bold flex items-center gap-1 uppercase tracking-widest text-[10px]">
+                          <Pin size={12} className="text-amber-500" /> Premium Pin
+                        </div>
+                        <p className="opacity-70 leading-relaxed lowercase text-[11px]">
+                          Boost your game to the top of the leaderboard for 3 full weeks.
+                        </p>
+                        <div className="mt-1 text-amber-400 font-xirod text-[8px]">Cost: 200 MOVE</div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="cursor-help opacity-40 hover:opacity-100 transition-opacity p-1 pr-2">
+                        <Info size={11} className="text-amber-200" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-black border-white/10 text-[9px] text-white/60 lowercase z-[3000]">
+                      Promoted games get 10x more visibility.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              )}
+
+              {status === 'upcoming' && (
               <div className="px-4 py-2 rounded-2xl border text-[10px] font-bold lowercase flex items-center gap-2 bg-blue-400/10 border-blue-400/20 text-blue-400">
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                 upcoming
@@ -450,7 +541,8 @@ export function GameLeaderboard({
               </div>
             )}
           </div>
-          <div className="grid grid-cols-4 gap-2 md:gap-4 py-4 border-t border-white/10">
+        </div>
+        <div className="grid grid-cols-4 gap-2 md:gap-4 py-4 border-t border-white/10">
             <div className="flex flex-col gap-1 text-center border-r border-white/10 px-1">
               <span className="text-[9px] md:text-[10px] text-white/40 lowercase whitespace-nowrap">entry fee</span>
               <div className="flex items-center justify-center gap-1 md:gap-1.5 h-[24px]">
@@ -481,7 +573,7 @@ export function GameLeaderboard({
 
         {/* Nested Table Card Area */}
         <div className="flex-1 min-h-[400px] bg-white/5">
-          <div className="overflow-x-auto scrollbar-hide">
+          <div className="overflow-x-auto">
             <MaterialReactTable table={table} />
           </div>
         </div>

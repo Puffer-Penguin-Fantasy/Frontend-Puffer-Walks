@@ -46,24 +46,35 @@
 
 .pinned-row-beam {
   position: relative;
-  border: 1px solid rgba(251, 191, 36, 0.2) !important;
+  outline: 1px solid rgba(251, 191, 36, 0.25);
+  outline-offset: -1px;
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.12), 0 0 12px rgba(251, 191, 36, 0.06);
+  background-color: rgba(251, 191, 36, 0.03) !important;
 }
 
-.pinned-row-beam::after {
+.pinned-row-beam td {
+  overflow: visible;
+}
+
+/* Left-edge amber pulse bar */
+.pinned-row-beam td:first-child::before {
   content: "";
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border: 2px solid transparent;
-  border-radius: inherit;
-  mask-image: linear-gradient(transparent, transparent), linear-gradient(white, white);
-  mask-clip: padding-box, border-box;
-  mask-composite: intersect;
-  background: linear-gradient(to left, #f59e0b, #fbbf24, transparent) border-box;
-  animation: border-beam 15s infinite linear;
-  offset-anchor: 90% 50%;
-  offset-path: rect(0 100% 100% 0 round 200px);
+  left: 0;
+  top: 10%;
+  height: 80%;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, transparent, #f59e0b, transparent);
+  animation: pinned-glow-sweep 3s ease-in-out infinite;
+  z-index: 2;
 }
+
+@keyframes pinned-glow-sweep {
+  0%, 100% { opacity: 0.4; transform: scaleY(0.8); }
+  50%       { opacity: 1;   transform: scaleY(1);   }
+}
+
 
 @layer base {
   * {
