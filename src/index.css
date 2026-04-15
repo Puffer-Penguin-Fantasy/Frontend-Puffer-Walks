@@ -34,6 +34,35 @@
   --radius-lg: 1rem;
   --radius-md: 0.5rem;
   --radius-sm: 0.25rem;
+
+  --animate-border-beam: border-beam var(--duration) infinite linear;
+
+  @keyframes border-beam {
+    100% {
+      offset-distance: 100%;
+    }
+  }
+}
+
+.pinned-row-beam {
+  position: relative;
+  border: 1px solid rgba(251, 191, 36, 0.2) !important;
+}
+
+.pinned-row-beam::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px solid transparent;
+  border-radius: inherit;
+  mask-image: linear-gradient(transparent, transparent), linear-gradient(white, white);
+  mask-clip: padding-box, border-box;
+  mask-composite: intersect;
+  background: linear-gradient(to left, #f59e0b, #fbbf24, transparent) border-box;
+  animation: border-beam 15s infinite linear;
+  offset-anchor: 90% 50%;
+  offset-path: rect(0 100% 100% 0 round 200px);
 }
 
 @layer base {

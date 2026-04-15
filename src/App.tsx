@@ -6,6 +6,7 @@ import Callback from './pages/Callback'
 import GoogleCallback from './pages/GoogleCallback'
 import LeaderboardPage from './pages/Leaderboard'
 import { NavigationDock } from './components/NavigationDock'
+import { TooltipProvider } from './components/ui/tooltip'
 
 
 function AppRoutes() {
@@ -32,8 +33,10 @@ function AppRoutes() {
 function App() {
 	return (
 		<BrowserRouter>
-			<AppRoutes />
-			<NavigationDock />
+			<TooltipProvider delayDuration={0}>
+				<AppRoutes />
+				<NavigationDock />
+			</TooltipProvider>
 		</BrowserRouter>
 	)
 }

@@ -329,8 +329,10 @@ export function GameLeaderboard({
     },
     muiTableBodyRowProps: ({ row }) => {
       const isMe = row.original.walletAddress?.toLowerCase() === myAddress;
+      const isPinned = row.original.isPinned;
       return {
         hover: false,
+        className: isPinned ? 'pinned-row-beam' : '',
         sx: {
           backgroundColor: isMe ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
           '&:hover': {
@@ -339,6 +341,7 @@ export function GameLeaderboard({
           border: 'none !important',
           transition: 'none',
           color: 'var(--color-foreground)',
+          position: 'relative',
         },
       };
     },
