@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useRef, useEff
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { db } from "../lib/firebase";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import type { Game } from "../types/game";
 
 const MODULE_ADDRESS = "0xbe0da9a00793b7935eadc9064d5f5e4a531fe3deb598fa7f8fa0637402e93177";

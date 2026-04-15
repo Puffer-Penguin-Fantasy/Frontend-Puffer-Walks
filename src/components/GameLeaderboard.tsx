@@ -3,12 +3,10 @@ import { useEffect, useState, useMemo } from "react";
 import { db } from "../lib/firebase";
 import { collection, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore";
 import { useAccount } from "@razorlabs/razorkit";
-import { useGame } from "../hooks/useGame";
 import {
   Users,
   Trophy,
-  Pin,
-  Loader2
+  Pin
 } from "lucide-react";
 import {
   MaterialReactTable,
@@ -122,8 +120,6 @@ export function GameLeaderboard({
   gameId,
 }: GameLeaderboardProps) {
   const { address } = useAccount();
-  const { pinUser } = useGame();
-  const [isPinning, setIsPinning] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const myAddress = address?.toLowerCase();
 
@@ -449,31 +445,6 @@ export function GameLeaderboard({
               <div className="px-4 py-2 rounded-2xl border text-[10px] font-bold lowercase flex items-center gap-2 bg-white/5 border-white/10 text-white/40">
                 ended
               </div>
-            )}
-            {myAddress && participants.some(p => {
-              const isMe = p.walletAddress.toLowerCase() === myAddress;
-              const hasActivePin = p.isPinned && p.pinnedUntil && p.pinnedUntil > Date.now();
-              return isMe && !hasActivePin;
-            }) && (
-              <button 
-                onClick={async () => {
-                  if (isPinning) return;
-                  try {
-                    setIsPinning(true);
-                    await pinUser(gameId);
-                  } catch(e) {
-                    alert("Failed to pin. Consult console.");
-                  } finally {
-                    setIsPinning(false);
-                  }
-                }}
-                disabled={isPinning}
-                className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-500 text-[10px] font-bold tracking-tight transition-all active:scale-95 flex items-center gap-1.5 shadow-sm ml-auto mr-1 disabled:opacity-50"
-              >
-                {isPinning ? <Loader2 size={12} className="animate-spin" /> : <Pin size={12} />}
-                <span className="hidden sm:inline">Pin Me (200 Move)</span>
-                <span className="sm:hidden">Pin (200)</span>
-              </button>
             )}
           </div>
           <div className="grid grid-cols-4 gap-2 md:gap-4 py-4 border-t border-white/10">

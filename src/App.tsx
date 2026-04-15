@@ -5,6 +5,7 @@ import SettingsPage from './pages/Settings'
 import Callback from './pages/Callback'
 import GoogleCallback from './pages/GoogleCallback'
 import LeaderboardPage from './pages/Leaderboard'
+import { NavigationDock } from './components/NavigationDock'
 
 
 function AppRoutes() {
@@ -32,6 +33,7 @@ function App() {
 	return (
 		<BrowserRouter>
 			<AppRoutes />
+			<NavigationDock />
 		</BrowserRouter>
 	)
 }
