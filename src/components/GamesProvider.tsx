@@ -25,6 +25,7 @@ interface GamesContextType {
   claimAdminFees: (gameId: string) => Promise<any>;
   pinUser: (gameId: string) => Promise<any>;
   claimPinFees: (amount: number) => Promise<any>;
+  claimLegacyPinFees: () => Promise<any>;
   getPinTreasuryBalance: () => Promise<number>;
 }
 
@@ -426,6 +427,30 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const claimLegacyPinFees = async () => {
+    if (!rawAddress) return;
+    try {
+      // 1. Try to claim from 'leaderboard_pins'
+      await signAndSubmitTransaction({
+        payload: {
+          function: `${MODULE_ADDRESS}::leaderboard_pins::claim_treasury`,
+          functionArguments: [],
+        }
+      });
+      // 2. Try to claim from 'pinned'
+      await signAndSubmitTransaction({
+        payload: {
+          function: `${MODULE_ADDRESS}::pinned::claim_treasury`,
+          functionArguments: [],
+        }
+      });
+      return true;
+    } catch (err) {
+      console.error("Error sweeping legacy fees:", err);
+      throw err;
+    }
+  };
+
   const getPinTreasuryBalance = async (): Promise<number> => {
     try {
       const result = await aptosClient.view({
@@ -463,6 +488,7 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       claimAdminFees,
       pinUser,
       claimPinFees,
+      claimLegacyPinFees,
       getPinTreasuryBalance
     }}>
       {children}

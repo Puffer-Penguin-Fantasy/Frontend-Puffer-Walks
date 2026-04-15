@@ -23,6 +23,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     updateOracleAddress,
     claimAdminFees,
     claimPinFees,
+    claimLegacyPinFees,
     getPinTreasuryBalance,
     deleteGame,
     refresh,
@@ -36,6 +37,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const [claimingGameId, setClaimingGameId] = React.useState<string | null>(null);
   const [deletingGameId, setDeletingGameId] = React.useState<string | null>(null);
   const [isClaimingPin, setIsClaimingPin] = React.useState(false);
+  const [isSweeping, setIsSweeping] = React.useState(false);
   const [pinBalance, setPinBalance] = React.useState<number>(0);
   const [pinWithdrawAmount, setPinWithdrawAmount] = React.useState<string>("");
   const [toast, setToast] = React.useState<{ msg: string; type: "success" | "error" } | null>(null);
@@ -284,6 +286,27 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                     Withdraw MOVE
                                   </button>
                                 </div>
+
+                                <div className="pt-4 border-t border-white/5">
+                                  <button
+                                    onClick={async () => {
+                                      playClick();
+                                      setIsSweeping(true);
+                                      try {
+                                        await claimLegacyPinFees();
+                                        showToast("Legacy fees recovered!");
+                                        fetchPinBalance();
+                                      } catch { showToast("No legacy fees found to sweep."); }
+                                      finally { setIsSweeping(false); }
+                                    }}
+                                    disabled={isSweeping}
+                                    className="w-full py-2.5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 text-[9px] font-xirod text-white/30 hover:text-white/50 transition-all flex items-center justify-center gap-2"
+                                  >
+                                    {isSweeping ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                                    Sweep Legacy Fee Vaults
+                                  </button>
+                                </div>
+
                               </div>
                             )}
 
