@@ -1,6 +1,9 @@
 import React, { useState, useRef } from "react";
 import { X, Calendar, Trophy, Footprints, Lock, Globe, Loader2, ShieldCheck, Upload, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { db } from "../lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
+// useAccount removed to fix build error
 
 interface CreateGameModalProps {
   isOpen: boolean;
@@ -95,7 +98,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
       const start_time = Math.floor(startUtc / 1000);
       const no_of_days = formData.duration_days;
 
-      await onSubmit({
+      const result = await onSubmit({
         name: formData.name,
         image_url,
         deposit_amount: deposit,
@@ -109,6 +112,27 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
         sponsor_image_url,
         required_nft: "0x0000000000000000000000000000000000000000000000000000000000000000",
       });
+
+      // Saving metadata to Firestore for instant discovery
+      const gameId = result?.game_id;
+      if (gameId) {
+        await setDoc(doc(db, "games", String(gameId)), {
+          id: String(gameId),
+          name: formData.name,
+          image_url,
+          startTime: start_time,
+          endTime: start_time + (no_of_days * 86400),
+          numDays: no_of_days,
+          minSteps: parseInt(formData.min_steps),
+          deposit: deposit,
+          isPublic: formData.is_public,
+          joinCode: formData.code, // Storing code for easier discovery as requested
+          sponsorName: formData.sponsor_name,
+          sponsorImageUrl: sponsor_image_url,
+          sponsorAmount: sponsorAmt,
+          createdAt: Date.now(),
+        }, { merge: true });
+      }
 
       // Reset form
       setFormData({ name: "", deposit: "10", min_steps: "3000", start_date: "", end_date: "", duration_days: 0, is_public: true, code: "", sponsor_name: "", sponsor_amount: "0" });
@@ -157,7 +181,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                 {/* Banner + Name row */}
                 <div className="grid grid-cols-[1fr_auto] gap-4 items-start">
                   <div>
-                    <label className="text-[11px] font-medium text-white/40 mb-2 block uppercase tracking-widest">Competition Name</label>
+                    <label className="text-[11px] font-medium text-white/40 mb-2 block tracking-widest">Competition Name</label>
                     <div className="relative">
                       <Trophy className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" size={15} />
                       <input
@@ -189,7 +213,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                 {/* Deposit + Steps */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[11px] font-medium text-white/40 mb-2 block uppercase tracking-widest">Entry Deposit (MOVE)</label>
+                    <label className="text-[11px] font-medium text-white/40 mb-2 block tracking-widest">Entry Deposit (MOVE)</label>
                     <div className="relative">
                       <img src="https://explorer.movementnetwork.xyz/logo.png" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" alt="MOVE" />
                       <input

@@ -105,6 +105,17 @@ export const ABI = {
             ]
         },
         {
+            "name": "game_not_empty",
+            "visibility": "public",
+            "is_entry": false,
+            "is_view": false,
+            "generic_type_params": [],
+            "params": [],
+            "return": [
+                "u64"
+            ]
+        },
+        {
             "name": "game_not_found",
             "visibility": "public",
             "is_entry": false,

@@ -236,7 +236,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                               <div className="space-y-4">
                                 <div className="p-4 bg-amber-400/10 border border-amber-400/20 rounded-2xl flex items-center justify-between">
                                   <div className="flex flex-col">
-                                    <span className="text-[9px] font-xirod text-amber-400/60 uppercase tracking-widest mb-1">Treasury Balance</span>
+                                    <span className="text-[9px] font-bold text-amber-400/60 tracking-widest mb-1">Treasury Balance</span>
                                     <div className="flex items-center gap-2">
                                       <span className="text-xl font-bold text-amber-400 tabular-nums">{pinBalance.toLocaleString()}</span>
                                       <span className="text-[10px] font-xirod text-amber-400">MOVE</span>
@@ -430,7 +430,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
 
                 {/* Admin address info */}
                 <div className="pt-4">
-                  <p className="text-[10px] font-xirod text-white/20 mb-1">Primary Admin</p>
+                  <p className="text-[10px] font-bold text-white/20 mb-1">Primary Admin Address</p>
                   <p className="text-[10px] font-mono text-white/30 break-all">{adminAddress || "—"}</p>
                 </div>
               </div>

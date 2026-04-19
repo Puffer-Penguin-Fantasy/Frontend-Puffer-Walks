@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
-import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { db } from "../lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, collection, getDocs } from "firebase/firestore";
 import type { Game } from "../types/game";
 
-const MODULE_ADDRESS = "0xbe0da9a00793b7935eadc9064d5f5e4a531fe3deb598fa7f8fa0637402e93177";
-const aptosConfig = new AptosConfig({ network: Network.CUSTOM, fullnode: "https://testnet.movementnetwork.xyz/v1" });
-const aptosClient = new Aptos(aptosConfig);
+import { aptosClient } from "../GameOnchain/movement_service/movement-client";
+import { MODULE_ADDRESS } from "../GameOnchain/movement_service/constants";
+const CONTRACT_NAME = "puffer_walks";
 
 interface GamesContextType {
   games: Game[];
@@ -16,7 +15,7 @@ interface GamesContextType {
   oracleAddress: string;
   isLoading: boolean;
   refresh: () => Promise<Game[]>;
-  joinGame: (gameId: string, joinCode?: string) => Promise<any>;
+  joinGame: (gameId: string) => Promise<any>;
   claimRewards: (gameId: string) => Promise<any>;
   createGame: (params: any) => Promise<any>;
   deleteGame: (gameId: string) => Promise<any>;
@@ -82,12 +81,15 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       setAdminAddress((resource as any).admin);
       setSecondaryAdminAddress((resource as any).secondary_admin);
       setOracleAddress((resource as any).oracle);
-
+ 
       const gamesResource = (resource as any).games;
       let rawGames = [];
       if (Array.isArray(gamesResource)) rawGames = gamesResource;
       else if (gamesResource?.inline_vec) rawGames = gamesResource.inline_vec;
       else if (gamesResource?.data) rawGames = gamesResource.data;
+
+      const fbSnap = await getDocs(collection(db, "games"));
+      const fbGamesMap = fbSnap.docs.reduce((acc: any, d) => ({ ...acc, [d.id]: d.data() }), {});
 
       const results = (rawGames as any[]).map((item: any) => {
         const g = item.value || item;
@@ -100,24 +102,27 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
         }
 
         const name = typeof g.name === "object" ? g.name.value : (g.name || "");
+        const fbData = fbGamesMap[gameId];
+        
         return {
           id: gameId,
-          name,
-          image_url: typeof g.image_url === "object" ? g.image_url.value : (g.image_url || ""),
-          slug: name.toLowerCase().replace(/ /g, "-"),
+          name: fbData?.name || name,
+          image_url: fbData?.image_url || (typeof g.image_url === "object" ? g.image_url.value : (g.image_url || null)),
+          slug: (fbData?.name || name).toLowerCase().replace(/ /g, "-"),
           deposit_amount: g.deposit_amount || "0",
           min_daily_steps: g.min_daily_steps || "0",
           start_time: g.start_time || "0",
           end_time: g.end_time || "0",
-          is_public: g.is_public,
-          is_sponsored: (g.sponsors?.[0]?.amount || "0") !== "0",
+          is_public: g.is_public !== undefined ? g.is_public : true,
+          is_sponsored: (g.sponsored_vault?.value || "0") !== "0",
           prize_pool: g.prize_vault?.value || "0",
           sponsored_pool: g.sponsored_vault?.value || "0",
+          sponsor_fee_pool: g.sponsor_fee_vault?.value || "0",
           participants_count: Array.isArray(g.participants) ? g.participants.length : (g.participants?.value?.length || 0),
           participants: Array.isArray(g.participants) ? g.participants : (g.participants?.value || []),
-          sponsor_name: g.sponsors?.[0]?.name?.value || g.sponsors?.[0]?.name || "",
-          sponsor_amount: g.sponsors?.[0]?.amount || "0",
-          sponsor_image_url: g.sponsors?.[0]?.image_url?.value || g.sponsors?.[0]?.image_url || "",
+          sponsor_name: fbData?.sponsorName || (g.sponsors?.[0]?.name?.value || g.sponsors?.[0]?.name || null),
+          sponsor_amount: fbData?.sponsorAmount || g.sponsors?.[0]?.amount || "0",
+          sponsor_image_url: fbData?.sponsorImageUrl || (g.sponsors?.[0]?.image_url?.value || g.sponsors?.[0]?.image_url || null),
           no_of_days: g.no_of_days || "0",
           is_paused: g.is_paused || false,
           required_nft: typeof g.required_nft === "object" ? g.required_nft.value : (g.required_nft || "0x0"),
@@ -127,7 +132,8 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
           day_winners_count: Array.isArray(g.day_winners_count) ? g.day_winners_count : (g.day_winners_count?.value || []),
           perfect_winners_count: g.perfect_winners_count || "0",
           admin_claimed: g.admin_claimed || false,
-          join_code_hash: hexToBytes(typeof g.join_code === "object" ? g.join_code.value : (g.join_code || "")),
+          join_code_hash: hexToBytes(typeof g.join_code_hash === "object" ? g.join_code_hash.value : (g.join_code_hash || "")),
+          join_code: fbData?.joinCode || "",
         };
       });
 
@@ -215,16 +221,15 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
     return null;
   };
 
-  const joinGame = async (gameId: string, joinCode: string = "") => {
+  const joinGame = async (gameId: string) => {
     if (!rawAddress) return;
+    await fetchGames(); // Refresh state before join to ensure ID is valid
     try {
-      const hashedCode = await hashString(joinCode);
       const response = await signAndSubmitTransaction({
         payload: {
           function: `${MODULE_ADDRESS}::game::join_game`,
           functionArguments: [
-            gameId, 
-            hashedCode, 
+            gameId.toString(), 
             "0x0000000000000000000000000000000000000000000000000000000000000000"
           ],
         }
@@ -286,34 +291,44 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
   const createGame = async (params: any) => {
     if (!rawAddress) return;
     try {
-      const hashedCode = await hashString(params.join_code || "");
       const response = await signAndSubmitTransaction({
         payload: {
           function: `${MODULE_ADDRESS}::game::create_game`,
           functionArguments: [
-            Array.from(new TextEncoder().encode(params.name)),
-            Array.from(new TextEncoder().encode(params.image_url)),
+            params.name,
+            params.image_url,
             Math.floor(params.deposit_amount * 100_000_000),
             params.min_daily_steps,
             params.start_time,
-            params.start_time + (params.no_of_days * 86400),
+            params.start_time + (params.no_of_days * 86400), // Correct: pass end_time
             params.is_public,
-            params.required_nft || "0x0",
-            hashedCode,
+            params.required_nft || "0x0000000000000000000000000000000000000000000000000000000000000000",
             Math.floor((params.sponsor_amount || 0) * 100_000_000),
-            Array.from(new TextEncoder().encode(params.sponsor_name || "")),
-            Array.from(new TextEncoder().encode(params.sponsor_image_url || ""))
+            params.sponsor_name || "",
+            params.sponsor_image_url || ""
           ],
         }
       });
       const hash = detectHash(response);
+      let gameIdFromEvent = null;
       if (hash) {
-        await aptosClient.waitForTransaction({ transactionHash: hash });
+        const result = await aptosClient.waitForTransaction({ transactionHash: hash });
+        // Try to find the GameCreated event and extract game_id
+        if ((result as any).events) {
+          const creationEvent = (result as any).events.find((e: any) => 
+            e.type.includes(`${CONTRACT_NAME}::game::GameCreated`) || 
+            e.type.includes("GameCreated")
+          );
+          if (creationEvent) {
+            gameIdFromEvent = creationEvent.data.game_id;
+            console.log("Found game_id from event:", gameIdFromEvent);
+          }
+        }
       } else {
         await new Promise(r => setTimeout(r, 2000));
       }
       await fetchGames();
-      return response;
+      return { ...response, game_id: gameIdFromEvent };
     } catch (err) {
       console.error("Error creating game:", err);
       throw err;

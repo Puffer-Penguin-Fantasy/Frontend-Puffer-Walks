@@ -1,7 +1,7 @@
 import { useAccount } from "@razorlabs/razorkit"
 import { WalletPanel } from "@/components/WalletPanel"
 import React from "react"
-import { Trophy, Plus } from "lucide-react"
+import { Trophy, Plus, Loader2 } from "lucide-react"
 import { useGame } from "../hooks/useGame"
 import { GameCard } from "../components/GameCard"
 import { GameCardSkeleton } from "../components/GameCardSkeleton"
@@ -103,12 +103,19 @@ export default function SettingsPage() {
                         .filter(game => {
                             const isSearchTermLongEnough = discoverCode.length > 2;
                             
-                            // Hash Match Logic: compare the local search hash to the blockchain's stored hash
-                            const isCodeMatch = isSearchTermLongEnough && 
+                            // 1. Plaintext Match (from Firebase metadata)
+                            const isPlaintextMatch = isSearchTermLongEnough && 
+                                                    game.join_code && 
+                                                    game.join_code.trim().toLowerCase() === discoverCode.trim().toLowerCase();
+
+                            // 2. Hash Match Logic: compare the local search hash to the blockchain's stored hash
+                            const isHashMatch = isSearchTermLongEnough && 
                                                discoverCodeHash && 
                                                Array.isArray(game.join_code_hash) &&
                                                game.join_code_hash.length === 32 &&
                                                game.join_code_hash.every((v, i) => v === discoverCodeHash[i]);
+
+                            const isCodeMatch = isPlaintextMatch || isHashMatch;
 
                             const isNameMatch = isSearchTermLongEnough && game.name.toLowerCase().includes(discoverCode.toLowerCase());
                             const isJoined = game.participants?.some(p => standardize(p) === standardize(address));
@@ -124,21 +131,46 @@ export default function SettingsPage() {
                                 key={game.id} 
                                 game={game} 
                                 globalJoinCode={discoverCode}
-                                onJoin={(id, code) => joinGame(id, code)}
+                                onJoin={(id) => joinGame(id)}
                                 onClaim={() => claimRewards(game.id)}
                             />
                         ))
                     ) : (
-                        <div className="col-span-full py-20 flex flex-col items-center justify-center bg-card rounded-[40px] border border-dashed border-border">
-                            <Trophy className="w-16 h-16 text-muted/30 mb-6" />
-                            <h3 className="text-2xl font-normal text-muted-foreground mb-2 lowercase tracking-tighter">No Active Battles</h3>
-                            <p className="text-muted-foreground/60 text-sm mb-6 lowercase">Games created on Movement Network will appear here.</p>
-                            <button 
-                                onClick={() => { playClick(); refreshGames(); }}
-                                className="px-6 py-2 rounded-full bg-muted border border-border text-foreground text-sm font-medium hover:bg-muted/80 transition-colors"
-                            >
-                                Reload List
-                            </button>
+                        <div className="col-span-full py-24 flex flex-col items-center justify-center bg-white/5 backdrop-blur-xl rounded-[48px] border border-white/10 relative overflow-hidden group shadow-2xl">
+                            {/* Decorative background glow */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full group-hover:bg-blue-500/20 transition-all duration-700" />
+                            
+                            <div className="relative z-10 flex flex-col items-center text-center px-6">
+                                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-inner">
+                                    <Trophy className="w-10 h-10 text-blue-400/60" />
+                                </div>
+                                
+                                <h3 className="text-3xl font-light text-white mb-3 tracking-tight">
+                                    No Active Battles
+                                </h3>
+                                <p className="text-white/40 text-sm mb-10 max-w-sm leading-relaxed">
+                                    The movement network is waiting for its next champion. Be the first to launch a new competition or reload to find others.
+                                </p>
+                                
+                                <div className="flex flex-col sm:flex-row gap-4 items-center">
+                                    <button 
+                                        onClick={() => { playClick(); refreshGames(); }}
+                                        className="px-8 py-3 rounded-full bg-white/5 border border-white/10 text-white text-sm font-medium hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 flex items-center gap-2"
+                                    >
+                                        <Loader2 className="w-4 h-4 text-white/40" />
+                                        Reload List
+                                    </button>
+                                    
+                                    {isAdmin && (
+                                        <button 
+                                            onClick={() => { playClick(); setIsCreateModalOpen(true); }}
+                                            className="px-8 py-3 rounded-full bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                                        >
+                                            Launch New Game
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>

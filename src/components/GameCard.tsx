@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 interface GameCardProps {
   game: Game;
-  onJoin: (id: string, code: string) => void;
+  onJoin: (id: string, code?: string) => void;
   onClaim: (id: string) => void;
   globalJoinCode?: string;
 }
@@ -79,7 +79,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
     setIsJoining(true);
     try {
       playClick();
-      await onJoin(game.id, globalJoinCode || "");
+      await onJoin(game.id);
     } catch (err) {
       console.error("Join failed:", err);
     } finally {
@@ -151,7 +151,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
               <button
                 onClick={handleJoin}
                 disabled={(!game.is_public && !globalJoinCode) || isJoining}
-                className={`flex items-center justify-center gap-1.5 px-6 py-2 rounded-xl text-[11px] font-bold uppercase tracking-tight transition-all active:scale-95 ${
+                className={`flex items-center justify-center gap-1.5 px-6 py-2 rounded-xl text-[11px] font-bold tracking-tight transition-all active:scale-95 ${
                   (!game.is_public && !globalJoinCode) || isJoining
                     ? "bg-white/5 text-white/20 cursor-not-allowed"
                     : "bg-white text-black hover:bg-white/90"
@@ -226,7 +226,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
         )}
         
         <div className="flex flex-col items-center min-w-0">
-          <span className="text-[9px] text-white/40 font-normal lowercase tracking-tight mb-0.5 whitespace-nowrap">entry fee</span>
+          <span className="text-[9px] text-white/40 font-normal tracking-tight mb-0.5 whitespace-nowrap">Entry Fee</span>
           <div className="flex items-center gap-1">
              <span className="text-sm font-bold text-white">
                {parseFloat(depositInMove).toFixed(0)}
@@ -244,7 +244,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
           <span className="text-sm font-medium text-white">{parseInt(game.min_daily_steps) >= 1000 ? `${parseInt(game.min_daily_steps)/1000}k` : game.min_daily_steps}</span>
         </div>
         <div className="flex flex-col items-center border-l border-white/10 pl-1">
-          <span className="text-[9px] text-white/40 font-normal lowercase tracking-tight mb-0.5">players</span>
+          <span className="text-[9px] text-white/40 font-normal tracking-tight mb-0.5">Players</span>
           <span className="text-sm font-medium text-white">
             {game.participants?.length || game.participants_count || 0}
           </span>

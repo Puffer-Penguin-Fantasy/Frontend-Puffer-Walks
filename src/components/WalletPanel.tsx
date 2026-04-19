@@ -10,6 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { db } from "../lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useSound } from "../hooks/useSound";
+import { MODULE_ADDRESS } from "../GameOnchain/movement_service/constants";
+
 interface WalletPanelProps {
     isOpen: boolean;
     onClose: () => void;
@@ -22,7 +24,7 @@ import userAvatar from "../assets/user-avatar.png";
 
 export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     const { address: rawAddress } = useAccount();
-    const { disconnect } = useWallet();
+    const { disconnect, signAndSubmitTransaction } = useWallet();
     const { playClick } = useSound();
     const [expandedKey, setExpandedKey] = useState<string | null>("profile");
     
@@ -35,7 +37,9 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
         username: initialUsername, 
         profileImage: initialImage, 
         isLoading: profileLoading,
-        refresh: refreshProfile
+        refresh: refreshProfile,
+        hasOnChainProfile,
+        hasFirebaseProfile
     } = useProfile(address);
 
     const [profileName, setProfileName] = useState("Puffer User");
@@ -148,6 +152,34 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
         }
     };
 
+    const saveOnChain = async () => {
+        if (!address) return;
+        setIsSaving(true);
+        try {
+            let finalImageUrl = profileImage;
+            if (profileImage && profileImage.startsWith('data:image')) {
+                finalImageUrl = await uploadToPinata(profileImage);
+            }
+
+            const response = await signAndSubmitTransaction({
+                payload: {
+                    function: `${MODULE_ADDRESS}::profile::create_profile`,
+                    functionArguments: [profileName, finalImageUrl || ""],
+                }
+            });
+            
+            if (response) {
+                console.log("Profile saved on-chain!");
+                await saveChanges(); // Also sync to firebase
+                await refreshProfile();
+            }
+        } catch (err: any) {
+            console.error("Error saving on-chain:", err);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const toggleEdit = () => {
         if (!arcticData.hasNFT && !isEditing) return;
         if (isEditing) {
@@ -213,19 +245,29 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                             </div>
 
                             <div className="absolute top-7 right-8 z-10 flex flex-col items-end gap-2">
+                                {!isEditing && hasFirebaseProfile && !hasOnChainProfile && (
+                                    <button 
+                                        onClick={() => { playClick(); saveOnChain(); }}
+                                        disabled={isSaving}
+                                        className="text-[9px] font-xirod bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition-all flex items-center gap-2 animate-pulse shadow-lg shadow-blue-600/40 border border-blue-400/30"
+                                    >
+                                        {isSaving ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />}
+                                        Notarize on Movement
+                                    </button>
+                                )}
                                 <button 
                                     onClick={() => { playClick(); toggleEdit(); }}
                                     disabled={isSaving || isLoading || (!arcticData.hasNFT && !isEditing)}
                                     className={`text-[10px] font-xirod transition-all px-4 py-1.5 rounded-full border flex items-center gap-2 ${
                                         isEditing 
-                                            ? "bg-primary text-primary-foreground border-primary" 
+                                            ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
                                             : !arcticData.hasNFT 
                                                 ? "bg-black/50 border-white/10 text-white/40 cursor-not-allowed" 
                                                 : "bg-black/20 border-white/20 text-white hover:bg-black/40"
                                     }`}
                                 >
                                     {isSaving ? <Loader2 size={12} className="animate-spin" /> : null}
-                                    {isEditing ? "Save Changes" : arcticData.hasNFT ? "Edit Account" : "NFT Holder Only"}
+                                    {isEditing ? "Save Local" : arcticData.hasNFT ? "Edit Account" : "NFT Holder Only"}
                                 </button>
                             </div>
 
@@ -345,8 +387,8 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                         </div>
                                                     ) : (
                                                         <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4">
-                                                            <div className="w-12 h-12 rounded-lg bg-black/20 flex items-center justify-center text-white/40 font-bold text-xs uppercase">
-                                                                NFT
+                                                            <div className="w-12 h-12 rounded-lg bg-black/20 flex items-center justify-center text-white/40 font-bold text-xs">
+                                                                Nft
                                                             </div>
                                                             <div>
                                                                 <div className="text-sm font-bold text-white">No NFT Found</div>
@@ -365,7 +407,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                         onClick={() => { playClick(); setExpandedKey(expandedKey === "connections" ? null : "connections"); }}
                                         className="w-full flex items-center justify-between py-7 group"
                                     >
-                                        <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "connections" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
+                                        <span className={`text-[12px] font-bold transition-all duration-300 ${expandedKey === "connections" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
                                             Connections
                                         </span>
                                         <motion.div

@@ -1,4 +1,4 @@
-export const MODULE_ADDRESS = "0xbe0da9a00793b7935eadc9064d5f5e4a531fe3deb598fa7f8fa0637402e93177";
+export const MODULE_ADDRESS = "0x69af3b1dc99b3aeadc1f6708bf07ef14b890fea64b57febccd58e0ab3656abdb";
 
 export const CONTRACT_MODULE = "puffer_walks";
 

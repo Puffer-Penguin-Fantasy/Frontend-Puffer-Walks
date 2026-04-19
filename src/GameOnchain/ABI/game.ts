@@ -21,6 +21,33 @@ export const ABI = {
             "return": []
         },
         {
+            "name": "batch_record_daily_steps",
+            "visibility": "public",
+            "is_entry": true,
+            "is_view": false,
+            "generic_type_params": [],
+            "params": [
+                "&signer",
+                "vector<address>",
+                "u64",
+                "u64",
+                "vector<u64>"
+            ],
+            "return": []
+        },
+        {
+            "name": "cancel_game",
+            "visibility": "public",
+            "is_entry": true,
+            "is_view": false,
+            "generic_type_params": [],
+            "params": [
+                "&signer",
+                "u64"
+            ],
+            "return": []
+        },
+        {
             "name": "claim_admin_fees",
             "visibility": "public",
             "is_entry": true,
@@ -60,7 +87,6 @@ export const ABI = {
                 "u64",
                 "bool",
                 "address",
-                "vector<u8>",
                 "u64",
                 "0x1::string::String",
                 "0x1::string::String"
@@ -90,6 +116,7 @@ export const ABI = {
             "return": [
                 "u64",
                 "u64",
+                "u64",
                 "u64"
             ]
         },
@@ -102,7 +129,6 @@ export const ABI = {
             "params": [
                 "&signer",
                 "u64",
-                "vector<u8>",
                 "address"
             ],
             "return": []
@@ -238,12 +264,8 @@ export const ABI = {
                     "type": "address"
                 },
                 {
-                    "name": "join_code_hash",
-                    "type": "vector<u8>"
-                },
-                {
                     "name": "sponsors",
-                    "type": "vector<0xbe0da9a00793b7935eadc9064d5f5e4a531fe3deb598fa7f8fa0637402e93177::game::Sponsor>"
+                    "type": `vector<${MODULE_ADDRESS}::game::Sponsor>`
                 },
                 {
                     "name": "prize_vault",
@@ -255,6 +277,10 @@ export const ABI = {
                 },
                 {
                     "name": "admin_fee_vault",
+                    "type": "0x1::coin::Coin<0x1::aptos_coin::AptosCoin>"
+                },
+                {
+                    "name": "sponsor_fee_vault",
                     "type": "0x1::coin::Coin<0x1::aptos_coin::AptosCoin>"
                 },
                 {
@@ -369,7 +395,7 @@ export const ABI = {
             "fields": [
                 {
                     "name": "games",
-                    "type": "vector<0xbe0da9a00793b7935eadc9064d5f5e4a531fe3deb598fa7f8fa0637402e93177::game::Game>"
+                    "type": `vector<${MODULE_ADDRESS}::game::Game>`
                 },
                 {
                     "name": "admin",
@@ -414,9 +440,9 @@ export const ABI = {
             "is_native": false,
             "is_event": false,
             "abilities": [
+                "store",
                 "copy",
-                "drop",
-                "store"
+                "drop"
             ],
             "generic_type_params": [],
             "fields": [
@@ -497,7 +523,7 @@ export const ABI = {
             "fields": [
                 {
                     "name": "games_status",
-                    "type": "0x1::table::Table<u64, 0xbe0da9a00793b7935eadc9064d5f5e4a531fe3deb598fa7f8fa0637402e93177::game::GameProgress>"
+                    "type": `0x1::table::Table<u64, ${MODULE_ADDRESS}::game::GameProgress>`
                 }
             ]
         }
