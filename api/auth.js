@@ -192,7 +192,7 @@ app.post(["/fitbit/steps", "/auth/fitbit/steps"], async (req, res) => {
       access_token = await refreshAccessToken(wallet);
     }
 
-    const fitbitRes = await fetch(`https://api.fitbit.com/1/user/-/activities/date/${date}.json`, {
+    const fitbitRes = await fetch(`https://api.fitbit.com/1/user/-/activities/tracker/steps/date/${date}/1d.json`, {
       headers: { Authorization: `Bearer ${access_token}` },
     });
 
@@ -200,12 +200,14 @@ app.post(["/fitbit/steps", "/auth/fitbit/steps"], async (req, res) => {
       if (fitbitRes.status === 401) {
         try {
           access_token = await refreshAccessToken(wallet);
-          const retryRes = await fetch(`https://api.fitbit.com/1/user/-/activities/date/${date}.json`, {
+          const retryRes = await fetch(`https://api.fitbit.com/1/user/-/activities/tracker/steps/date/${date}/1d.json`, {
             headers: { Authorization: `Bearer ${access_token}` },
           });
           if (!retryRes.ok) throw new Error("Retry failed");
           const retryData = await retryRes.json();
-          return res.json({ steps: retryData?.summary?.steps ?? 0 });
+          const trackerSteps = retryData?.['activities-tracker-steps'];
+          const steps = trackerSteps && trackerSteps.length > 0 ? parseInt(trackerSteps[0].value, 10) : 0;
+          return res.json({ steps });
         } catch {
           await db.collection("fitbit_tokens").doc(wallet.toLowerCase()).update({ connected: false });
           return res.status(401).json({ error: "Token revoked, please reconnect Fitbit" });
@@ -215,7 +217,8 @@ app.post(["/fitbit/steps", "/auth/fitbit/steps"], async (req, res) => {
     }
 
     const data = await fitbitRes.json();
-    const steps = data?.summary?.steps ?? 0;
+    const trackerSteps = data?.['activities-tracker-steps'];
+    const steps = trackerSteps && trackerSteps.length > 0 ? parseInt(trackerSteps[0].value, 10) : 0;
     res.json({ steps });
   } catch (err) {
     res.status(500).json({ error: err.message });
