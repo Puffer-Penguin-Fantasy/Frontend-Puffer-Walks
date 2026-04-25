@@ -20,7 +20,7 @@ export default function PrivacyPage() {
             <h2 className="text-white font-semibold text-base mb-2">2. Information We Collect</h2>
             <ul className="list-disc pl-5 space-y-1">
               <li><strong className="text-white">Wallet Address:</strong> Your public blockchain wallet address, used to identify you within the platform.</li>
-              <li><strong className="text-white">Fitness Data:</strong> If you connect Google Fit or Fitbit, we access your daily step count to track game progress. We request only the minimum required permissions (activity and step data).</li>
+              <li><strong className="text-white">Fitness Data:</strong> If you connect Fitbit, we access your daily step count to track game progress. We request only the minimum required permissions (activity and step data).</li>
               <li><strong className="text-white">Profile Information:</strong> Optional username and profile image you choose to set.</li>
               <li><strong className="text-white">Usage Data:</strong> Game participation records stored on the Movement blockchain and in Firebase Firestore.</li>
             </ul>

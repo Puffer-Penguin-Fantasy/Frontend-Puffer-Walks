@@ -49,7 +49,7 @@ export function FitbitConnector({ variant = "row", disabled = false }: FitbitCon
             <div className="flex flex-col text-left">
                 <span className="text-sm font-bold text-foreground">Fitbit</span>
                 <span className="text-[10px] text-muted-foreground font-medium">
-                    {isConnected ? 'Connected' : disabled ? 'Google Fit Connected' : 'Not connected'}
+                    {isConnected ? 'Connected' : 'Not connected'}
                 </span>
             </div>
             <button
