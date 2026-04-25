@@ -99,7 +99,7 @@ export function useFitbit() {
 
     try {
       const clientId = import.meta.env.VITE_FITBIT_CLIENT_ID;
-      const redirectUri = import.meta.env.VITE_FITBIT_REDIRECT_URI || `${window.location.origin}/callback`;
+      const redirectUri = import.meta.env.VITE_FITBIT_REDIRECT_URI || `${window.location.origin}/auth/fitbit/callback`;
       const scope = "activity profile";
       
       const url = `https://www.fitbit.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${standardizedWallet}&prompt=login%20consent`;

@@ -28,7 +28,7 @@ if (!admin.apps.length && serviceAccount) {
 // ─── Constants ─────────────────────────────────────────────────────────────────
 const CLIENT_ID = process.env.VITE_FITBIT_CLIENT_ID;
 const CLIENT_SECRET = process.env.VITE_FITBIT_CLIENT_SECRET;
-const REDIRECT_URI = process.env.VITE_FITBIT_REDIRECT_URI;
+const REDIRECT_URI = process.env.VITE_FITBIT_REDIRECT_URI || `${process.env.VITE_FRONTEND_URL || "https://pufferwalks.arcticpenguin.xyz"}/auth/fitbit/callback`;
 const SCOPES = "activity profile";
 
 
