@@ -20,7 +20,8 @@ import { AdminPanel } from "../components/AdminPanel";
 
 export default function Profile() {
   const { address, isConnected } = useAccount();
-  const { profileImage, username } = useProfile(address);
+  const normalizedAddress = address?.toLowerCase();
+  const { profileImage, username } = useProfile(normalizedAddress);
   const { games, joinGame, claimRewards } = useGame();
   const { playClick } = useSound();
   const [copied, setCopied] = React.useState(false);

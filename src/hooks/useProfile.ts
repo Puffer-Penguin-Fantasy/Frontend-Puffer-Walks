@@ -13,10 +13,12 @@ export interface ProfileData {
 }
 
 export function useProfile(address: string | null | undefined) {
+  const normalizedAddr = address?.toLowerCase();
+  
   // Use localStorage for instant initial state to prevent flickering
   const getCachedProfile = () => {
-    if (typeof window === "undefined" || !address) return null;
-    const cached = localStorage.getItem(`puffer_profile_${address.toLowerCase()}`);
+    if (typeof window === "undefined" || !normalizedAddr) return null;
+    const cached = localStorage.getItem(`puffer_profile_${normalizedAddr}`);
     return cached ? JSON.parse(cached) : null;
   };
 
