@@ -3,7 +3,7 @@ import { useAccount } from '@razorlabs/razorkit'
 import LoginPage from './pages/Login'
 import SettingsPage from './pages/Settings'
 import Callback from './pages/Callback'
-import GoogleCallback from './pages/GoogleCallback'
+
 import LeaderboardPage from './pages/Leaderboard'
 import ProfilePage from './pages/Profile'
 import PrivacyPage from './pages/Privacy'
@@ -21,7 +21,7 @@ function AppRoutes() {
 				element={isConnected ? <SettingsPage /> : <LoginPage />}
 			/>
 			<Route path="/callback" element={<Callback />} />
-			<Route path="/google-callback" element={<GoogleCallback />} />
+
 			<Route path="/privacy" element={<PrivacyPage />} />
 			<Route 
 				path="/leaderboard/:gameId" 

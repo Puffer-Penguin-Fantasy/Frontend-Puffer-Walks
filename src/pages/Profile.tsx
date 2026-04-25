@@ -5,7 +5,6 @@ import { useGame } from "../hooks/useGame";
 import { useSound } from "../hooks/useSound";
 import { useArcticPenguin } from "../hooks/useArcticPenguin";
 import { useFitbit } from "../integrations/fitbit/hooks/useFitbit";
-import { useGoogleFit } from "../integrations/googlefit/hooks/useGoogleFit";
 import { Activity } from "lucide-react";
 import {
   Trophy,
@@ -32,7 +31,6 @@ export default function Profile() {
   const { games, joinGame, claimRewards } = useGame();
   const { data: arcticData, isLoading: arcticLoading } = useArcticPenguin(normalizedAddress);
   const { steps: fitbitSteps, isConnected: isFitbitConnected } = useFitbit();
-  const { steps: googleFitSteps, isConnected: isGoogleFitConnected } = useGoogleFit();
   const { playClick } = useSound();
   const [copied, setCopied] = React.useState(false);
   const [isWalletOpen, setIsWalletOpen] = React.useState(false);
@@ -128,10 +126,10 @@ export default function Profile() {
                         <div className="flex items-center gap-2 text-[10px] md:text-xs text-blue-400 tracking-tight">
                           <MapPin size={12} className="md:w-3.5 md:h-3.5" /> Joined {userGames.length} Games
                         </div>
-                        {(isFitbitConnected || isGoogleFitConnected) && (
+                        {isFitbitConnected && (
                           <div className="flex items-center gap-2 text-[10px] md:text-xs text-emerald-400 tracking-tight">
                             <Activity size={12} className="md:w-3.5 md:h-3.5" /> 
-                            {isFitbitConnected ? `Fitbit: ${fitbitSteps?.toLocaleString() ?? 0}` : `Google Fit: ${googleFitSteps?.toLocaleString() ?? 0}`} steps
+                            {`Fitbit: ${fitbitSteps?.toLocaleString() ?? 0}`} steps
                           </div>
                         )}
                       </div>
