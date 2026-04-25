@@ -19,6 +19,8 @@ export function NavigationDock() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  if (location.pathname === "/login") return null;
+
   const activeTab = location.pathname === "/" ? "home" : "";
 
   const navItems = [
