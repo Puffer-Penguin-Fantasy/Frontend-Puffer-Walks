@@ -12,14 +12,16 @@ import {
 } from "./ui/tooltip";
 import { motion } from "framer-motion";
 
+import { useAccount } from "@razorlabs/razorkit";
 import { useLocation, useNavigate } from "react-router-dom";
 
 // Simplified Dock implementation for the Puffer aesthetic
 export function NavigationDock() {
+  const { isConnected } = useAccount();
   const location = useLocation();
   const navigate = useNavigate();
 
-  if (location.pathname === "/login") return null;
+  if (!isConnected || location.pathname === "/login") return null;
 
   const activeTab = location.pathname === "/" ? "home" : "";
 
