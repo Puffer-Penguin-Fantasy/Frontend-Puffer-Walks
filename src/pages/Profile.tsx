@@ -27,8 +27,6 @@ export default function Profile() {
   const [copied, setCopied] = React.useState(false);
   const [isWalletOpen, setIsWalletOpen] = React.useState(false);
   const [isAdminOpen, setIsAdminOpen] = React.useState(false);
-
-  const normalizedAddress = address?.toLowerCase();
   
   const userGames = games.filter(g => 
     g.participants?.some((p: any) => {
