@@ -69,7 +69,7 @@ export function Footer() {
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              transition={{ type: "spring", damping: 35, stiffness: 400, duration: 0.2 }}
               className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[32px] p-6 pb-10 z-[2001] max-h-[85vh] overflow-y-auto shadow-[0_-15px_40px_rgba(0,0,0,0.3)]"
             >
               <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-6" />

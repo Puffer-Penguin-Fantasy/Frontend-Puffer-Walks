@@ -93,83 +93,99 @@ export default function SettingsPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {gamesLoading ? (
-                        Array(6).fill(0).map((_, i) => (
-                            <GameCardSkeleton key={i} />
-                        ))
-                    ) : games.length > 0 ? (
-                        games
-                        .filter(game => {
+                <div className="space-y-16">
+                    {/* Active Games Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {gamesLoading ? (
+                            Array(3).fill(0).map((_, i) => (
+                                <GameCardSkeleton key={i} />
+                            ))
+                        ) : games.filter(game => {
+                            const now = Math.floor(Date.now() / 1000);
                             const isSearchTermLongEnough = discoverCode.length > 2;
-                            
-                            // 1. Plaintext Match (from Firebase metadata)
-                            const isPlaintextMatch = isSearchTermLongEnough && 
-                                                    game.join_code && 
-                                                    game.join_code.trim().toLowerCase() === discoverCode.trim().toLowerCase();
-
-                            // 2. Hash Match Logic: compare the local search hash to the blockchain's stored hash
-                            const isHashMatch = isSearchTermLongEnough && 
-                                               discoverCodeHash && 
-                                               Array.isArray(game.join_code_hash) &&
-                                               game.join_code_hash.length === 32 &&
-                                               game.join_code_hash.every((v, i) => v === discoverCodeHash[i]);
-
+                            const isPlaintextMatch = isSearchTermLongEnough && game.join_code && game.join_code.trim().toLowerCase() === discoverCode.trim().toLowerCase();
+                            const isHashMatch = isSearchTermLongEnough && discoverCodeHash && Array.isArray(game.join_code_hash) && game.join_code_hash.length === 32 && game.join_code_hash.every((v, i) => v === discoverCodeHash[i]);
                             const isCodeMatch = isPlaintextMatch || isHashMatch;
-
                             const isNameMatch = isSearchTermLongEnough && game.name.toLowerCase().includes(discoverCode.toLowerCase());
                             const isJoined = game.participants?.some(p => standardize(p) === standardize(address));
+                            const isActive = parseInt(game.end_time) >= now;
                             
-                            if (game.is_public) {
-                                return isSearchTermLongEnough ? isNameMatch : true;
-                            }
-                            
-                            return isCodeMatch || isJoined;
-                        })
-                        .map((game) => (
-                            <GameCard 
-                                key={game.id} 
-                                game={game} 
-                                globalJoinCode={discoverCode}
-                                onJoin={(id) => joinGame(id)}
-                                onClaim={() => claimRewards(game.id)}
-                            />
-                        ))
-                    ) : (
-                        <div className="col-span-full py-24 flex flex-col items-center justify-center bg-white/5 backdrop-blur-xl rounded-[48px] border border-white/10 relative overflow-hidden group shadow-2xl">
-                            {/* Decorative background glow */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full group-hover:bg-blue-500/20 transition-all duration-700" />
-                            
-                            <div className="relative z-10 flex flex-col items-center text-center px-6">
-                                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-inner">
-                                    <Trophy className="w-10 h-10 text-blue-400/60" />
-                                </div>
+                            if (game.is_public) return isActive && (isSearchTermLongEnough ? isNameMatch : true);
+                            return isActive && (isCodeMatch || isJoined);
+                        }).length > 0 ? (
+                            games
+                            .filter(game => {
+                                const now = Math.floor(Date.now() / 1000);
+                                const isSearchTermLongEnough = discoverCode.length > 2;
+                                const isPlaintextMatch = isSearchTermLongEnough && game.join_code && game.join_code.trim().toLowerCase() === discoverCode.trim().toLowerCase();
+                                const isHashMatch = isSearchTermLongEnough && discoverCodeHash && Array.isArray(game.join_code_hash) && game.join_code_hash.length === 32 && game.join_code_hash.every((v, i) => v === discoverCodeHash[i]);
+                                const isCodeMatch = isPlaintextMatch || isHashMatch;
+                                const isNameMatch = isSearchTermLongEnough && game.name.toLowerCase().includes(discoverCode.toLowerCase());
+                                const isJoined = game.participants?.some(p => standardize(p) === standardize(address));
+                                const isActive = parseInt(game.end_time) >= now;
                                 
-                                <h3 className="text-3xl font-light text-white mb-3 tracking-tight">
-                                    No Active Battles
-                                </h3>
-                                <p className="text-white/40 text-sm mb-10 max-w-sm leading-relaxed">
-                                    The movement network is waiting for its next champion. Be the first to launch a new competition or reload to find others.
+                                if (game.is_public) return isActive && (isSearchTermLongEnough ? isNameMatch : true);
+                                return isActive && (isCodeMatch || isJoined);
+                            })
+                            .sort((a, b) => parseInt(b.start_time) - parseInt(a.start_time))
+                            .map((game) => (
+                                <GameCard 
+                                    key={game.id} 
+                                    game={game} 
+                                    globalJoinCode={discoverCode}
+                                    onJoin={(id) => joinGame(id)}
+                                    onClaim={() => claimRewards(game.id)}
+                                />
+                            ))
+                        ) : !gamesLoading && (
+                            <div className="col-span-full py-16 flex flex-col items-center justify-center bg-white/5 backdrop-blur-xl rounded-[20px] border border-white/10 relative overflow-hidden group shadow-2xl">
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full group-hover:bg-blue-500/20 transition-all duration-700" />
+                                <div className="relative z-10 flex flex-col items-center text-center px-6">
+                                    <Trophy className="w-8 h-8 text-blue-400/60 mb-4" />
+                                    <h3 className="text-xl font-light text-white mb-2">No Active Competitions</h3>
+                                    <p className="text-white/40 text-xs max-w-xs">Be the first to launch a new competition or search for another code.</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Finished Games Section */}
+                    {games.filter(game => {
+                        const now = Math.floor(Date.now() / 1000);
+                        const isSearchTermLongEnough = discoverCode.length > 2;
+                        const isJoined = game.participants?.some(p => standardize(p) === standardize(address));
+                        const isFinished = parseInt(game.end_time) < now;
+                        return isFinished && (isSearchTermLongEnough ? game.name.toLowerCase().includes(discoverCode.toLowerCase()) : isJoined);
+                    }).length > 0 && (
+                        <div className="space-y-8">
+                            <div className="border-t border-white/10 pt-12">
+                                <h2 className="text-xl text-white mb-2 tracking-tight">
+                                    Finished Competitions
+                                </h2>
+                                <p className="text-white/70 text-xs tracking-tight">
+                                    Past battles on the Movement Network.
                                 </p>
-                                
-                                <div className="flex flex-col sm:flex-row gap-4 items-center">
-                                    <button 
-                                        onClick={() => { playClick(); refreshGames(); }}
-                                        className="px-8 py-3 rounded-full bg-white/5 border border-white/10 text-white text-sm font-medium hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 flex items-center gap-2"
-                                    >
-                                        <Loader2 className="w-4 h-4 text-white/40" />
-                                        Reload List
-                                    </button>
-                                    
-                                    {isAdmin && (
-                                        <button 
-                                            onClick={() => { playClick(); setIsCreateModalOpen(true); }}
-                                            className="px-8 py-3 rounded-full bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 active:scale-95"
-                                        >
-                                            Launch New Game
-                                        </button>
-                                    )}
-                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {games
+                                .filter(game => {
+                                    const now = Math.floor(Date.now() / 1000);
+                                    const isSearchTermLongEnough = discoverCode.length > 2;
+                                    const isJoined = game.participants?.some(p => standardize(p) === standardize(address));
+                                    const isFinished = parseInt(game.end_time) < now;
+                                    return isFinished && (isSearchTermLongEnough ? game.name.toLowerCase().includes(discoverCode.toLowerCase()) : isJoined);
+                                })
+                                .sort((a, b) => parseInt(b.end_time) - parseInt(a.end_time))
+                                .map((game) => (
+                                    <div key={game.id} className="transition-all">
+                                        <GameCard 
+                                            game={game} 
+                                            globalJoinCode={discoverCode}
+                                            onJoin={(id) => joinGame(id)}
+                                            onClaim={() => claimRewards(game.id)}
+                                        />
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

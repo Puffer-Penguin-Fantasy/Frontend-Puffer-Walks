@@ -5,6 +5,7 @@ import { db } from "../lib/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { useGame } from "../hooks/useGame"
 import { useSound } from "../hooks/useSound"
+import { useProfile } from "../hooks/useProfile"
 
 interface HeaderProps {
     onOpenWallet: () => void;
@@ -12,14 +13,14 @@ interface HeaderProps {
 }
 
 import pfpFrame from "../assets/gameframe/pfpframe.png"
+import userAvatar from "../assets/user-avatar.png"
 
 export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
     const { address, isConnected } = useAccount()
     const { adminAddress } = useGame()
     const { playClick } = useSound()
-    const [profileImage, setProfileImage] = React.useState<string | null>(null)
-
     const normalizedAddress = address?.toLowerCase();
+    const { profileImage } = useProfile(normalizedAddress);
 
     const standardize = (addr: string | null | undefined) => {
         if (!addr) return "";
@@ -30,21 +31,7 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
 
     const isAdmin = normalizedAddress && adminAddress && standardize(normalizedAddress) === standardize(adminAddress);
 
-    React.useEffect(() => {
-        if (!normalizedAddress) return;
-        const fetchProfile = async () => {
-            try {
-                const userDoc = await getDoc(doc(db, "users", normalizedAddress));
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    if (data.profileImage) setProfileImage(data.profileImage);
-                }
-            } catch (err) {
-                console.error("Error fetching header profile:", err);
-            }
-        };
-        fetchProfile();
-    }, [normalizedAddress]);
+
 
     const shortAddress = normalizedAddress
         ? normalizedAddress.slice(0, 6) + '...' + normalizedAddress.slice(-4)
@@ -91,7 +78,7 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
                             {profileImage ? (
                                 <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                             ) : (
-                                <span className="text-[10px] font-medium tracking-tighter opacity-80 uppercase">0x</span>
+                                <img src={userAvatar} alt="Default" className="w-full h-full object-cover opacity-50" />
                             )}
                         </div>
                     </div>

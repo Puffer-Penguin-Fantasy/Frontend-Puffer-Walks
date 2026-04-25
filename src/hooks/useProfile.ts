@@ -13,12 +13,21 @@ export interface ProfileData {
 }
 
 export function useProfile(address: string | null | undefined) {
+  // Use localStorage for instant initial state to prevent flickering
+  const getCachedProfile = () => {
+    if (typeof window === "undefined" || !address) return null;
+    const cached = localStorage.getItem(`puffer_profile_${address.toLowerCase()}`);
+    return cached ? JSON.parse(cached) : null;
+  };
+
+  const cachedData = getCachedProfile();
+
   const [profile, setProfile] = useState<ProfileData>({
-    username: "Puffer User",
-    profileImage: null,
-    hasFirebaseProfile: false,
+    username: cachedData?.username || "Puffer User",
+    profileImage: cachedData?.profileImage || null,
+    hasFirebaseProfile: !!cachedData,
     hasOnChainProfile: false,
-    isLoading: true,
+    isLoading: !cachedData,
   });
 
   const fetchProfile = useCallback(async () => {
@@ -69,6 +78,14 @@ export function useProfile(address: string | null | undefined) {
         hasOnChainProfile: hasOnChain,
         isLoading: false,
       });
+
+      // Cache for next time
+      if (address) {
+        localStorage.setItem(`puffer_profile_${address.toLowerCase()}`, JSON.stringify({
+          username: firebaseData.username,
+          profileImage: firebaseData.profileImage
+        }));
+      }
     } catch (err) {
       console.error("Error fetching full profile:", err);
       setProfile(prev => ({ ...prev, isLoading: false }));

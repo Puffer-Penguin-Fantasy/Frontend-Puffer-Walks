@@ -5,6 +5,7 @@ import SettingsPage from './pages/Settings'
 import Callback from './pages/Callback'
 import GoogleCallback from './pages/GoogleCallback'
 import LeaderboardPage from './pages/Leaderboard'
+import ProfilePage from './pages/Profile'
 import { NavigationDock } from './components/NavigationDock'
 import { TooltipProvider } from './components/ui/tooltip'
 
@@ -27,6 +28,10 @@ function AppRoutes() {
 			<Route 
 				path="/leaderboard/:gameId" 
 				element={isConnected ? <LeaderboardPage /> : <Navigate to="/login" />} 
+			/>
+			<Route 
+				path="/profile" 
+				element={isConnected ? <ProfilePage /> : <Navigate to="/login" />} 
 			/>
 			{/* Catch-all redirect to home (which then goes to login if needed) */}
 			<Route path="*" element={<Navigate to="/" />} />

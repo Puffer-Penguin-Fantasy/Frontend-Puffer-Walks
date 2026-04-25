@@ -2,7 +2,8 @@
 
 
 import { 
-  Home
+  Home,
+  User
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { 
@@ -23,14 +24,16 @@ export function NavigationDock() {
 
   if (!isConnected || location.pathname === "/login") return null;
 
-  const activeTab = location.pathname === "/" ? "home" : "";
+  const activeTab = location.pathname === "/" ? "home" : 
+                    location.pathname === "/profile" ? "profile" : "";
 
   const navItems = [
     { id: "home", icon: Home, label: "Home", href: "/" },
+    { id: "profile", icon: User, label: "Profile", href: "/profile" },
   ];
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2000] px-4">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-4">
       <div className="flex items-center gap-1.5 p-1.5 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-full shadow-2xl">
         
         {/* Main Nav */}

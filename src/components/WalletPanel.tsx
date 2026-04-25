@@ -222,7 +222,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                         initial={{ x: "100%" }}
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
-                        transition={{ type: "spring", damping: 30, stiffness: 300, duration: 0.3 }}
+                        transition={{ type: "spring", damping: 35, stiffness: 400, duration: 0.2 }}
                         style={{ backgroundImage: `url(${blueBg})` }}
                         className="relative w-full max-w-md bg-cover bg-center shadow-2xl flex flex-col h-full overflow-hidden border-l border-white/10"
                     >
@@ -293,7 +293,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: "auto", opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.2, ease: "easeInOut" }}
+                                                transition={{ duration: 0.15, ease: "circOut" }}
                                                 className="overflow-hidden pb-8"
                                             >
                                                 <div className="flex flex-col items-center space-y-6 pt-4 text-center">
@@ -366,7 +366,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: "auto", opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.2, ease: "easeInOut" }}
+                                                transition={{ duration: 0.15, ease: "circOut" }}
                                                 className="overflow-hidden pb-8"
                                             >
                                                 <div className="pt-2">
@@ -407,7 +407,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                         onClick={() => { playClick(); setExpandedKey(expandedKey === "connections" ? null : "connections"); }}
                                         className="w-full flex items-center justify-between py-7 group"
                                     >
-                                        <span className={`text-[12px] font-bold transition-all duration-300 ${expandedKey === "connections" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
+                                        <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "connections" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
                                             Connections
                                         </span>
                                         <motion.div
@@ -423,7 +423,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: "auto", opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.2, ease: "easeInOut" }}
+                                                transition={{ duration: 0.15, ease: "circOut" }}
                                                 className="overflow-hidden pb-8"
                                             >
                                                 <div className="pt-2">
