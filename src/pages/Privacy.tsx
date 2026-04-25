@@ -37,17 +37,11 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-white font-semibold text-base mb-2">4. Google Fit & Fitbit Integration</h2>
+            <h2 className="text-white font-semibold text-base mb-2">4. Fitbit Integration</h2>
             <p>
-              When you connect Google Fit or Fitbit, we store OAuth tokens securely in Firebase Firestore to enable 
+              When you connect Fitbit, we store OAuth tokens securely in Firebase Firestore to enable 
               periodic step synchronization. These tokens are used solely to read your step count. You may disconnect 
               at any time from the Settings page, which will revoke our access and delete your stored tokens.
-            </p>
-            <p className="mt-2">
-              Our use of Google API data complies with the{" "}
-              <a href="https://developers.google.com/terms/api-services-user-data-policy" className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
-                Google API Services User Data Policy
-              </a>, including the Limited Use requirements.
             </p>
           </section>
 
