@@ -3,14 +3,16 @@ import { useFitbit } from "../hooks/useFitbit";
 
 interface FitbitConnectorProps {
     variant?: "row" | "grid";
+    disabled?: boolean;
 }
 
-export function FitbitConnector({ variant = "row" }: FitbitConnectorProps) {
+export function FitbitConnector({ variant = "row", disabled = false }: FitbitConnectorProps) {
     const { isConnected, connect, disconnect } = useFitbit();
 
     const handleToggle = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+        if (disabled && !isConnected) return;
         if (isConnected) {
             disconnect();
         } else {
@@ -43,14 +45,17 @@ export function FitbitConnector({ variant = "row" }: FitbitConnectorProps) {
     }
 
     return (
-        <div className="flex items-center justify-between py-2 group transition-all w-full">
+        <div className={`flex items-center justify-between py-2 group transition-all w-full ${disabled && !isConnected ? 'opacity-40 grayscale cursor-not-allowed' : ''}`}>
             <div className="flex flex-col text-left">
                 <span className="text-sm font-bold text-foreground">Fitbit</span>
-                <span className="text-[10px] text-muted-foreground font-medium">{isConnected ? 'Connected' : 'Not connected'}</span>
+                <span className="text-[10px] text-muted-foreground font-medium">
+                    {isConnected ? 'Connected' : disabled ? 'Google Fit Connected' : 'Not connected'}
+                </span>
             </div>
             <button
                 onClick={handleToggle}
-                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isConnected ? 'border-[#fcc61f]' : 'border-border'}`}
+                disabled={disabled && !isConnected}
+                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isConnected ? 'border-[#fcc61f]' : 'border-border'} ${disabled && !isConnected ? 'cursor-not-allowed' : ''}`}
             >
                 <div className={`w-3 h-3 rounded-full transition-all duration-300 ${isConnected ? 'bg-[#fcc61f] scale-100' : 'bg-transparent scale-0'}`} />
             </button>

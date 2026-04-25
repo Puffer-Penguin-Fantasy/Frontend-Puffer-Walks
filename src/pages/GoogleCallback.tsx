@@ -1,24 +1,53 @@
-import { useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import { GOOGLE_REDIRECT_URI } from '../integrations/googlefit/config'
+
+const isDev = import.meta.env.DEV;
+const AUTH_SERVER = isDev ? (import.meta.env.VITE_AUTH_SERVER_URL || "http://localhost:3001") : "";
 
 function GoogleCallback() {
-    const location = useLocation()
+    const [searchParams] = useSearchParams()
+    const exchanged = useRef(false)
     const navigate = useNavigate()
 
     useEffect(() => {
-        // Google OAuth sends the token in the URL hash for response_type=token
-        const hashParams = new URLSearchParams(location.hash.replace('#', '?'))
-        const token = hashParams.get('access_token')
+        const code = searchParams.get('code')
+        const state = searchParams.get('state')
 
-        if (token) {
-            localStorage.setItem('googlefit_token', token)
-            navigate('/')
-        } else {
-            // Handle error case
-            console.error('Google OAuth failed: No access token found')
+        if (code && state && !exchanged.current) {
+            exchanged.current = true
+            const exchangeToken = async () => {
+                try {
+                    const res = await fetch(`${AUTH_SERVER}/auth/googlefit/exchange`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            code, 
+                            walletAddress: state,
+                            redirectUri: GOOGLE_REDIRECT_URI
+                        }),
+                    });
+
+                    if (res.ok) {
+                        navigate('/?googlefit=connected')
+                    } else {
+                        const errorData = await res.json().catch(() => ({}));
+                        console.error('Google exchange failed:', errorData)
+                        navigate('/?googlefit=error')
+                    }
+                } catch (err) {
+                    console.error('Google exchange error:', err)
+                    navigate('/?googlefit=error')
+                }
+            }
+            exchangeToken()
+            return
+        }
+
+        if (!code || !state) {
             navigate('/')
         }
-    }, [location, navigate])
+    }, [searchParams, navigate])
 
     return (
         <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">

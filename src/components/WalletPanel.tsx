@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { LogOut, ChevronDown, Camera, Check, Loader2 } from "lucide-react";
 import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { FitbitConnector } from "../integrations/fitbit/components/FitbitConnector";
+import { GoogleFitConnector } from "../integrations/googlefit/components/GoogleFitConnector";
+import { useFitbit } from "../integrations/fitbit/hooks/useFitbit";
+import { useGoogleFit } from "../integrations/googlefit/hooks/useGoogleFit";
 import { useArcticPenguin } from "../hooks/useArcticPenguin";
 import { useProfile } from "../hooks/useProfile";
 import { motion, AnimatePresence } from "framer-motion";
@@ -46,6 +49,8 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     const [profileImage, setProfileImage] = useState<string | null>(null);
 
     const { data: arcticData, isLoading: arcticLoading } = useArcticPenguin(address);
+    const { isConnected: isFitbitConnected } = useFitbit();
+    const { isConnected: isGoogleFitConnected } = useGoogleFit();
     const isLoading = profileLoading || arcticLoading;
 
     const shortAddress = address?.slice(0, 6) + '...' + address?.slice(-4);
@@ -426,8 +431,9 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                 transition={{ duration: 0.15, ease: "circOut" }}
                                                 className="overflow-hidden pb-8"
                                             >
-                                                <div className="pt-2">
-                                                    <FitbitConnector variant="row" />
+                                                <div className="pt-2 space-y-4">
+                                                    <FitbitConnector variant="row" disabled={isGoogleFitConnected} />
+                                                    <GoogleFitConnector variant="row" disabled={isFitbitConnected} />
                                                 </div>
                                             </motion.div>
                                         )}

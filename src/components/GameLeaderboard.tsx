@@ -3,7 +3,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
 import { FlickeringGrid } from "./FlickeringGrid";
 
 import { db } from "../lib/firebase";
-import { collection, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc } from "firebase/firestore";
 import { useAccount } from "@razorlabs/razorkit";
 import { useGame } from "../hooks/useGame";
 import {
@@ -53,32 +53,14 @@ const RANK_COLORS = [
   "from-amber-600 to-amber-700",     // 3rd
 ];
 
-function ParticipantProfile({ address, fallbackName, isMe, isPodium, rank, isPinned }: {
-  address: string,
+function ParticipantProfile({ fallbackName, isMe, isPodium, rank, isPinned, profile }: {
   fallbackName: string,
   isMe: boolean,
   isPodium: boolean,
   rank: number,
-  isPinned?: boolean
+  isPinned?: boolean,
+  profile?: { username: string | null, profileImage: string | null }
 }) {
-  const [profile, setProfile] = useState<{ username: string | null, profileImage: string | null } | null>(null);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const addr = address?.toLowerCase();
-        if (!addr) return;
-        const userSnap = await getDoc(doc(db, "users", addr));
-        if (userSnap.exists()) {
-          setProfile(userSnap.data() as any);
-        }
-      } catch (err) {
-        console.error("Error fetching live profile:", err);
-      }
-    };
-    fetchProfile();
-  }, [address]);
-
   const username = profile?.username || fallbackName;
   const pfp = profile?.profileImage;
 
@@ -126,7 +108,44 @@ export function GameLeaderboard({
   const { address } = useAccount();
   const { pinUser, games } = useGame();
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [userProfiles, setUserProfiles] = useState<Record<string, any>>({});
   const myAddress = address?.toLowerCase();
+  
+  // Batch fetch profiles when participants change
+  useEffect(() => {
+    if (participants.length === 0) return;
+    
+    const fetchProfiles = async () => {
+      const uniqueAddrs = Array.from(new Set(participants.map(p => p.walletAddress?.toLowerCase()).filter(Boolean)));
+      const uncachedAddrs = uniqueAddrs.filter(addr => !userProfiles[addr!]);
+      
+      if (uncachedAddrs.length === 0) return;
+
+      // Firestore "in" query limit is 30
+      const chunks = [];
+      for (let i = 0; i < uncachedAddrs.length; i += 30) {
+        chunks.push(uncachedAddrs.slice(i, i + 30));
+      }
+
+      const newProfiles: Record<string, any> = { ...userProfiles };
+      try {
+        const { query, where, getDocs, documentId } = await import("firebase/firestore");
+        for (const chunk of chunks) {
+          const q = query(collection(db, "users"), where(documentId(), "in", chunk));
+          const snap = await getDocs(q);
+          snap.docs.forEach(doc => {
+            newProfiles[doc.id] = doc.data();
+          });
+        }
+        setUserProfiles(newProfiles);
+      } catch (err) {
+        console.error("Error batch fetching profiles:", err);
+      }
+    };
+
+    fetchProfiles();
+  }, [participants]);
+
   const me = participants.find(p => p.walletAddress?.toLowerCase() === myAddress);
   const hasActivePin = !!(me?.isPinned && me?.pinnedUntil && me?.pinnedUntil > Date.now());
 
@@ -290,12 +309,12 @@ export function GameLeaderboard({
       },
       Cell: ({ row }) => (
         <ParticipantProfile
-            address={row.original.walletAddress}
             fallbackName={row.original.username || shortAddr(row.original.walletAddress)}
             isMe={row.original.walletAddress?.toLowerCase() === myAddress}
             isPodium={row.original.rank <= 3}
             rank={row.original.rank}
             isPinned={row.original.isPinned}
+            profile={userProfiles[row.original.walletAddress?.toLowerCase() || ""]}
         />
       ),
     },

@@ -2,7 +2,7 @@ import { useGoogleFit } from "../hooks/useGoogleFit";
 import { Activity, RefreshCcw, TrendingUp } from "lucide-react";
 
 export function GoogleFitSteps() {
-    const { steps, weeklySteps, isSyncing, fetchSteps, isConnected } = useGoogleFit();
+    const { steps, isSyncing, fetchSteps, isConnected } = useGoogleFit();
 
     if (!isConnected) return null;
 
@@ -37,17 +37,6 @@ export function GoogleFitSteps() {
                         <span>Active</span>
                     </div>
                     <span className="text-slate-500">Live synchronization</span>
-                </div>
-            </div>
-
-            {/* Weekly Summary */}
-            <div className="bg-[#1a1a1a] rounded-xl p-4 border border-[#303030] flex items-center justify-between">
-                <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Weekly Average</span>
-                    <span className="text-sm font-bold text-white">{weeklySteps ? Math.round(weeklySteps / 7).toLocaleString() : "0"} <span className="text-slate-500 font-medium">steps/day</span></span>
-                </div>
-                <div className="w-12 h-1.5 bg-[#303030] rounded-full overflow-hidden">
-                    <div className="h-full bg-[#fcc61f] rounded-full" style={{ width: '65%' }} />
                 </div>
             </div>
         </div>

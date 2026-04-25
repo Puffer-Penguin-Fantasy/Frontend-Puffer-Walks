@@ -102,12 +102,12 @@ export default function LoginPage() {
                 </motion.div>
 
                 <footer className="mt-8 flex justify-center gap-6">
-                    <button 
-                        onClick={() => { playClick(); setActiveModal('privacy'); }}
+                    <a 
+                        href="/privacy"
                         className="text-[14px] text-white/80 hover:text-white font-medium drop-shadow-md transition-colors"
                     >
-                        Privacy
-                    </button>
+                        Privacy Policy
+                    </a>
                     <button 
                         onClick={() => { playClick(); setActiveModal('terms'); }}
                         className="text-[14px] text-white/80 hover:text-white font-medium drop-shadow-md transition-colors"

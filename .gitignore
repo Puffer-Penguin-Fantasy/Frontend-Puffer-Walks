@@ -27,3 +27,4 @@ dist-ssr
 .env
 .env.production
 firestore.rules
+client_secret_*.json

@@ -40,6 +40,8 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
   const [oracleAddress, setOracleAddress] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const hasLoadedOnce = useRef(false);
+  const fbGamesCache = useRef<{ data: Record<string, any>, fetchedAt: number } | null>(null);
+  const FB_CACHE_TTL = 60 * 1000; // 1 minute
 
   const hexToBytes = (hex: string): number[] => {
     if (!hex) return [];
@@ -88,8 +90,16 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       else if (gamesResource?.inline_vec) rawGames = gamesResource.inline_vec;
       else if (gamesResource?.data) rawGames = gamesResource.data;
 
-      const fbSnap = await getDocs(collection(db, "games"));
-      const fbGamesMap = fbSnap.docs.reduce((acc: any, d) => ({ ...acc, [d.id]: d.data() }), {});
+      // Use cached Firestore games map if fresh (avoids re-reading entire collection on every mutation)
+      let fbGamesMap: Record<string, any> = {};
+      const now_ts = Date.now();
+      if (fbGamesCache.current && (now_ts - fbGamesCache.current.fetchedAt) < FB_CACHE_TTL) {
+        fbGamesMap = fbGamesCache.current.data;
+      } else {
+        const fbSnap = await getDocs(collection(db, "games"));
+        fbGamesMap = fbSnap.docs.reduce((acc: any, d) => ({ ...acc, [d.id]: d.data() }), {});
+        fbGamesCache.current = { data: fbGamesMap, fetchedAt: now_ts };
+      }
 
       const results = (rawGames as any[]).map((item: any) => {
         const g = item.value || item;
@@ -223,7 +233,6 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
 
   const joinGame = async (gameId: string) => {
     if (!rawAddress) return;
-    await fetchGames(); // Refresh state before join to ensure ID is valid
     try {
       const response = await signAndSubmitTransaction({
         payload: {

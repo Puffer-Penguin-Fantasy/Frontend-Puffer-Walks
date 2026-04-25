@@ -3,14 +3,16 @@ import { useGoogleFit } from "../hooks/useGoogleFit";
 
 interface GoogleFitConnectorProps {
     variant?: "row" | "grid";
+    disabled?: boolean;
 }
 
-export function GoogleFitConnector({ variant = "row" }: GoogleFitConnectorProps) {
+export function GoogleFitConnector({ variant = "row", disabled = false }: GoogleFitConnectorProps) {
     const { isConnected, connect, disconnect } = useGoogleFit();
 
     const handleToggle = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+        if (disabled && !isConnected) return;
         if (isConnected) {
             disconnect();
         } else {
@@ -21,9 +23,10 @@ export function GoogleFitConnector({ variant = "row" }: GoogleFitConnectorProps)
     if (variant === "grid") {
         return (
             <button 
-                className="w-full h-full flex flex-col items-center justify-center relative cursor-pointer group/btn bg-transparent border-none p-0"
+                className={`w-full h-full flex flex-col items-center justify-center relative group/btn bg-transparent border-none p-0 ${disabled && !isConnected ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
                 onClick={handleToggle}
-                title={isConnected ? "Disconnect Google Fit" : "Connect Google Fit"}
+                disabled={disabled && !isConnected}
+                title={isConnected ? "Disconnect Google Fit" : disabled ? "Fitbit Connected" : "Connect Google Fit"}
             >
                 <div className="relative">
                     <img 
@@ -43,14 +46,17 @@ export function GoogleFitConnector({ variant = "row" }: GoogleFitConnectorProps)
     }
 
     return (
-        <div className="flex items-center justify-between py-2 group transition-all w-full">
+        <div className={`flex items-center justify-between py-2 group transition-all w-full ${disabled && !isConnected ? 'opacity-40 grayscale cursor-not-allowed' : ''}`}>
             <div className="flex flex-col text-left">
-                <span className="text-sm font-bold text-gray-900">Google Fit</span>
-                <span className="text-[10px] text-gray-500">{isConnected ? 'Connected' : 'Not connected'}</span>
+                <span className="text-sm font-bold text-foreground">Google Fit</span>
+                <span className="text-[10px] text-muted-foreground font-medium">
+                    {isConnected ? 'Connected' : disabled ? 'Fitbit Connected' : 'Not connected'}
+                </span>
             </div>
             <button
                 onClick={handleToggle}
-                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isConnected ? 'border-[#fcc61f]' : 'border-gray-200'}`}
+                disabled={disabled && !isConnected}
+                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isConnected ? 'border-[#fcc61f]' : 'border-border'} ${disabled && !isConnected ? 'cursor-not-allowed' : ''}`}
             >
                 <div className={`w-3 h-3 rounded-full transition-all duration-300 ${isConnected ? 'bg-[#fcc61f] scale-100' : 'bg-transparent scale-0'}`} />
             </button>

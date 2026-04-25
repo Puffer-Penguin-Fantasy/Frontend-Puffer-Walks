@@ -12,6 +12,8 @@ export interface ProfileData {
   isLoading: boolean;
 }
 
+const PROFILE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export function useProfile(address: string | null | undefined) {
   const normalizedAddr = address?.toLowerCase();
   
@@ -28,18 +30,26 @@ export function useProfile(address: string | null | undefined) {
     username: cachedData?.username || "Puffer User",
     profileImage: cachedData?.profileImage || null,
     hasFirebaseProfile: !!cachedData,
-    hasOnChainProfile: false,
+    hasOnChainProfile: cachedData?.hasOnChainProfile || false,
     isLoading: !cachedData,
   });
 
-  const fetchProfile = useCallback(async () => {
+  const fetchProfile = useCallback(async (force = false) => {
     if (!address) {
       setProfile(prev => ({ ...prev, isLoading: false }));
       return;
     }
 
+    // Skip full fetch if cache is still fresh (unless forced)
+    if (!force && cachedData) {
+      const age = Date.now() - (cachedData.cachedAt || 0);
+      if (age < PROFILE_CACHE_TTL) {
+        setProfile(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+    }
+
     setProfile(prev => ({ ...prev, isLoading: true }));
-    console.log("useProfile: fetching for address:", address);
     
     try {
       // 1. Fetch from Firebase
@@ -49,18 +59,15 @@ export function useProfile(address: string | null | undefined) {
       
       if (userDoc.exists()) {
         const data = userDoc.data();
-        console.log("useProfile: found Firebase data:", data);
         firebaseData = {
           username: data.username || "Puffer User",
           profileImage: data.profileImage || null,
           hasFirebaseProfile: true,
         };
-      } else {
-        console.log("useProfile: no Firebase document found for:", address);
       }
 
       // 2. Check On-chain status
-      let hasOnChain = false;
+      let hasOnChain = cachedData?.hasOnChainProfile || false;
       try {
         const result = await aptosClient.view({
           payload: {
@@ -70,7 +77,6 @@ export function useProfile(address: string | null | undefined) {
           },
         });
         hasOnChain = result[0] as boolean;
-        console.log("useProfile: on-chain status:", hasOnChain);
       } catch (err) {
         console.error("Error checking on-chain profile:", err);
       }
@@ -81,13 +87,13 @@ export function useProfile(address: string | null | undefined) {
         isLoading: false,
       });
 
-      // Cache for next time
-      if (address) {
-        localStorage.setItem(`puffer_profile_${address.toLowerCase()}`, JSON.stringify({
-          username: firebaseData.username,
-          profileImage: firebaseData.profileImage
-        }));
-      }
+      // Cache with timestamp
+      localStorage.setItem(`puffer_profile_${address.toLowerCase()}`, JSON.stringify({
+        username: firebaseData.username,
+        profileImage: firebaseData.profileImage,
+        hasOnChainProfile: hasOnChain,
+        cachedAt: Date.now(),
+      }));
     } catch (err) {
       console.error("Error fetching full profile:", err);
       setProfile(prev => ({ ...prev, isLoading: false }));
@@ -100,6 +106,6 @@ export function useProfile(address: string | null | undefined) {
 
   return {
     ...profile,
-    refresh: fetchProfile,
+    refresh: () => fetchProfile(true), // force = true bypasses cache
   };
 }

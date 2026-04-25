@@ -6,6 +6,7 @@ import Callback from './pages/Callback'
 import GoogleCallback from './pages/GoogleCallback'
 import LeaderboardPage from './pages/Leaderboard'
 import ProfilePage from './pages/Profile'
+import PrivacyPage from './pages/Privacy'
 import { NavigationDock } from './components/NavigationDock'
 import { TooltipProvider } from './components/ui/tooltip'
 
@@ -25,6 +26,7 @@ function AppRoutes() {
 			/>
 			<Route path="/callback" element={<Callback />} />
 			<Route path="/google-callback" element={<GoogleCallback />} />
+			<Route path="/privacy" element={<PrivacyPage />} />
 			<Route 
 				path="/leaderboard/:gameId" 
 				element={isConnected ? <LeaderboardPage /> : <Navigate to="/login" />} 

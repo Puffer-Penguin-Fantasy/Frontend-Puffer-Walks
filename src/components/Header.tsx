@@ -1,8 +1,5 @@
 import { useAccount } from "@razorlabs/razorkit"
-import React from "react"
 import SettingsIcon from "@mui/icons-material/Settings";
-import { db } from "../lib/firebase"
-import { doc, getDoc } from "firebase/firestore"
 import { useGame } from "../hooks/useGame"
 import { useSound } from "../hooks/useSound"
 import { useProfile } from "../hooks/useProfile"

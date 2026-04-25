@@ -1,7 +1,7 @@
 import { useAccount } from "@razorlabs/razorkit"
 import { WalletPanel } from "@/components/WalletPanel"
 import React from "react"
-import { Trophy, Plus, Loader2 } from "lucide-react"
+import { Trophy, Plus } from "lucide-react"
 import { useGame } from "../hooks/useGame"
 import { GameCard } from "../components/GameCard"
 import { GameCardSkeleton } from "../components/GameCardSkeleton"
@@ -21,7 +21,7 @@ export default function SettingsPage() {
     const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
     const [discoverCode, setDiscoverCode] = React.useState("")
     const [discoverCodeHash, setDiscoverCodeHash] = React.useState<number[] | null>(null)
-    const { games, adminAddress, isLoading: gamesLoading, refresh: refreshGames, joinGame, claimRewards, createGame, hashString } = useGame()
+    const { games, adminAddress, isLoading: gamesLoading, joinGame, claimRewards, createGame, hashString } = useGame()
     
     const address = rawAddress?.toLowerCase();
     React.useEffect(() => {

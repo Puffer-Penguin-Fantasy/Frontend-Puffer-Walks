@@ -111,7 +111,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
       {/* Header Row: Avatar | Title | Button */}
       <div className="flex items-center justify-between gap-3 p-5">
         <div className="flex items-center gap-3 overflow-hidden flex-1">
-          {game.image_url && (
+          {game.image_url && game.image_url.trim() !== "" && (
             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-white/10">
                <img 
                   src={game.image_url} 
@@ -219,7 +219,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
 
       {/* Stats Row: The "Internal Card" (Flush, Darker, Taller) */}
       <div className="bg-white/5 p-7 px-5 grid grid-cols-4 gap-2 items-center border-t border-white/10 rounded-t-xl mt-auto relative overflow-hidden">
-        {game.is_sponsored && game.sponsor_image_url && (
+        {game.is_sponsored && game.sponsor_image_url && game.sponsor_image_url.trim() !== "" && (
           <div className="absolute top-0 right-0 p-1 px-3 bg-amber-500/10 rounded-bl-xl flex items-center gap-1.5">
             <span className="text-[8px] font-medium text-amber-500 lowercase tracking-tight">sponsored by</span>
             <img src={game.sponsor_image_url} alt={game.sponsor_name} loading="lazy" decoding="async" className="w-3.5 h-3.5 rounded-full object-cover" />

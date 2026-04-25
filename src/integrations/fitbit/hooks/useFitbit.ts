@@ -82,11 +82,11 @@ export function useFitbit() {
     }
   }, [standardizedWallet, isConnected]);
 
-  // ── Auto-poll steps every 60s when connected ──────────────────────────────
+  // Auto-poll steps every 5 minutes when connected (Oracle syncs are not per-minute)
   useEffect(() => {
     if (!isConnected) return;
     fetchSteps();
-    const interval = setInterval(() => fetchSteps(), 60000);
+    const interval = setInterval(() => fetchSteps(), 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [isConnected, fetchSteps]);
 
