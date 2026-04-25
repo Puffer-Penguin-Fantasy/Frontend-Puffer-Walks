@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LogOut, ChevronDown, Camera, Check, Loader2 } from "lucide-react";
+import { LogOut, ChevronDown, Camera, Check, Loader2, Lock } from "lucide-react";
 import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { FitbitConnector } from "../integrations/fitbit/components/FitbitConnector";
 import { useFitbit } from "../integrations/fitbit/hooks/useFitbit";
@@ -27,7 +27,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     const { address: rawAddress } = useAccount();
     const { disconnect, signAndSubmitTransaction } = useWallet();
     const { playClick } = useSound();
-    const [expandedKey, setExpandedKey] = useState<string | null>("profile");
+    const [expandedKey, setExpandedKey] = useState<string | null>(null);
     
     // Profile Edit State
     const [isEditing, setIsEditing] = useState(false);
@@ -51,6 +51,13 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     const isLoading = profileLoading || arcticLoading;
 
     const shortAddress = address?.slice(0, 6) + '...' + address?.slice(-4);
+
+    // Initial expanded state based on NFT ownership
+    useEffect(() => {
+        if (!arcticLoading) {
+            setExpandedKey(arcticData?.hasNFT ? "profile" : "nft");
+        }
+    }, [arcticLoading, arcticData?.hasNFT]);
 
     // Sync state with hook data
     useEffect(() => {
@@ -183,7 +190,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     };
 
     const toggleEdit = () => {
-        if (!arcticData.hasNFT && !isEditing) return;
+        if (!arcticData?.hasNFT && !isEditing) return;
         if (isEditing) {
             saveChanges();
         } else {
@@ -259,29 +266,36 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 )}
                                 <button 
                                     onClick={() => { playClick(); toggleEdit(); }}
-                                    disabled={isSaving || isLoading || (!arcticData.hasNFT && !isEditing)}
+                                    disabled={isSaving || isLoading || (!arcticData?.hasNFT && !isEditing)}
                                     className={`text-[10px] font-xirod transition-all px-4 py-1.5 rounded-full border flex items-center gap-2 ${
                                         isEditing 
                                             ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
-                                            : !arcticData.hasNFT 
+                                            : !arcticData?.hasNFT 
                                                 ? "bg-black/50 border-white/10 text-white/40 cursor-not-allowed" 
                                                 : "bg-black/20 border-white/20 text-white hover:bg-black/40"
                                     }`}
                                 >
                                     {isSaving ? <Loader2 size={12} className="animate-spin" /> : null}
-                                    {isEditing ? "Save Local" : arcticData.hasNFT ? "Edit Account" : "NFT Holder Only"}
+                                    {isEditing ? "Save Local" : arcticData?.hasNFT ? "Edit Account" : "NFT Holder Only"}
                                 </button>
                             </div>
 
                             <div className="p-8 overflow-y-auto flex-1 space-y-2 no-scrollbar pt-20">
                                 <div className="border-b border-white/10 pb-2">
                                     <button 
-                                        onClick={() => { playClick(); setExpandedKey(expandedKey === "profile" ? null : "profile"); }}
-                                        className="w-full flex items-center justify-between py-6 group"
+                                        onClick={() => { 
+                                            if (!arcticData?.hasNFT) return;
+                                            playClick(); 
+                                            setExpandedKey(expandedKey === "profile" ? null : "profile"); 
+                                        }}
+                                        className={`w-full flex items-center justify-between py-6 group ${!arcticData?.hasNFT ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
-                                        <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "profile" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
-                                            Wallet Profile
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "profile" ? "text-white border-b-2 border-white" : "text-white/80 group-hover:text-white"}`}>
+                                                Wallet Profile
+                                            </span>
+                                            {!arcticData?.hasNFT && <Lock size={12} className="text-white/40" />}
+                                        </div>
                                         <motion.div
                                             animate={{ rotate: expandedKey === "profile" ? 180 : 0 }}
                                             className="text-white/60 group-hover:text-white transition-colors"
@@ -290,7 +304,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                         </motion.div>
                                     </button>
                                     <AnimatePresence initial={false}>
-                                        {expandedKey === "profile" && (
+                                        {expandedKey === "profile" && arcticData?.hasNFT && (
                                             <motion.div
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: "auto", opacity: 1 }}
@@ -377,7 +391,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                             <Loader2 size={16} className="animate-spin" />
                                                             <span className="text-sm">Verifying assets...</span>
                                                         </div>
-                                                    ) : arcticData.hasNFT ? (
+                                                    ) : arcticData?.hasNFT ? (
                                                         <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4 flex items-center gap-4">
                                                             <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400">
                                                                 <Check size={24} />
@@ -406,12 +420,19 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
 
                                 <div className="border-b border-white/10">
                                     <button 
-                                        onClick={() => { playClick(); setExpandedKey(expandedKey === "connections" ? null : "connections"); }}
-                                        className="w-full flex items-center justify-between py-7 group"
+                                        onClick={() => { 
+                                            if (!arcticData?.hasNFT) return;
+                                            playClick(); 
+                                            setExpandedKey(expandedKey === "connections" ? null : "connections"); 
+                                        }}
+                                        className={`w-full flex items-center justify-between py-7 group ${!arcticData?.hasNFT ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
-                                        <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "connections" ? "text-white border-b-2 border-white" : "text-white/80 hover:text-white"}`}>
-                                            Connections
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "connections" ? "text-white border-b-2 border-white" : "text-white/80 group-hover:text-white"}`}>
+                                                Connections
+                                            </span>
+                                            {!arcticData?.hasNFT && <Lock size={12} className="text-white/40" />}
+                                        </div>
                                         <motion.div
                                             animate={{ rotate: expandedKey === "connections" ? 180 : 0 }}
                                             className="text-white/60 group-hover:text-white transition-colors"
@@ -420,7 +441,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                         </motion.div>
                                     </button>
                                     <AnimatePresence initial={false}>
-                                        {expandedKey === "connections" && (
+                                        {expandedKey === "connections" && arcticData?.hasNFT && (
                                             <motion.div
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: "auto", opacity: 1 }}
