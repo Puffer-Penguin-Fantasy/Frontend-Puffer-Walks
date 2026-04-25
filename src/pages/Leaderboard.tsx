@@ -46,30 +46,42 @@ export default function LeaderboardPage() {
         }, { merge: true });
 
         const participants = game.participants || [];
-        for (const p of participants) {
+        
+        // 1. Fetch all existing Firestore participants at once to avoid loop getDocs
+        const pCollRef = collection(db, "games", game.id, "participants");
+        const existingPSnap = await getDocs(pCollRef);
+        const existingPMap = new Map(existingPSnap.docs.map(d => [d.id, d.data()]));
+
+        // 2. Filter for participants that need syncing
+        const participantsToSync = participants.filter(p => {
+          const pAddr = typeof p === 'string' ? p : ((p as any)?.value || String(p));
+          if (!pAddr || pAddr === "[object Object]") return false;
+          const standardizedPAddr = pAddr.toLowerCase();
+          const existing = existingPMap.get(standardizedPAddr);
+          return !existing || !existing.username;
+        });
+
+        // 3. Sync them in parallel batches (or all at once if small enough)
+        await Promise.all(participantsToSync.map(async (p) => {
           try {
             const pAddr = typeof p === 'string' ? p : ((p as any)?.value || String(p));
-            if (!pAddr || pAddr === "[object Object]") continue;
-            
             const standardizedPAddr = pAddr.toLowerCase();
             const pRef = doc(db, "games", game.id, "participants", standardizedPAddr);
-            const pSnap = await getDoc(pRef);
             
-            if (!pSnap.exists() || !pSnap.data()?.username) {
-              const userSnap = await getDoc(doc(db, "users", standardizedPAddr));
-              const profile = userSnap.exists() ? userSnap.data() : null;
-              await setDoc(pRef, {
-                walletAddress: standardizedPAddr,
-                username: profile?.username || null,
-                profileImage: profile?.profileImage || null,
-                joinedAt: Date.now(),
-                isEliminated: pSnap.exists() ? (pSnap.data()?.isEliminated === true) : false
-              }, { merge: true });
-            }
+            const userSnap = await getDoc(doc(db, "users", standardizedPAddr));
+            const profile = userSnap.exists() ? userSnap.data() : null;
+            
+            await setDoc(pRef, {
+              walletAddress: standardizedPAddr,
+              username: profile?.username || null,
+              profileImage: profile?.profileImage || null,
+              joinedAt: Date.now(),
+              isEliminated: existingPMap.get(standardizedPAddr)?.isEliminated === true
+            }, { merge: true });
           } catch (innerErr) {
             console.error("Participant Sync Error:", innerErr);
           }
-        }
+        }));
       } catch (err) {
         console.error("Leaderboard Sync Error:", err);
       } finally {
