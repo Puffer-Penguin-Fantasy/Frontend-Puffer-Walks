@@ -4,6 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Puffer Walks</title>
+    
+    <!-- DNS and Connection Pre-warming -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://firestore.googleapis.com" />
+    <link rel="preconnect" href="https://mainnet.movementnetwork.xyz" />
+
+    <!-- Asset Pre-loading -->
+    <link rel="preload" as="image" href="/src/assets/blue.jpg" />
+    <link rel="preload" as="font" href="/Xirod.otf" type="font/otf" crossorigin />
+    @font-face {
+      font-family: 'Xirod';
+      src: url('/Xirod.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
   </head>
   <body>
     <div id="root"></div>

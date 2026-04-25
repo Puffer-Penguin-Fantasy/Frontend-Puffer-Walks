@@ -8,7 +8,7 @@ import { WalletPanel } from "../components/WalletPanel";
 import { ArrowLeft, Trophy, Lock } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { db } from "../lib/firebase";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
 import { useSound } from "../hooks/useSound";
 
 import blueBackground from "../assets/blue.jpg"
@@ -57,7 +57,7 @@ export default function LeaderboardPage() {
           const pAddr = typeof p === 'string' ? p : ((p as any)?.value || String(p));
           if (!pAddr || pAddr === "[object Object]") return false;
           const standardizedPAddr = pAddr.toLowerCase();
-          const existing = existingPMap.get(standardizedPAddr);
+          const existing = existingPMap.get(standardizedPAddr) as any;
           return !existing || !existing.username;
         });
 
@@ -76,7 +76,7 @@ export default function LeaderboardPage() {
               username: profile?.username || null,
               profileImage: profile?.profileImage || null,
               joinedAt: Date.now(),
-              isEliminated: existingPMap.get(standardizedPAddr)?.isEliminated === true
+              isEliminated: (existingPMap.get(standardizedPAddr) as any)?.isEliminated === true
             }, { merge: true });
           } catch (innerErr) {
             console.error("Participant Sync Error:", innerErr);
