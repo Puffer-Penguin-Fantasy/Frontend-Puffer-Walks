@@ -306,9 +306,9 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                             {isLoading ? (
                                                                 <Loader2 size={32} className="animate-spin opacity-40" />
                                                             ) : profileImage ? (
-                                                                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                                                                <img src={profileImage} alt="Profile" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                                             ) : (
-                                                                <img src={userAvatar} alt="Default Avatar" className="w-full h-full object-cover opacity-50" />
+                                                                <img src={userAvatar} alt="Default Avatar" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-50" />
                                                             )}
                                                             
                                                             {isEditing && !isLoading && (

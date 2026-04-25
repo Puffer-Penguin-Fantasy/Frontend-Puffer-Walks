@@ -116,6 +116,8 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
                <img 
                   src={game.image_url} 
                   alt={game.name} 
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover transition-transform duration-500"
                 />
             </div>
@@ -195,7 +197,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
                   ) : (
                     <>
                       {claimableReward}
-                      <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3 h-3 rounded-full" alt="MOVE" />
+                      <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3 h-3 rounded-full" loading="lazy" decoding="async" alt="MOVE" />
                     </>
                   )}
                 </button>
@@ -220,7 +222,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
         {game.is_sponsored && game.sponsor_image_url && (
           <div className="absolute top-0 right-0 p-1 px-3 bg-amber-500/10 rounded-bl-xl flex items-center gap-1.5">
             <span className="text-[8px] font-medium text-amber-500 lowercase tracking-tight">sponsored by</span>
-            <img src={game.sponsor_image_url} alt={game.sponsor_name} className="w-3.5 h-3.5 rounded-full object-cover" />
+            <img src={game.sponsor_image_url} alt={game.sponsor_name} loading="lazy" decoding="async" className="w-3.5 h-3.5 rounded-full object-cover" />
             <span className="text-[9px] font-semibold text-amber-500 leading-none">{game.sponsor_name}</span>
           </div>
         )}
@@ -231,7 +233,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
              <span className="text-sm font-bold text-white">
                {parseFloat(depositInMove).toFixed(0)}
              </span>
-             <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3 h-3 rounded-full" alt="MOVE" />
+             <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3 h-3 rounded-full" loading="lazy" decoding="async" alt="MOVE" />
              <span className="text-[10px] text-blue-400 font-bold whitespace-nowrap">+10</span>
           </div>
         </div>
