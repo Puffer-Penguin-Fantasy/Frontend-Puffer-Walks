@@ -17,25 +17,21 @@ function AppRoutes() {
 	return (
 		<Routes>
 			<Route
-				path="/login"
-				element={isConnected ? <Navigate to="/" /> : <LoginPage />}
-			/>
-			<Route
 				path="/"
-				element={isConnected ? <SettingsPage /> : <Navigate to="/login" />}
+				element={isConnected ? <SettingsPage /> : <LoginPage />}
 			/>
 			<Route path="/callback" element={<Callback />} />
 			<Route path="/google-callback" element={<GoogleCallback />} />
 			<Route path="/privacy" element={<PrivacyPage />} />
 			<Route 
 				path="/leaderboard/:gameId" 
-				element={isConnected ? <LeaderboardPage /> : <Navigate to="/login" />} 
+				element={isConnected ? <LeaderboardPage /> : <Navigate to="/" />} 
 			/>
 			<Route 
 				path="/profile" 
-				element={isConnected ? <ProfilePage /> : <Navigate to="/login" />} 
+				element={isConnected ? <ProfilePage /> : <Navigate to="/" />} 
 			/>
-			{/* Catch-all redirect to home (which then goes to login if needed) */}
+			{/* Catch-all redirect to home */}
 			<Route path="*" element={<Navigate to="/" />} />
 		</Routes>
 	)
