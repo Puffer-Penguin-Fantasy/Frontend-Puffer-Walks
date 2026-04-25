@@ -20,12 +20,16 @@ function AppRoutes() {
 			/>
 			<Route
 				path="/"
-				element={isConnected ? <SettingsPage /> : <LoginPage />}
+				element={isConnected ? <SettingsPage /> : <Navigate to="/login" />}
 			/>
 			<Route path="/callback" element={<Callback />} />
 			<Route path="/google-callback" element={<GoogleCallback />} />
-			<Route path="/leaderboard/:gameId" element={<LeaderboardPage />} />
-
+			<Route 
+				path="/leaderboard/:gameId" 
+				element={isConnected ? <LeaderboardPage /> : <Navigate to="/login" />} 
+			/>
+			{/* Catch-all redirect to home (which then goes to login if needed) */}
+			<Route path="*" element={<Navigate to="/" />} />
 		</Routes>
 	)
 }
