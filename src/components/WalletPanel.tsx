@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { LogOut, ChevronDown, Camera, Check, Loader2, Lock } from "lucide-react";
 import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { FitbitConnector } from "../integrations/fitbit/components/FitbitConnector";
-import { useFitbit } from "../integrations/fitbit/hooks/useFitbit";
 import { useArcticPenguin } from "../hooks/useArcticPenguin";
 import { useProfile } from "../hooks/useProfile";
 import { motion, AnimatePresence } from "framer-motion";
@@ -47,7 +46,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     const [profileImage, setProfileImage] = useState<string | null>(null);
 
     const { data: arcticData, isLoading: arcticLoading } = useArcticPenguin(address);
-    const { isConnected: isFitbitConnected } = useFitbit();
+
     const isLoading = profileLoading || arcticLoading;
 
     const shortAddress = address?.slice(0, 6) + '...' + address?.slice(-4);
