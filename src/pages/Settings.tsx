@@ -67,7 +67,7 @@ export default function SettingsPage() {
                 {/* Hero Section */}
                 <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
-                        <h1 className="text-2xl text-foreground mb-2 tracking-tight">
+                        <h1 id="step-competitions" className="text-2xl text-foreground mb-2 tracking-tight">
                             Active Competitions
                         </h1>
                         <p className="text-muted-foreground text-sm tracking-tight">
@@ -76,6 +76,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex flex-col md:flex-row items-center gap-3">
                         <input
+                            id="step-join-code"
                             type="text"
                             placeholder="Enter Join Code"
                             value={discoverCode}

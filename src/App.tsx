@@ -7,8 +7,10 @@ import Callback from './pages/Callback'
 import LeaderboardPage from './pages/Leaderboard'
 import ProfilePage from './pages/Profile'
 import PrivacyPage from './pages/Privacy'
+import GuidanceDemo from './pages/GuidanceDemo'
 import { NavigationDock } from './components/NavigationDock'
 import { TooltipProvider } from './components/ui/tooltip'
+import { AppGuidance } from './components/AppGuidance'
 
 
 function AppRoutes() {
@@ -31,6 +33,7 @@ function AppRoutes() {
 				path="/profile" 
 				element={isConnected ? <ProfilePage /> : <Navigate to="/" />} 
 			/>
+			<Route path="/guidance-demo" element={<GuidanceDemo />} />
 			{/* Catch-all redirect to home */}
 			<Route path="*" element={<Navigate to="/" />} />
 		</Routes>
@@ -41,6 +44,7 @@ function App() {
 	return (
 		<BrowserRouter>
 			<TooltipProvider delayDuration={0}>
+				<AppGuidance />
 				<AppRoutes />
 				<NavigationDock />
 			</TooltipProvider>

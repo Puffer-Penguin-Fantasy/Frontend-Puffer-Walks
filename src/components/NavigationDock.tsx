@@ -41,6 +41,7 @@ export function NavigationDock() {
           <Tooltip key={item.id}>
             <TooltipTrigger asChild>
               <button
+                id={`step-${item.id}`}
                 onClick={() => navigate(item.href)}
                 className={cn(
                   "relative p-2.5 rounded-full transition-all duration-300 group",

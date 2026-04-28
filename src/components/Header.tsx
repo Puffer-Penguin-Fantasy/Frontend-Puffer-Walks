@@ -67,6 +67,7 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
                     )}
 
                     <div 
+                        id="step-wallet"
                         className="relative w-10 h-10 md:w-12 md:h-12 cursor-pointer hover:scale-105 transition-transform flex items-center justify-center"
                         onClick={() => { playClick(); onOpenWallet(); }}
                     >

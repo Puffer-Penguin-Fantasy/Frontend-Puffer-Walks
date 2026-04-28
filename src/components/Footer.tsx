@@ -92,13 +92,25 @@ export function Footer() {
                     <button onClick={() => { playClick(); setIsOpen(false); }} className="text-black/10 hover:text-black transition-colors"><X size={20} /></button>
                   </div>
 
-                  <div className="space-y-4 text-center md:text-left flex-1 flex flex-col justify-center">
+                    <div className="space-y-4 text-center md:text-left flex-1 flex flex-col justify-center">
                     <h2 className="text-2xl font-bold font-xirod text-black tracking-tight leading-loose">
                       {steps[currentStep].title}
                     </h2>
                     <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto md:mx-0">
                       {steps[currentStep].description}
                     </p>
+                    {currentStep === 0 && (
+                      <button 
+                        onClick={() => {
+                          playClick();
+                          setIsOpen(false);
+                          window.dispatchEvent(new CustomEvent('restart-puffer-tour'));
+                        }}
+                        className="mt-4 text-blue-600 text-xs font-bold hover:underline underline-offset-4 decoration-blue-600/30 transition-all"
+                      >
+                        Take Interactive Tour →
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-center md:justify-start gap-4 mt-8 md:mt-0">
