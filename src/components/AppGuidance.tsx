@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Joyride, STATUS } from 'react-joyride';
 import type { Step, EventData } from 'react-joyride';
 import { useAccount } from '@razorlabs/razorkit';

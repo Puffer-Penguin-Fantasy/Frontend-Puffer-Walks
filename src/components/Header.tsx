@@ -73,7 +73,7 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
                     >
                         <img src={pfpFrame} alt="Frame" className="absolute inset-0 w-full h-full pointer-events-none" />
                         <div className="relative w-[75%] h-[75%] overflow-hidden rounded-full bg-muted flex items-center justify-center z-10">
-                            {profileImage ? (
+                            {profileImage && profileImage.trim() !== "" ? (
                                 <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                             ) : (
                                 <img src={userAvatar} alt="Default" className="w-full h-full object-cover opacity-50" />

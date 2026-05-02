@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { db } from "../lib/firebase";
-import { doc, setDoc, collection, getDocs } from "firebase/firestore";
+import { doc, setDoc, collection, getDocs, getDoc } from "firebase/firestore";
 import type { Game } from "../types/game";
 
 import { aptosClient } from "../GameOnchain/movement_service/movement-client";
@@ -150,6 +150,18 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       let gamesWithClaimStatus = [...results];
       if (rawAddress) {
         const userAddrNorm = rawAddress.toLowerCase();
+        
+        // 1. Fetch user's claim map from their profile (Fast, no index needed)
+        let userClaims: Record<string, boolean> = {};
+        try {
+          const userDoc = await getDoc(doc(db, "users", userAddrNorm));
+          if (userDoc.exists()) {
+            userClaims = userDoc.data().claims || {};
+          }
+        } catch (err) {
+          console.error("Error fetching user claims:", err);
+        }
+
         const hasJoinedAnyGame = results.some(g => g.participants.some((p: any) => {
             const pAddr = typeof p === 'string' ? p : (p.value || "");
             return pAddr.toLowerCase() === userAddrNorm;
@@ -157,6 +169,7 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
 
         if (hasJoinedAnyGame) {
           try {
+            // 2. Fetch UserParticipation resource for blockchain verification handle
             const upResource = await aptosClient.getAccountResource({
               accountAddress: rawAddress,
               resourceType: `${MODULE_ADDRESS}::game::UserParticipation`
@@ -171,9 +184,19 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
                   const pAddr = typeof p === 'string' ? p : (p.value || "");
                   return pAddr.toLowerCase() === userAddrNorm;
                 });
+                
+                if (!isJoined) return { ...g, isClaimed: false };
+                
                 const isEnded = parseInt(g.end_time) < Math.floor(Date.now() / 1000);
-                if (isJoined && isEnded) {
+                
+                // If our Firestore profile says it's claimed, trust it for the UI (Instant)
+                if (userClaims[g.id]) {
+                  return { ...g, isClaimed: true };
+                }
+
+                if (isEnded) {
                   try {
+                    // Fallback to blockchain for ended games if not in Firestore profile
                     const progress = await aptosClient.getTableItem({
                       handle: tableHandle,
                       data: {
@@ -183,19 +206,19 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
                       }
                     }) as any;
                     
-                    const compCount = Array.isArray(progress?.days_completed) 
-                      ? progress.days_completed.filter((met: boolean) => met).length 
-                      : 0;
-
+                    const isActuallyClaimed = progress?.has_withdrawn === true || progress?.has_withdrawn === "true";
+                    
                     return { 
                       ...g, 
-                      isClaimed: progress?.has_withdrawn === true || progress?.has_withdrawn === "true",
-                      userCompletedDays: compCount,
+                      isClaimed: isActuallyClaimed,
+                      userCompletedDays: Array.isArray(progress?.days_completed) 
+                        ? progress.days_completed.filter((met: boolean) => met).length 
+                        : 0,
                       userMissedDays: parseInt(progress?.missed_days || "0"),
                       days_completed: progress?.days_completed || []
                     };
                   } catch (err) {
-                    return { ...g, isClaimed: false, userCompletedDays: 0, userMissedDays: 0 };
+                    return { ...g, isClaimed: false };
                   }
                 }
                 return { ...g, isClaimed: false };
@@ -289,6 +312,27 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       const hash = detectHash(response);
       if (hash) await aptosClient.waitForTransaction({ transactionHash: hash });
       else await new Promise(r => setTimeout(r, 2000));
+
+      // Optimistic Update: Set claimed state in UI immediately
+      setGames(prev => prev.map(g => g.id === gameId ? { ...g, isClaimed: true } : g));
+
+      // Sync claim status to User Profile (Simple, index-free sync)
+      try {
+        const userRef = doc(db, "users", rawAddress.toLowerCase());
+        const userDoc = await getDoc(userRef);
+        const currentClaims = userDoc.exists() ? (userDoc.data().claims || {}) : {};
+        
+        await setDoc(userRef, {
+          claims: {
+            ...currentClaims,
+            [gameId]: true
+          },
+          lastClaimAt: Date.now()
+        }, { merge: true });
+      } catch (err) {
+        console.error("Error syncing claim to user profile:", err);
+      }
+
       await fetchGames();
       return response;
     } catch (err) {

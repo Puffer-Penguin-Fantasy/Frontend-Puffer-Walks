@@ -1,9 +1,10 @@
 import React from "react";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, Share2 } from "lucide-react";
 import type { Game } from "../types/game";
 import { useAccount } from "@razorlabs/razorkit";
 import { useSound } from "../hooks/useSound";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface GameCardProps {
   game: Game;
@@ -100,6 +101,30 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
     }
   };
 
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    playClick();
+    
+    const baseUrl = window.location.origin;
+    const shareUrl = game.is_public 
+      ? `${baseUrl}/` 
+      : `${baseUrl}/?code=${game.join_code || ""}`;
+      
+    if (navigator.share && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      navigator.share({
+        title: `Join ${game.name} on Puffer Walks!`,
+        text: `I'm competing in "${game.name}" on Puffer Walks. Join me and let's see who walks the most!`,
+        url: shareUrl,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied to clipboard!", {
+        description: "Share it with friends to invite them to this competition.",
+        duration: 3000,
+      });
+    }
+  };
+
   return (
     <div 
       onClick={() => {
@@ -141,7 +166,14 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
         </div>
 
         {/* Action Button at Top-Right */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 flex items-center gap-2">
+          <button
+            onClick={handleShare}
+            className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-95"
+            title="Share Competition"
+          >
+            <Share2 size={16} />
+          </button>
           {isUpcoming && (
             isJoined ? (
               <div

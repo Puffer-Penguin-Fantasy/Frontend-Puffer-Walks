@@ -210,7 +210,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                 ) : (
                                   endedGames.map(game => (
                                     <div key={game.id} className="flex items-center gap-3 p-3 bg-black/30 rounded-xl border border-white/10">
-                                      {game.image_url && (
+                                      {game.image_url && game.image_url.trim() !== "" && (
                                         <img src={game.image_url} alt={game.name} className="w-8 h-8 rounded-full object-cover shrink-0 border border-white/10" />
                                       )}
                                       <div className="flex-1 min-w-0">
@@ -321,7 +321,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                     const hasParticipants = (game.participants_count || 0) > 0;
                                     return (
                                       <div key={game.id} className="flex items-center gap-3 p-3 bg-black/30 rounded-xl border border-white/10">
-                                        {game.image_url && (
+                                        {game.image_url && game.image_url.trim() !== "" && (
                                           <img src={game.image_url} alt={game.name} className="w-8 h-8 rounded-full object-cover shrink-0 border border-white/10" />
                                         )}
                                         <div className="flex-1 min-w-0">

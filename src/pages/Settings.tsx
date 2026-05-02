@@ -26,8 +26,15 @@ export default function SettingsPage() {
     const address = rawAddress?.toLowerCase();
     React.useEffect(() => {
         const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
+        if (code) {
+            setDiscoverCode(code);
+            url.searchParams.delete('code');
+        }
         if (url.searchParams.has('fitbit')) {
             url.searchParams.delete('fitbit');
+        }
+        if (code || url.searchParams.has('fitbit')) {
             window.history.replaceState({}, '', url.pathname + url.search);
         }
     }, []);

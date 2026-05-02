@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
 import { AppGuidance } from '../components/AppGuidance';
 import { Header } from '../components/Header';
 import { NavigationDock } from '../components/NavigationDock';
 import { Footer } from '../components/Footer';
 import blueBackground from "../assets/blue.jpg";
 
-// Mocking useAccount for the demo
-import * as razorlabs from '@razorlabs/razorkit';
+
 
 export default function GuidanceDemo() {
   // We can't easily mock useAccount if it's a real hook from a library,

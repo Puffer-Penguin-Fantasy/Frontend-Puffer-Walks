@@ -70,7 +70,7 @@ function ParticipantProfile({ fallbackName, isMe, isPodium, rank, isPinned, prof
         className={`w-7 h-7 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center text-[10px] font-normal ${isMe ? "" : isPodium ? `bg-gradient-to-br ${RANK_COLORS[rank - 1]}` : "bg-muted"
           }`}
       >
-        {pfp ? (
+        {pfp && pfp.trim() !== "" ? (
           <img src={pfp} alt={username} loading="lazy" decoding="async" className="w-full h-full object-cover" />
         ) : (
           <span className={isPodium ? "text-white" : "text-muted-foreground"}>
@@ -442,7 +442,7 @@ export function GameLeaderboard({
         <div className="flex justify-center mb-0">
           <div className="flex items-center gap-3 py-4 px-6 rounded-3xl transition-all">
             <div className="w-10 h-10 flex items-center justify-center overflow-hidden flex-shrink-0">
-              {sponsorImageUrl ? (
+              {sponsorImageUrl && sponsorImageUrl.trim() !== "" ? (
                 <img src={sponsorImageUrl} alt={sponsorName} loading="lazy" decoding="async" className="w-full h-full object-contain grayscale opacity-60 invert" />
               ) : (
                 <Trophy className="text-muted-foreground/30" size={20} />
@@ -466,7 +466,7 @@ export function GameLeaderboard({
           <div className="flex items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3 overflow-hidden flex-1">
               <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border border-white/10">
-                {imageUrl ? (
+                {imageUrl && imageUrl.trim() !== "" ? (
                   <img src={imageUrl} alt={gameName} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-white/5 flex items-center justify-center text-white font-bold text-xl uppercase">

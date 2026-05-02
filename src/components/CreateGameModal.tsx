@@ -3,6 +3,7 @@ import { X, Calendar, Trophy, Footprints, Lock, Globe, Loader2, ShieldCheck, Upl
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "../lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
+import { toast } from "sonner";
 // useAccount removed to fix build error
 
 interface CreateGameModalProps {
@@ -13,6 +14,8 @@ interface CreateGameModalProps {
 
 export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreated, setIsCreated] = useState(false);
+  const [createdData, setCreatedData] = useState({ name: "", code: "", isPublic: true });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [sponsorLogoFile, setSponsorLogoFile] = useState<File | null>(null);
@@ -134,11 +137,14 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
         }, { merge: true });
       }
 
-      // Reset form
+      // Reset form (don't reset name/code yet as we might want to show them)
+      setCreatedData({ name: formData.name, code: formData.code, isPublic: formData.is_public });
+      setIsCreated(true);
+
       setFormData({ name: "", deposit: "10", min_steps: "3000", start_date: "", end_date: "", duration_days: 0, is_public: true, code: "", sponsor_name: "", sponsor_amount: "0" });
       setImageFile(null); setImagePreview(null);
       setSponsorLogoFile(null); setSponsorLogoPreview(null);
-      onClose();
+      // Removed onClose() call here to show success screen
     } catch (err) {
       console.error(err);
       alert("Failed to launch competition. Check console for details.");
@@ -170,12 +176,77 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                 <h2 className="text-lg font-bold text-white tracking-tight">Launch Competition</h2>
                 <p className="text-white/40 text-xs mt-0.5">Configure a new on-chain walking battle</p>
               </div>
-              <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+              <button 
+                onClick={() => {
+                  if (isCreated) setIsCreated(false);
+                  onClose();
+                }} 
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+              >
                 <X size={16} className="text-white/60" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 no-scrollbar">
+            {isCreated ? (
+              <div className="p-8 flex flex-col items-center text-center">
+                <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6">
+                  <Trophy size={40} className="text-emerald-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">Competition Launched!</h3>
+                <p className="text-white/60 text-sm mb-8 max-w-sm">
+                  "{createdData.name}" is now live on the Movement Network. Share it with your community to start the battle.
+                </p>
+
+                <div className="w-full space-y-3 mb-8">
+                  <div className="p-4 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between">
+                    <div className="text-left">
+                      <div className="text-[10px] text-white/40 uppercase tracking-widest">Share Link</div>
+                      <div className="text-sm text-white font-medium truncate max-w-[240px]">
+                        {window.location.origin}{createdData.isPublic ? "" : `/?code=${createdData.code}`}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const url = window.location.origin + (createdData.isPublic ? "" : `/?code=${createdData.code}`);
+                        navigator.clipboard.writeText(url);
+                        toast.success("Link copied to clipboard!");
+                      }}
+                      className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-all"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  {!createdData.isPublic && (
+                    <div className="p-4 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between">
+                      <div className="text-left">
+                        <div className="text-[10px] text-white/40 uppercase tracking-widest">Join Code</div>
+                        <div className="text-sm text-white font-medium">{createdData.code}</div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(createdData.code);
+                          toast.success("Code copied to clipboard!");
+                        }}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-all"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => {
+                    setIsCreated(false);
+                    onClose();
+                  }}
+                  className="w-full py-4 bg-white text-black font-bold rounded-xl text-sm transition-all active:scale-95 shadow-lg shadow-white/5"
+                >
+                  Back to Dashboard
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 no-scrollbar">
               <div className="p-6 space-y-6">
 
                 {/* Banner + Name row */}
@@ -200,7 +271,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                       onClick={() => bannerInputRef.current?.click()}
                       className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/40 flex items-center justify-center cursor-pointer overflow-hidden transition-all"
                     >
-                      {imagePreview ? (
+                      {imagePreview && imagePreview.trim() !== "" ? (
                         <img src={imagePreview} alt="Banner" className="w-full h-full object-cover" />
                       ) : (
                         <Upload size={16} className="text-white/30" />
@@ -352,7 +423,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                         onClick={() => sponsorLogoInputRef.current?.click()}
                         className="w-full h-11 px-4 bg-white/5 border border-white/10 rounded-xl flex items-center gap-2 cursor-pointer hover:border-amber-500/30 transition-all"
                       >
-                        {sponsorLogoPreview ? (
+                        {sponsorLogoPreview && sponsorLogoPreview.trim() !== "" ? (
                           <img src={sponsorLogoPreview} alt="Logo" className="w-6 h-6 rounded-full object-cover" />
                         ) : (
                           <Upload size={14} className="text-white/30" />
@@ -418,7 +489,8 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                   {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Launching…</> : "🚀 Launch Competition"}
                 </button>
               </div>
-            </form>
+              </form>
+            )}
           </motion.div>
         </div>
       )}
