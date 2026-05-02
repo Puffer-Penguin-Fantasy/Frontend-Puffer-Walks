@@ -67,8 +67,13 @@ export default defineConfig({
                return 'ui-suite';
              }
 
-             // 3. Framework & React Suite
-             if (id.includes('react') || id.includes('react-dom') || id.includes('firebase') || id.includes('framer-motion')) {
+             // 3. React Core (Isolated to prevent CJS/ESM shim initialization errors)
+             if (id.includes('react') || id.includes('react-dom')) {
+               return 'react-vendor';
+             }
+
+             // 4. Framework Suite (Other heavy libraries)
+             if (id.includes('firebase') || id.includes('framer-motion')) {
                return 'framework-suite';
              }
 
