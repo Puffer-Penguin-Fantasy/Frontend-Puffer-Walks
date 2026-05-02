@@ -23,7 +23,10 @@ export default defineConfig({
     },
   },
   build: {
-    target: 'esnext', // Crucial: Prevents esbuild from attempting to transpile/rename symbols
+    target: 'es2020', // Better compatibility for mobile wallet browsers than esnext
+    modulePreload: {
+      polyfill: true,
+    },
     minify: 'terser',
     terserOptions: {
       compress: {

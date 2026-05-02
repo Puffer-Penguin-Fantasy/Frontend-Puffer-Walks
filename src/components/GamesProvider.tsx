@@ -41,7 +41,6 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const hasLoadedOnce = useRef(false);
   const fbGamesCache = useRef<{ data: Record<string, any>, fetchedAt: number } | null>(null);
-  const FB_CACHE_TTL = 60 * 1000; // 1 minute
 
   const hexToBytes = (hex: string): number[] => {
     if (!hex) return [];
@@ -70,10 +69,14 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(true);
       }
       
-      const resource = await aptosClient.getAccountResource({
-        accountAddress: MODULE_ADDRESS,
-        resourceType: `${MODULE_ADDRESS}::game::GameStore`
-      });
+      // Parallelize blockchain and firebase fetches for speed
+      const [resource, fbSnap] = await Promise.all([
+        aptosClient.getAccountResource({
+          accountAddress: MODULE_ADDRESS,
+          resourceType: `${MODULE_ADDRESS}::game::GameStore`
+        }),
+        getDocs(collection(db, "games"))
+      ]);
 
       if (!resource) {
         console.error("GameStore resource not found at address:", MODULE_ADDRESS);
@@ -90,16 +93,9 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       else if (gamesResource?.inline_vec) rawGames = gamesResource.inline_vec;
       else if (gamesResource?.data) rawGames = gamesResource.data;
 
-      // Use cached Firestore games map if fresh (avoids re-reading entire collection on every mutation)
-      let fbGamesMap: Record<string, any> = {};
-      const now_ts = Date.now();
-      if (fbGamesCache.current && (now_ts - fbGamesCache.current.fetchedAt) < FB_CACHE_TTL) {
-        fbGamesMap = fbGamesCache.current.data;
-      } else {
-        const fbSnap = await getDocs(collection(db, "games"));
-        fbGamesMap = fbSnap.docs.reduce((acc: any, d) => ({ ...acc, [d.id]: d.data() }), {});
-        fbGamesCache.current = { data: fbGamesMap, fetchedAt: now_ts };
-      }
+      // Map Firestore games
+      const fbGamesMap = fbSnap.docs.reduce((acc: any, d) => ({ ...acc, [d.id]: d.data() }), {});
+      fbGamesCache.current = { data: fbGamesMap, fetchedAt: Date.now() };
 
       const results = (rawGames as any[]).map((item: any) => {
         const g = item.value || item;

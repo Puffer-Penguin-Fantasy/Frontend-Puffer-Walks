@@ -106,9 +106,9 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
     playClick();
     
     const baseUrl = window.location.origin;
-    const shareUrl = game.is_public 
-      ? `${baseUrl}/` 
-      : `${baseUrl}/?code=${game.join_code || ""}`;
+    // Use join_code if it exists, otherwise use game name which dashboard can use to filter
+    const shareCode = game.join_code || game.name;
+    const shareUrl = `${baseUrl}/?code=${encodeURIComponent(shareCode)}`;
       
     if (navigator.share && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
       navigator.share({

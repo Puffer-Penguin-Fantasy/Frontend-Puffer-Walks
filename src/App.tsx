@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAccount } from '@razorlabs/razorkit'
 import LoginPage from './pages/Login'
@@ -16,11 +16,31 @@ import { NavigationDock } from './components/NavigationDock'
 import { TooltipProvider } from './components/ui/tooltip'
 
 // Loading fallback component
-const PageLoader = () => (
-	<div className="fixed inset-0 flex items-center justify-center bg-[#0a0a0a] z-[3000]">
-		<div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-	</div>
-)
+const PageLoader = () => {
+	const [timedOut, setTimedOut] = useState(false);
+
+	useEffect(() => {
+		const timer = setTimeout(() => setTimedOut(true), 10000);
+		return () => clearTimeout(timer);
+	}, []);
+
+	return (
+		<div className="fixed inset-0 flex flex-col items-center justify-center bg-[#0a0a0a] z-[3000] p-6 text-center">
+			<div className="w-10 h-10 border-3 border-white/20 border-t-white rounded-full animate-spin mb-6" />
+			{timedOut && (
+				<div className="max-w-xs animate-in fade-in slide-in-from-bottom-4 duration-500">
+					<p className="text-white/60 text-sm mb-4">Taking longer than expected. This can happen in some wallet browsers.</p>
+					<button 
+						onClick={() => window.location.reload()}
+						className="px-6 py-2 bg-white text-black text-xs font-bold rounded-full hover:bg-white/90 transition-all active:scale-95"
+					>
+						Refresh Page
+					</button>
+				</div>
+			)}
+		</div>
+	);
+}
 
 
 function AppRoutes() {

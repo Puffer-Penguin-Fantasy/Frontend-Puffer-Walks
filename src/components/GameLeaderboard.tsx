@@ -10,8 +10,10 @@ import {
   Users,
   Trophy,
   Pin,
-  Info
+  Info,
+  Share2
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -535,6 +537,35 @@ export function GameLeaderboard({
                   </Tooltip>
                 </div>
               )}
+
+              {/* Share Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const baseUrl = window.location.origin;
+                  const gameData = games.find(g => g.id === gameId);
+                  const shareCode = gameData?.join_code || gameName;
+                  const shareUrl = `${baseUrl}/?code=${encodeURIComponent(shareCode)}`;
+
+                  if (navigator.share && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                    navigator.share({
+                      title: `Join ${gameName} on Puffer Walks!`,
+                      text: `I'm competing in "${gameName}" on Puffer Walks. Join me and let's see who walks the most!`,
+                      url: shareUrl,
+                    }).catch(console.error);
+                  } else {
+                    navigator.clipboard.writeText(shareUrl);
+                    toast.success("Link copied to clipboard!", {
+                      description: "Share it with friends to invite them to this competition.",
+                      duration: 3000,
+                    });
+                  }
+                }}
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all active:scale-95 shadow-sm"
+                title="Share Competition"
+              >
+                <Share2 size={16} />
+              </button>
 
               {status === 'upcoming' && (
               <div className="px-4 py-2 rounded-2xl border text-[10px] font-bold lowercase flex items-center gap-2 bg-blue-400/10 border-blue-400/20 text-blue-400">
