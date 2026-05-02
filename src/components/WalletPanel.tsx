@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LogOut, ChevronDown, Camera, Check, Loader2, Lock } from "lucide-react";
+import { LogOut, ChevronDown, Camera, Check, Loader2 } from "lucide-react";
 import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { FitbitConnector } from "../integrations/fitbit/components/FitbitConnector";
 import { useArcticPenguin } from "../hooks/useArcticPenguin";
@@ -264,17 +264,15 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 )}
                                 <button 
                                     onClick={() => { playClick(); toggleEdit(); }}
-                                    disabled={isSaving || isLoading || (!arcticData?.hasNFT && !isEditing)}
+                                    disabled={isSaving || isLoading}
                                     className={`text-[10px] font-xirod transition-all px-4 py-1.5 rounded-full border flex items-center gap-2 ${
                                         isEditing 
                                             ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
-                                            : !arcticData?.hasNFT 
-                                                ? "bg-black/50 border-white/10 text-white/40 cursor-not-allowed" 
-                                                : "bg-black/20 border-white/20 text-white hover:bg-black/40"
+                                            : "bg-black/20 border-white/20 text-white hover:bg-black/40"
                                     }`}
                                 >
                                     {isSaving ? <Loader2 size={12} className="animate-spin" /> : null}
-                                    {isEditing ? "Save Local" : arcticData?.hasNFT ? "Edit Account" : "NFT Holder Only"}
+                                    {isEditing ? "Save Local" : "Edit Account"}
                                 </button>
                             </div>
 
@@ -282,17 +280,15 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 <div className="border-b border-white/10 pb-2">
                                     <button 
                                         onClick={() => { 
-                                            if (!arcticData?.hasNFT) return;
                                             playClick(); 
                                             setExpandedKey(expandedKey === "profile" ? null : "profile"); 
                                         }}
-                                        className={`w-full flex items-center justify-between py-6 group ${!arcticData?.hasNFT ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className="w-full flex items-center justify-between py-6 group"
                                     >
                                         <div className="flex items-center gap-2">
                                             <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "profile" ? "text-white border-b-2 border-white" : "text-white/80 group-hover:text-white"}`}>
                                                 Wallet Profile
                                             </span>
-                                            {!arcticData?.hasNFT && <Lock size={12} className="text-white/40" />}
                                         </div>
                                         <motion.div
                                             animate={{ rotate: expandedKey === "profile" ? 180 : 0 }}
@@ -302,7 +298,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                         </motion.div>
                                     </button>
                                     <AnimatePresence initial={false}>
-                                        {expandedKey === "profile" && arcticData?.hasNFT && (
+                                        {expandedKey === "profile" && (
                                             <motion.div
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: "auto", opacity: 1 }}
@@ -419,17 +415,15 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 <div className="border-b border-white/10">
                                     <button 
                                         onClick={() => { 
-                                            if (!arcticData?.hasNFT) return;
                                             playClick(); 
                                             setExpandedKey(expandedKey === "connections" ? null : "connections"); 
                                         }}
-                                        className={`w-full flex items-center justify-between py-7 group ${!arcticData?.hasNFT ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className="w-full flex items-center justify-between py-7 group"
                                     >
                                         <div className="flex items-center gap-2">
                                             <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "connections" ? "text-white border-b-2 border-white" : "text-white/80 group-hover:text-white"}`}>
                                                 Connections
                                             </span>
-                                            {!arcticData?.hasNFT && <Lock size={12} className="text-white/40" />}
                                         </div>
                                         <motion.div
                                             animate={{ rotate: expandedKey === "connections" ? 180 : 0 }}
@@ -439,7 +433,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                         </motion.div>
                                     </button>
                                     <AnimatePresence initial={false}>
-                                        {expandedKey === "connections" && arcticData?.hasNFT && (
+                                        {expandedKey === "connections" && (
                                             <motion.div
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: "auto", opacity: 1 }}
