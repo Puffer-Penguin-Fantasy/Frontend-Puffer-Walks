@@ -21,8 +21,8 @@ import { GameCard } from "../components/GameCard";
 import pfpFrame from "../assets/gameframe/pfpframe.png";
 import userAvatar from "../assets/user-avatar.png";
 import { Header } from "../components/Header";
-import { WalletPanel } from "../components/WalletPanel";
-import { AdminPanel } from "../components/AdminPanel";
+import { WalletPanel, AdminPanel } from "../components/LazyPanels";
+import { Suspense } from "react";
 
 export default function Profile() {
   const { address } = useAccount();
@@ -285,8 +285,10 @@ export default function Profile() {
         </div>
       </main>
 
-      <WalletPanel isOpen={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
-      <AdminPanel isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
+      <Suspense fallback={null}>
+        <WalletPanel isOpen={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
+        <AdminPanel isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
+      </Suspense>
     </div>
   );
 }

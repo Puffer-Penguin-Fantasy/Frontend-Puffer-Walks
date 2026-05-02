@@ -1,12 +1,10 @@
 import { useAccount } from "@razorlabs/razorkit"
-import { WalletPanel } from "@/components/WalletPanel"
-import React from "react"
+import React, { Suspense } from "react"
+import { WalletPanel, AdminPanel, CreateGameModal } from "../components/LazyPanels"
 import { Trophy, Plus } from "lucide-react"
 import { useGame } from "../hooks/useGame"
 import { GameCard } from "../components/GameCard"
 import { GameCardSkeleton } from "../components/GameCardSkeleton"
-import { CreateGameModal } from "../components/CreateGameModal"
-import { AdminPanel } from "../components/AdminPanel"
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 import { useSound } from "../hooks/useSound"
@@ -211,18 +209,20 @@ export default function SettingsPage() {
                 )}
             </div>
 
-            <WalletPanel isOpen={isPanelOpen} onClose={() => setIsPanelOpen(false)} />
-            
-            <AdminPanel 
-                isOpen={isAdminPanelOpen} 
-                onClose={() => setIsAdminPanelOpen(false)} 
-            />
-            
-            <CreateGameModal 
-                isOpen={isCreateModalOpen} 
-                onClose={() => setIsCreateModalOpen(false)} 
-                onSubmit={createGame} 
-            />
+            <Suspense fallback={null}>
+                <WalletPanel isOpen={isPanelOpen} onClose={() => setIsPanelOpen(false)} />
+                
+                <AdminPanel 
+                    isOpen={isAdminPanelOpen} 
+                    onClose={() => setIsAdminPanelOpen(false)} 
+                />
+                
+                <CreateGameModal 
+                    isOpen={isCreateModalOpen} 
+                    onClose={() => setIsCreateModalOpen(false)} 
+                    onSubmit={createGame} 
+                />
+            </Suspense>
 
             <Footer />
         </div>

@@ -24,7 +24,16 @@ export default defineConfig({
   },
   build: {
     target: 'esnext', // Crucial: Prevents esbuild from attempting to transpile/rename symbols
-    minify: 'esbuild',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: false, // Keep console for debugging since user has issues
+        pure_funcs: ['console.info', 'console.debug']
+      },
+      mangle: {
+        safari10: true, // Better compatibility for mobile/wallet browsers
+      }
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -39,12 +48,17 @@ export default defineConfig({
                return 'aptos-sdk-core';
              }
 
-             // 2. Razor Kit wallet provider (grouped to avoid its own init cycles)
-             if (id.includes('@razorlabs') || id.includes('razorkit') || id.includes('@radix-ui')) {
-               return 'wallet-suite';
+             // 2. Razor Kit core (Isolated to prevent init cycles)
+             if (id.includes('@razorlabs') || id.includes('razorkit')) {
+               return 'wallet-kit-core';
              }
 
-             // 2. Fragmented Adapters: Split these individually to avoid the "qe" symbol collision
+             // 2.1 UI Primitives (Radix, etc) - Split from wallet kit to reduce initial load
+             if (id.includes('@radix-ui')) {
+               return 'ui-primitives';
+             }
+
+             // 2.2 Fragmented Adapters: Split these individually to avoid the "qe" symbol collision
              if (id.includes('wallet-adapter') || id.includes('aptos-connect')) {
                return id.toString().split('node_modules/')[1].split('/')[0].toString();
              }

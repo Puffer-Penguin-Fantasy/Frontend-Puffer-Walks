@@ -24,7 +24,7 @@ import userAvatar from "../assets/user-avatar.png";
 
 export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     const { address: rawAddress } = useAccount();
-    const { disconnect, signAndSubmitTransaction } = useWallet();
+    const { disconnect, signAndSubmitTransaction, connected } = useWallet();
     const { playClick } = useSound();
     const [expandedKey, setExpandedKey] = useState<string | null>(null);
     
@@ -66,9 +66,15 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
         }
     }, [initialUsername, initialImage, isEditing, isLoading]);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         playClick();
-        disconnect();
+        try {
+            if (connected) {
+                await disconnect();
+            }
+        } catch (error) {
+            console.error("Disconnect error:", error);
+        }
         onClose();
     };
 

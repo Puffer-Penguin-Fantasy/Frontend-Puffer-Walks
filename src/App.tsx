@@ -1,16 +1,26 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAccount } from '@razorlabs/razorkit'
 import LoginPage from './pages/Login'
 import SettingsPage from './pages/Settings'
 import Callback from './pages/Callback'
 
-import LeaderboardPage from './pages/Leaderboard'
-import ProfilePage from './pages/Profile'
-import PrivacyPage from './pages/Privacy'
-import GuidanceDemo from './pages/GuidanceDemo'
+// Lazy load pages and heavy components
+const LeaderboardPage = lazy(() => import('./pages/Leaderboard'))
+const ProfilePage = lazy(() => import('./pages/Profile'))
+const PrivacyPage = lazy(() => import('./pages/Privacy'))
+const GuidanceDemo = lazy(() => import('./pages/GuidanceDemo'))
+const AppGuidance = lazy(() => import('./components/AppGuidance').then(m => ({ default: m.AppGuidance })))
+
 import { NavigationDock } from './components/NavigationDock'
 import { TooltipProvider } from './components/ui/tooltip'
-import { AppGuidance } from './components/AppGuidance'
+
+// Loading fallback component
+const PageLoader = () => (
+	<div className="fixed inset-0 flex items-center justify-center bg-[#0a0a0a] z-[3000]">
+		<div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+	</div>
+)
 
 
 function AppRoutes() {
@@ -44,8 +54,10 @@ function App() {
 	return (
 		<BrowserRouter>
 			<TooltipProvider delayDuration={0}>
-				<AppGuidance />
-				<AppRoutes />
+				<Suspense fallback={<PageLoader />}>
+					<AppGuidance />
+					<AppRoutes />
+				</Suspense>
 				<NavigationDock />
 			</TooltipProvider>
 		</BrowserRouter>
