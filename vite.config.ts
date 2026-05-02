@@ -24,16 +24,7 @@ export default defineConfig({
   },
   build: {
     target: 'esnext', // Crucial: Prevents esbuild from attempting to transpile/rename symbols
-    minify: 'terser',
-    terserOptions: {
-      mangle: {
-         keep_fnames: true
-      },
-      compress: {
-        passes: 2,
-        dead_code: true,
-      },
-    },
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -67,8 +58,8 @@ export default defineConfig({
                return 'ui-suite';
              }
 
-             // 3. React Core (Isolated to prevent CJS/ESM shim initialization errors)
-             if (id.includes('react') || id.includes('react-dom')) {
+             // 3. React Core & Sync Shims (Isolated to prevent CJS/ESM shim initialization errors)
+             if (id.includes('react') || id.includes('react-dom') || id.includes('use-sync-external-store')) {
                return 'react-vendor';
              }
 
