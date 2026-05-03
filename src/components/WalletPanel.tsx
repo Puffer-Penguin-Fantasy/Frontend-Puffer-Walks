@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LogOut, ChevronDown, Camera, Check, Loader2 } from "lucide-react";
+import { LogOut, ChevronDown, Camera, Check, Loader2, Volume2, VolumeX } from "lucide-react";
 import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { FitbitConnector } from "../integrations/fitbit/components/FitbitConnector";
 import { useArcticPenguin } from "../hooks/useArcticPenguin";
@@ -25,7 +25,7 @@ import userAvatar from "../assets/user-avatar.png";
 export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     const { address: rawAddress } = useAccount();
     const { disconnect, signAndSubmitTransaction, connected } = useWallet();
-    const { playClick } = useSound();
+    const { playClick, isMuted, toggleMute } = useSound();
     const [expandedKey, setExpandedKey] = useState<string | null>(null);
     
     // Profile Edit State
@@ -449,6 +449,58 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                             >
                                                 <div className="pt-2 space-y-4">
                                                     <FitbitConnector variant="row" disabled={false} />
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                                <div className="border-b border-white/10">
+                                    <button 
+                                        onClick={() => { 
+                                            playClick(); 
+                                            setExpandedKey(expandedKey === "audio" ? null : "audio"); 
+                                        }}
+                                        className="w-full flex items-center justify-between py-7 group"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "audio" ? "text-white border-b-2 border-white" : "text-white/80 group-hover:text-white"}`}>
+                                                Audio Settings
+                                            </span>
+                                        </div>
+                                        <motion.div
+                                            animate={{ rotate: expandedKey === "audio" ? 180 : 0 }}
+                                            className="text-white/60 group-hover:text-white transition-colors"
+                                        >
+                                            <ChevronDown size={22} strokeWidth={1} />
+                                        </motion.div>
+                                    </button>
+                                    <AnimatePresence initial={false}>
+                                        {expandedKey === "audio" && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: "auto", opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.15, ease: "circOut" }}
+                                                className="overflow-hidden pb-8"
+                                            >
+                                                <div className="pt-2">
+                                                    <button
+                                                        onClick={() => { playClick(); toggleMute(); }}
+                                                        className="w-full flex items-center justify-between py-3 hover:bg-white/5 transition-all rounded-lg px-2"
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`p-2 rounded-lg ${isMuted ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
+                                                                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                                                            </div>
+                                                            <div className="text-left">
+                                                                <div className="text-sm font-bold text-white">{isMuted ? 'Muted' : 'Sound On'}</div>
+                                                                <div className="text-xs text-white/40">Toggle click sound effects</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${isMuted ? 'bg-white/10' : 'bg-blue-500'}`}>
+                                                            <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all duration-200 ${isMuted ? 'left-1' : 'left-6'}`} />
+                                                        </div>
+                                                    </button>
                                                 </div>
                                             </motion.div>
                                         )}

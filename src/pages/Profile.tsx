@@ -5,17 +5,15 @@ import { useGame } from "../hooks/useGame";
 import { useSound } from "../hooks/useSound";
 import { useArcticPenguin } from "../hooks/useArcticPenguin";
 import { useFitbit } from "../integrations/fitbit/hooks/useFitbit";
-import { Activity } from "lucide-react";
 import {
   Trophy,
-  MapPin,
   Copy,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Image as ImageIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GameCard } from "../components/GameCard";
@@ -94,7 +92,7 @@ export default function Profile() {
       <main className="container mx-auto px-4 pt-32 pb-32 max-w-6xl relative">
         {/* Carousel Hero Section */}
         <div className="relative group mb-16 bg-white/5 backdrop-blur-xl rounded-[20px] border border-white/10 overflow-hidden">
-          <div className="h-[320px] md:h-[280px] relative">
+          <div className="h-[360px] md:h-[300px] relative">
             <AnimatePresence mode="wait">
               {currentSlide === 0 ? (
                 <motion.div
@@ -103,12 +101,12 @@ export default function Profile() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="p-8 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-8 h-full"
+                  className="p-8 pb-20 md:p-12 md:pb-16 flex items-center justify-center h-full"
                 >
                   <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
 
-                  <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 relative z-10 text-center md:text-left">
-                    <div className="relative w-28 h-28 md:w-32 md:h-32 flex-shrink-0">
+                  <div className="flex flex-row items-center justify-center gap-5 md:gap-10 relative z-10 text-left w-full max-w-2xl mx-auto">
+                    <div className="relative w-24 h-24 md:w-32 md:h-32 flex-shrink-0">
                       <img src={pfpFrame} alt="Frame" className="absolute inset-0 w-full h-full pointer-events-none" />
                       <div className="relative w-[75%] h-[75%] mx-auto mt-[12.5%] rounded-full overflow-hidden bg-black/40 z-10">
                         <img
@@ -120,34 +118,36 @@ export default function Profile() {
                     </div>
 
                     <div>
-                      <h1 className="text-2xl md:text-3xl font-xirod mb-3 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
+                      <h1 className="text-xl md:text-3xl font-xirod mb-2 md:mb-3 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70 truncate">
                         {username}
                       </h1>
-                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-4">
+                      <div className="flex flex-col md:flex-row md:items-center gap-2.5 md:gap-4">
                         <div
                           onClick={handleCopy}
-                          className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] md:text-xs font-mono text-white/50 cursor-pointer hover:bg-white/10 transition-all group"
+                          className="flex items-center gap-2 w-fit px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] md:text-xs font-mono text-white/50 cursor-pointer hover:bg-white/10 transition-all group"
                         >
                           {shortAddress}
                           {copied ? <CheckCircle2 size={12} className="text-green-500" /> : <Copy size={12} className="group-hover:text-white transition-colors" />}
                         </div>
-                        <div className="flex items-center gap-2 text-[10px] md:text-xs text-blue-400 tracking-tight">
-                          <MapPin size={12} className="md:w-3.5 md:h-3.5" /> Joined {userGames.length} Games
-                        </div>
-                        {isFitbitConnected && (
-                          <div className="flex items-center gap-2 text-[10px] md:text-xs text-emerald-400 tracking-tight">
-                            <Activity size={12} className="md:w-3.5 md:h-3.5" /> 
-                            {`Fitbit: ${fitbitSteps?.toLocaleString() ?? 0}`} steps
-                            <button
-                              onClick={() => fetchSteps()}
-                              disabled={isSyncing}
-                              className={`ml-1 p-1 hover:bg-white/10 rounded-full transition-all ${isSyncing ? 'animate-spin opacity-50' : 'opacity-70 hover:opacity-100'}`}
-                              title="Refresh steps"
-                            >
-                              <RefreshCw size={10} />
-                            </button>
+                        
+                        <div className="flex items-center gap-4">
+                          <div className="text-[10px] md:text-xs text-blue-400 tracking-tight font-medium">
+                            Joined {userGames.length} Games
                           </div>
-                        )}
+                          {isFitbitConnected && (
+                            <div className="flex items-center gap-1.5 text-[10px] md:text-xs text-emerald-400 tracking-tight font-medium">
+                              {`Fitbit: ${fitbitSteps?.toLocaleString() ?? 0}`} steps
+                              <button
+                                onClick={(e) => { e.stopPropagation(); fetchSteps(); }}
+                                disabled={isSyncing}
+                                className={`ml-0.5 p-1 hover:bg-white/10 rounded-full transition-all ${isSyncing ? 'animate-spin opacity-50' : 'opacity-70 hover:opacity-100'}`}
+                                title="Refresh steps"
+                              >
+                                <RefreshCw size={10} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -159,24 +159,24 @@ export default function Profile() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="px-8 py-6 md:px-12 md:py-8 h-full flex flex-col justify-center"
+                  className="px-8 pt-8 pb-20 md:px-12 md:pt-10 md:pb-16 h-full flex flex-col"
                 >
                   <div className="absolute top-0 left-0 w-64 h-64 bg-purple-500/10 blur-[100px] rounded-full pointer-events-none" />
 
                   <div className="relative z-10 h-full flex flex-col">
                     <h3 className="text-sm md:text-base text-white/90 mb-4 flex items-center gap-2 tracking-tight">
-                      <Sparkles className="w-4 h-4 text-yellow-400" />
+                      <ImageIcon className="w-4 h-4 text-blue-400" />
                       NFT Collection
                     </h3>
 
-                    <div className="flex-1 min-h-0 flex items-center">
+                    <div className="flex-1 min-h-0 flex items-start pt-2">
                       {arcticLoading ? (
                         <div className="flex items-center gap-3 text-white/40 w-full justify-center">
                           <Loader2 size={24} className="animate-spin text-blue-500" />
                           <span className="text-lg font-light">Scanning collection...</span>
                         </div>
                       ) : arcticData.hasNFT ? (
-                        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide w-full">
+                        <div className="flex flex-wrap md:flex-nowrap gap-4 md:gap-6 overflow-x-auto md:overflow-x-visible pb-4 scrollbar-hide w-full items-start">
                           {arcticData.nfts.map((nft: any, idx: number) => {
                             const tokenData = nft.current_token_data;
                             let imgUri = tokenData?.token_uri || "";
@@ -185,7 +185,7 @@ export default function Profile() {
                             }
 
                             return (
-                              <div key={idx} className="flex-shrink-0 w-32 md:w-36 group/nft cursor-pointer">
+                              <div key={idx} className="flex-shrink-0 w-28 md:w-32 group/nft cursor-pointer">
                                 <div className="relative aspect-square rounded-xl overflow-hidden bg-black/40 transition-all mb-2">
                                   {imgUri && imgUri.trim() !== "" ? (
                                     <img
@@ -225,7 +225,7 @@ export default function Profile() {
           </div>
 
           {/* New Bottom Control Bar */}
-          <div className="absolute bottom-6 left-0 right-0 px-8 flex items-center justify-between z-40">
+          <div className="absolute bottom-5 left-0 right-0 px-8 flex items-center justify-between z-40">
             <button
               onClick={prevSlide}
               className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all active:scale-90"
