@@ -195,7 +195,7 @@ app.post(["/fitbit/steps", "/auth/fitbit/steps"], async (req, res) => {
       access_token = await refreshAccessToken(wallet);
     }
 
-    const fitbitRes = await fetch(`https://api.fitbit.com/1/user/-/activities/tracker/steps/date/${date}/1d.json`, {
+    const fitbitRes = await fetch(`https://api.fitbit.com/1/user/-/activities/steps/date/${date}/1d.json`, {
       headers: { Authorization: `Bearer ${access_token}` },
     });
 
@@ -203,12 +203,12 @@ app.post(["/fitbit/steps", "/auth/fitbit/steps"], async (req, res) => {
       if (fitbitRes.status === 401) {
         try {
           access_token = await refreshAccessToken(wallet);
-          const retryRes = await fetch(`https://api.fitbit.com/1/user/-/activities/tracker/steps/date/${date}/1d.json`, {
+          const retryRes = await fetch(`https://api.fitbit.com/1/user/-/activities/steps/date/${date}/1d.json`, {
             headers: { Authorization: `Bearer ${access_token}` },
           });
           if (!retryRes.ok) throw new Error("Retry failed");
           const retryData = await retryRes.json();
-          const trackerSteps = retryData?.['activities-tracker-steps'];
+          const trackerSteps = retryData?.['activities-steps'];
           const steps = trackerSteps && trackerSteps.length > 0 ? parseInt(trackerSteps[0].value, 10) : 0;
           return res.json({ steps });
         } catch {
@@ -220,7 +220,7 @@ app.post(["/fitbit/steps", "/auth/fitbit/steps"], async (req, res) => {
     }
 
     const data = await fitbitRes.json();
-    const trackerSteps = data?.['activities-tracker-steps'];
+    const trackerSteps = data?.['activities-steps'];
     const steps = trackerSteps && trackerSteps.length > 0 ? parseInt(trackerSteps[0].value, 10) : 0;
     res.json({ steps });
   } catch (err) {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAccount } from "@razorlabs/razorkit";
 import { useProfile } from "../hooks/useProfile";
 import { useGame } from "../hooks/useGame";
@@ -14,7 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  Loader2
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GameCard } from "../components/GameCard";
@@ -30,7 +31,14 @@ export default function Profile() {
   const { profileImage, username } = useProfile(normalizedAddress);
   const { games, joinGame, claimRewards } = useGame();
   const { data: arcticData, isLoading: arcticLoading } = useArcticPenguin(normalizedAddress);
-  const { steps: fitbitSteps, isConnected: isFitbitConnected } = useFitbit();
+  const { steps: fitbitSteps, isConnected: isFitbitConnected, fetchSteps, isSyncing } = useFitbit();
+
+  // ✅ Safety net: force a fresh fetch when profile page mounts and Fitbit is connected
+  useEffect(() => {
+    if (isFitbitConnected) {
+      fetchSteps();
+    }
+  }, [isFitbitConnected]);
   const { playClick } = useSound();
   const [copied, setCopied] = React.useState(false);
   const [isWalletOpen, setIsWalletOpen] = React.useState(false);
@@ -130,6 +138,14 @@ export default function Profile() {
                           <div className="flex items-center gap-2 text-[10px] md:text-xs text-emerald-400 tracking-tight">
                             <Activity size={12} className="md:w-3.5 md:h-3.5" /> 
                             {`Fitbit: ${fitbitSteps?.toLocaleString() ?? 0}`} steps
+                            <button
+                              onClick={() => fetchSteps()}
+                              disabled={isSyncing}
+                              className={`ml-1 p-1 hover:bg-white/10 rounded-full transition-all ${isSyncing ? 'animate-spin opacity-50' : 'opacity-70 hover:opacity-100'}`}
+                              title="Refresh steps"
+                            >
+                              <RefreshCw size={10} />
+                            </button>
                           </div>
                         )}
                       </div>

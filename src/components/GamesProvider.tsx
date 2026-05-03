@@ -27,6 +27,8 @@ interface GamesContextType {
   claimLegacyPinFees: () => Promise<any>;
   getPinTreasuryBalance: () => Promise<number>;
   hashString: (input: string) => Promise<number[]>;
+  userProfiles: Record<string, any>;
+  fetchProfiles: (addresses: string[]) => Promise<void>;
 }
 
 const GamesContext = createContext<GamesContextType | undefined>(undefined);
@@ -39,6 +41,7 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
   const [secondaryAdminAddress, setSecondaryAdminAddress] = useState<string>("");
   const [oracleAddress, setOracleAddress] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
+  const [userProfiles, setUserProfiles] = useState<Record<string, any>>({});
   const hasLoadedOnce = useRef(false);
   const fbGamesCache = useRef<{ data: Record<string, any>, fetchedAt: number } | null>(null);
 
@@ -575,7 +578,34 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       claimPinFees,
       claimLegacyPinFees,
       getPinTreasuryBalance,
-      hashString
+      hashString,
+      userProfiles,
+      fetchProfiles: async (addresses: string[]) => {
+        const uniqueAddrs = Array.from(new Set(addresses.map(a => a?.toLowerCase()).filter(Boolean)));
+        const uncachedAddrs = uniqueAddrs.filter(addr => !userProfiles[addr!]);
+        
+        if (uncachedAddrs.length === 0) return;
+  
+        const chunks = [];
+        for (let i = 0; i < uncachedAddrs.length; i += 30) {
+          chunks.push(uncachedAddrs.slice(i, i + 30));
+        }
+  
+        const newProfiles: Record<string, any> = { ...userProfiles };
+        try {
+          const { query, where, getDocs, collection, documentId } = await import("firebase/firestore");
+          for (const chunk of chunks) {
+            const q = query(collection(db, "users"), where(documentId(), "in", chunk));
+            const snap = await getDocs(q);
+            snap.docs.forEach(doc => {
+              newProfiles[doc.id] = doc.data();
+            });
+          }
+          setUserProfiles(newProfiles);
+        } catch (err) {
+          console.error("Error batch fetching profiles:", err);
+        }
+      }
     }}>
       {children}
     </GamesContext.Provider>

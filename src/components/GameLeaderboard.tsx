@@ -5,7 +5,7 @@ import { FlickeringGrid } from "./FlickeringGrid";
 import { db } from "../lib/firebase";
 import { collection, onSnapshot, doc, setDoc } from "firebase/firestore";
 import { useAccount } from "@razorlabs/razorkit";
-import { useGame } from "../hooks/useGame";
+import { useGamesContext } from "./GamesProvider";
 import {
   Users,
   Trophy,
@@ -108,45 +108,16 @@ export function GameLeaderboard({
   gameId,
 }: GameLeaderboardProps) {
   const { address } = useAccount();
-  const { pinUser, games } = useGame();
+  const { pinUser, games, userProfiles, fetchProfiles } = useGamesContext();
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [userProfiles, setUserProfiles] = useState<Record<string, any>>({});
   const myAddress = address?.toLowerCase();
   
   // Batch fetch profiles when participants change
   useEffect(() => {
     if (participants.length === 0) return;
-    
-    const fetchProfiles = async () => {
-      const uniqueAddrs = Array.from(new Set(participants.map(p => p.walletAddress?.toLowerCase()).filter(Boolean)));
-      const uncachedAddrs = uniqueAddrs.filter(addr => !userProfiles[addr!]);
-      
-      if (uncachedAddrs.length === 0) return;
-
-      // Firestore "in" query limit is 30
-      const chunks = [];
-      for (let i = 0; i < uncachedAddrs.length; i += 30) {
-        chunks.push(uncachedAddrs.slice(i, i + 30));
-      }
-
-      const newProfiles: Record<string, any> = { ...userProfiles };
-      try {
-        const { query, where, getDocs, documentId } = await import("firebase/firestore");
-        for (const chunk of chunks) {
-          const q = query(collection(db, "users"), where(documentId(), "in", chunk));
-          const snap = await getDocs(q);
-          snap.docs.forEach(doc => {
-            newProfiles[doc.id] = doc.data();
-          });
-        }
-        setUserProfiles(newProfiles);
-      } catch (err) {
-        console.error("Error batch fetching profiles:", err);
-      }
-    };
-
-    fetchProfiles();
-  }, [participants]);
+    const uniqueAddrs = participants.map(p => p.walletAddress).filter(Boolean);
+    fetchProfiles(uniqueAddrs);
+  }, [participants, fetchProfiles]);
 
   const me = participants.find(p => p.walletAddress?.toLowerCase() === myAddress);
   const hasActivePin = !!(me?.isPinned && me?.pinnedUntil && me?.pinnedUntil > Date.now());
