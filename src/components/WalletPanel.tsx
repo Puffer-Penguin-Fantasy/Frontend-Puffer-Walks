@@ -69,13 +69,20 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     const handleLogout = async () => {
         playClick();
         try {
-            if (connected) {
+            if (connected && typeof disconnect === 'function') {
+                // Some wallets/libraries have race conditions on disconnect
                 await disconnect();
             }
-        } catch (error) {
-            console.error("Disconnect error:", error);
+        } catch (error: any) {
+            // Ignore the specific r.filter error if it's internal to the library
+            if (error?.message?.includes('filter')) {
+                console.warn("Caught internal wallet disconnect warning:", error.message);
+            } else {
+                console.error("Disconnect error:", error);
+            }
+        } finally {
+            onClose();
         }
-        onClose();
     };
 
     const handlePfpClick = () => {
@@ -486,7 +493,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                 <div className="pt-2">
                                                     <button
                                                         onClick={() => { playClick(); toggleMute(); }}
-                                                        className="w-full flex items-center justify-between py-3 hover:bg-white/5 transition-all rounded-lg px-2"
+                                                        className="w-full flex items-center justify-between py-3 transition-all rounded-lg px-2"
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <div className={`p-2 rounded-lg ${isMuted ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>

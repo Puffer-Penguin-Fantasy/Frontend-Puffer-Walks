@@ -32,13 +32,13 @@ export function useFitbit() {
       return;
     }
 
-    console.log("[useFitbit] Starting snapshot for:", standardizedWallet);
+    
     const unsubscribe = onSnapshot(
       doc(db, "fitbit_tokens", standardizedWallet),
       (snap) => {
         const data = snap.data();
         const connected = snap.exists() && data?.connected === true;
-        console.log("[useFitbit] Snapshot update:", { exists: snap.exists(), connected, wallet: standardizedWallet });
+        
         setIsConnected(connected);
         if (!connected) setSteps(null);
       },
@@ -56,17 +56,17 @@ export function useFitbit() {
     const wallet = walletRef.current;
     const connected = isConnectedRef.current;
 
-    console.log("[useFitbit] fetchSteps called:", { wallet, connected, customDateStr });
+    
 
     if (!wallet || !connected) {
-      console.warn("[useFitbit] fetchSteps aborted: not connected or no wallet");
+      
       return 0;
     }
 
     setIsSyncing(true);
     try {
       const dateStr = customDateStr || new Date().toISOString().split("T")[0];
-      console.log("[useFitbit] Fetching from:", `${AUTH_SERVER}/auth/fitbit/steps`);
+      
 
       const res = await fetch(`${AUTH_SERVER}/auth/fitbit/steps`, {
         method: "POST",
@@ -88,14 +88,18 @@ export function useFitbit() {
 
       const data = await res.json();
       const stepCount = data.steps ?? 0;
-      console.log("[useFitbit] Success:", { stepCount });
+      
 
       if (!customDateStr) {
         setSteps(stepCount);
       }
       return stepCount;
     } catch (err) {
-      console.error("[useFitbit] fetchSteps error:", err);
+      if (err instanceof TypeError && err.message === "Failed to fetch") {
+        console.warn("[useFitbit] Auth server not reachable. Ensure backend is running on 3001.");
+      } else {
+        console.error("[useFitbit] fetchSteps error:", err);
+      }
       return 0;
     } finally {
       setIsSyncing(false);

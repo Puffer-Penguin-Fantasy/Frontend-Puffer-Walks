@@ -90,7 +90,7 @@ export default function LoginPage() {
                 >
                     <div className="w-full flex flex-col items-center gap-4">
                         <div className="w-full max-w-sm [&_button]:!w-full [&_button]:!bg-transparent [&_button]:!text-black [&_button]:!rounded-none [&_button]:!h-16 [&_button]:!font-xirod [&_button]:!text-sm [&_button]:hover:!opacity-90 [&_button]:!transition-all [&_button]:!border-none [&_button]:!flex [&_button]:!justify-center [&_button]:!items-center [&_button]:!mx-auto" style={buttonStyle}>
-                            <ConnectButton label="Connect Wallet" />
+                            <ConnectButton>Connect Wallet</ConnectButton>
                         </div>
                     </div>
 
