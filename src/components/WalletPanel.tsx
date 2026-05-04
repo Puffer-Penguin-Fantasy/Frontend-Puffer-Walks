@@ -201,7 +201,6 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
     };
 
     const toggleEdit = () => {
-        if (!arcticData?.hasNFT && !isEditing) return;
         if (isEditing) {
             saveChanges();
         } else {
