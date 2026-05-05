@@ -582,7 +582,7 @@ export function GameLeaderboard({
             </div>
             <div className="flex flex-col gap-1 text-center border-r border-white/10 px-1">
               <span className="text-[9px] md:text-[10px] text-white/40 lowercase whitespace-nowrap">steps</span>
-              <span className="text-white text-xs md:text-base font-normal flex items-center justify-center h-[24px]">{(minDailySteps / 1000).toFixed(0)}k</span>
+              <span className="text-white text-xs md:text-base font-normal flex items-center justify-center h-[24px]">{minDailySteps >= 1000 ? `${minDailySteps / 1000}k` : minDailySteps}</span>
             </div>
             <div className="flex flex-col gap-1 text-center px-1">
               <span className="text-[9px] md:text-[10px] text-white/40 lowercase whitespace-nowrap">players</span>
