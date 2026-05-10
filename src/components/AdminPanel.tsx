@@ -1,8 +1,9 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Loader2, Coins, Trash2, CheckCircle, AlertCircle } from "lucide-react";
+import { ChevronDown, Loader2, Coins, Trash2 } from "lucide-react";
 import { useGame } from "../hooks/useGame";
 import { useSound } from "../hooks/useSound";
+import { toast } from "sonner";
 import cancelBg from "../assets/gameframe/cancel.png";
 import buttonBg from "../assets/gameframe/button.png";
 import blueBg from "../assets/blue.jpg";
@@ -40,7 +41,6 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const [isSweeping, setIsSweeping] = React.useState(false);
   const [pinBalance, setPinBalance] = React.useState<number>(0);
   const [pinWithdrawAmount, setPinWithdrawAmount] = React.useState<string>("");
-  const [toast, setToast] = React.useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   const fetchPinBalance = React.useCallback(async () => {
     const bal = await getPinTreasuryBalance();
@@ -51,10 +51,6 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     if (isOpen) fetchPinBalance();
   }, [isOpen, fetchPinBalance]);
 
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
-  };
 
   const now = Math.floor(Date.now() / 1000);
   const endedGames = games.filter(g => parseInt(g.end_time) < now && !g.admin_claimed);
@@ -69,9 +65,9 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     setClaimingGameId(gameId);
     try {
       await claimAdminFees(gameId);
-      showToast("Admin fees claimed!");
+      toast.success("Admin fees claimed!");
     } catch (err: any) {
-      showToast(err?.message?.includes("wait_period") ? "Game hasn't ended yet." : "Failed to claim fees.", "error");
+      toast.error(err?.message?.includes("wait_period") ? "Game hasn't ended yet." : "Failed to claim fees.");
     } finally {
       setClaimingGameId(null);
     }
@@ -82,9 +78,9 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     setDeletingGameId(gameId);
     try {
       await deleteGame(gameId);
-      showToast("Game cancelled!");
+      toast.success("Game cancelled!");
     } catch {
-      showToast("Cannot cancel — game may have participants.", "error");
+      toast.error("Cannot cancel — game may have participants.");
     } finally {
       setDeletingGameId(null);
     }
@@ -150,24 +146,6 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                 <span className="text-[12px] font-xirod text-white/80">Protocol Settings</span>
               </div>
 
-              {/* Toast */}
-              <AnimatePresence>
-                {toast && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className={`absolute top-20 left-8 right-8 z-30 px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-medium ${
-                      toast.type === "success"
-                        ? "bg-green-500/20 border border-green-500/30 text-green-300"
-                        : "bg-red-500/20 border border-red-500/30 text-red-300"
-                    }`}
-                  >
-                    {toast.type === "success" ? <CheckCircle size={13} /> : <AlertCircle size={13} />}
-                    {toast.msg}
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
               {/* Sections */}
               <div className="p-8 overflow-y-auto flex-1 space-y-2 no-scrollbar pt-24">
@@ -267,15 +245,15 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                   <button
                                     onClick={async () => {
                                       const amt = parseFloat(pinWithdrawAmount);
-                                      if (isNaN(amt) || amt <= 0) return showToast("Enter valid amount", "error");
+                                      if (isNaN(amt) || amt <= 0) return toast.error("Enter valid amount");
                                       playClick();
                                       setIsClaimingPin(true);
                                       try {
                                         await claimPinFees(amt);
-                                        showToast(`Successfully withdrawn ${amt} MOVE`);
+                                        toast.success(`Successfully withdrawn ${amt} MOVE`);
                                         setPinWithdrawAmount("");
                                         fetchPinBalance();
-                                      } catch { showToast("Withdrawal failed", "error"); }
+                                      } catch { toast.error("Withdrawal failed"); }
                                       finally { setIsClaimingPin(false); }
                                     }}
                                     disabled={isClaimingPin || !pinWithdrawAmount}
@@ -294,9 +272,9 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                       setIsSweeping(true);
                                       try {
                                         await claimLegacyPinFees();
-                                        showToast("Legacy fees recovered!");
+                                        toast.success("Legacy fees recovered!");
                                         fetchPinBalance();
-                                      } catch { showToast("No legacy fees found to sweep."); }
+                                      } catch { toast.error("No legacy fees found to sweep."); }
                                       finally { setIsSweeping(false); }
                                     }}
                                     disabled={isSweeping}
@@ -371,8 +349,8 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                     try {
                                       await updateSecondaryAdmin(secondaryAdminInput);
                                       setSecondaryAdminInput("");
-                                      showToast("Treasury wallet updated!");
-                                    } catch { showToast("Update failed.", "error"); }
+                                      toast.success("Treasury wallet updated!");
+                                    } catch { toast.error("Update failed."); }
                                     finally { setIsUpdatingAdmin(false); }
                                   }}
                                   disabled={isUpdatingAdmin || !secondaryAdminInput}
@@ -407,8 +385,8 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                     try {
                                       await updateOracleAddress(oracleInput);
                                       setOracleInput("");
-                                      showToast("Oracle authority updated!");
-                                    } catch { showToast("Update failed.", "error"); }
+                                      toast.success("Oracle authority updated!");
+                                    } catch { toast.error("Update failed."); }
                                     finally { setIsUpdatingOracle(false); }
                                   }}
                                   disabled={isUpdatingOracle || !oracleInput}

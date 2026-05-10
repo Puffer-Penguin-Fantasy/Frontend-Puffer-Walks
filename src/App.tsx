@@ -11,6 +11,7 @@ const ProfilePage = lazy(() => import('./pages/Profile'))
 const PrivacyPage = lazy(() => import('./pages/Privacy'))
 const GuidanceDemo = lazy(() => import('./pages/GuidanceDemo'))
 const AppGuidance = lazy(() => import('./components/AppGuidance').then(m => ({ default: m.AppGuidance })))
+const GlobalLeaderboard = lazy(() => import('./components/GlobalLeaderboard').then(m => ({ default: m.GlobalLeaderboard })))
 
 import { NavigationDock } from './components/NavigationDock'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -58,6 +59,10 @@ function AppRoutes() {
 			<Route 
 				path="/leaderboard/:gameId" 
 				element={isConnected ? <LeaderboardPage /> : <Navigate to="/" />} 
+			/>
+			<Route 
+				path="/leaderboard" 
+				element={isConnected ? <GlobalLeaderboard /> : <Navigate to="/" />} 
 			/>
 			<Route 
 				path="/profile" 

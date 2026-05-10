@@ -11,6 +11,7 @@ import { db } from "../lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useSound } from "../hooks/useSound";
 import { MODULE_ADDRESS } from "../GameOnchain/movement_service/constants";
+import { toast } from "sonner";
 
 interface WalletPanelProps {
     isOpen: boolean;
@@ -163,10 +164,12 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
             }, { merge: true });
             
             console.log("Profile saved successfully to Firebase!");
+            toast.success("Profile saved locally!");
             await refreshProfile();
             setIsEditing(false);
         } catch (err: any) {
             console.error("Error saving profile to Firestore:", err);
+            toast.error("Failed to save profile.");
         } finally {
             setIsSaving(false);
         }
@@ -190,11 +193,18 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
             
             if (response) {
                 console.log("Profile saved on-chain!");
+                toast.success("Identity Notarized!", {
+                    description: "Your profile has been recorded on the Movement Network.",
+                    duration: 5000
+                });
                 await saveChanges(); // Also sync to firebase
                 await refreshProfile();
             }
         } catch (err: any) {
             console.error("Error saving on-chain:", err);
+            toast.error("Notarization Failed", {
+                description: err?.message || "Something went wrong while saving to the blockchain."
+            });
         } finally {
             setIsSaving(false);
         }
@@ -328,7 +338,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                             {isLoading ? (
                                                                 <Loader2 size={32} className="animate-spin opacity-40" />
                                                             ) : (profileImage && profileImage.trim() !== "") ? (
-                                                                                                                                 <img src={profileImage || undefined} alt="Profile" loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                                                                <img src={profileImage || undefined} alt="Profile" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                                             ) : (
                                                                 <img src={userAvatar} alt="Default Avatar" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-50" />
                                                             )}

@@ -83,8 +83,15 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
     try {
       playClick();
       await onJoin(game.id);
-    } catch (err) {
+      toast.success("Transaction Confirmed!", {
+        description: `You have successfully joined "${game.name}".`,
+        duration: 5000,
+      });
+    } catch (err: any) {
       console.error("Join failed:", err);
+      toast.error("Transaction Failed", {
+        description: err?.message || "Something went wrong while joining the game.",
+      });
     } finally {
       setIsJoining(false);
     }
@@ -96,8 +103,15 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
     try {
       playClick();
       await onClaim(game.id);
-    } catch (err) {
+      toast.success("Rewards Claimed!", {
+        description: "Your steps have been rewarded on the Movement Network.",
+        duration: 5000,
+      });
+    } catch (err: any) {
       console.error("Claim failed:", err);
+      toast.error("Claim Failed", {
+        description: err?.message || "There was an error claiming your rewards.",
+      });
     } finally {
       setIsClaiming(false);
     }

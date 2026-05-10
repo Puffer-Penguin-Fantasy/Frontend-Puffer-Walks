@@ -437,7 +437,7 @@ export function GameLeaderboard({
       )}
 
       {/* Main Container Card */}
-      <div className="bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 flex flex-col w-full overflow-hidden relative shadow-2xl">
+      <div className="bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 flex flex-col w-full overflow-hidden relative shadow-2xl">
         {/* Header Hero Area */}
         <div className="p-6 pb-2">
           <div className="flex items-center justify-between gap-4 mb-6">

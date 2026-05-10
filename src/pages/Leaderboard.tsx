@@ -6,7 +6,7 @@ import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { WalletPanel } from "../components/LazyPanels";
 import { Suspense } from "react";
-import { ArrowLeft, Trophy, Lock } from "lucide-react";
+import { Trophy, Lock } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { db } from "../lib/firebase";
 import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
@@ -181,12 +181,6 @@ export default function LeaderboardPage() {
       <Header onOpenWallet={() => setIsWalletOpen(true)} />
 
       <main className="container mx-auto px-4 pt-24 max-w-5xl">
-        <button 
-          onClick={() => { playClick(); navigate("/"); }} 
-          className="flex items-center gap-1 text-muted-foreground text-sm hover:text-white transition-colors lowercase mb-6 group"
-        >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> back
-        </button>
 
         <GameLeaderboard
           gameId={game.id}

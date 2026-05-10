@@ -150,9 +150,11 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
       setImageFile(null); setImagePreview(null);
       setSponsorLogoFile(null); setSponsorLogoPreview(null);
       // Removed onClose() call here to show success screen
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to launch competition. Check console for details.");
+      toast.error("Launch Failed", {
+        description: err?.message || "Something went wrong while launching the competition.",
+      });
     } finally {
       setIsSubmitting(false);
     }

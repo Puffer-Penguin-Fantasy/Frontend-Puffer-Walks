@@ -101,11 +101,11 @@ export default function Profile() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="p-8 pb-20 md:p-12 md:pb-16 flex items-center justify-center h-full"
+                  className="p-8 pb-20 md:p-12 md:pb-16 flex items-center justify-start h-full"
                 >
                   <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
 
-                  <div className="flex flex-row items-center justify-center gap-5 md:gap-10 relative z-10 text-left w-full max-w-2xl mx-auto">
+                  <div className="flex flex-row items-center justify-start gap-5 md:gap-10 relative z-10 text-left w-full max-w-2xl">
                     <div className="relative w-24 h-24 md:w-32 md:h-32 flex-shrink-0">
                       <img src={pfpFrame} alt="Frame" className="absolute inset-0 w-full h-full pointer-events-none" />
                       <div className="relative w-[75%] h-[75%] mx-auto mt-[12.5%] rounded-full overflow-hidden bg-black/40 z-10">
@@ -176,7 +176,7 @@ export default function Profile() {
                           <span className="text-lg font-light">Scanning collection...</span>
                         </div>
                       ) : arcticData.hasNFT ? (
-                        <div className="flex flex-wrap md:flex-nowrap gap-4 md:gap-6 overflow-x-auto md:overflow-x-visible pb-4 scrollbar-hide w-full items-start">
+                        <div className="flex flex-nowrap gap-4 md:gap-6 overflow-x-auto pb-4 scrollbar-hide w-full items-start">
                           {arcticData.nfts.map((nft: any, idx: number) => {
                             const tokenData = nft.current_token_data;
                             let imgUri = tokenData?.token_uri || "";
