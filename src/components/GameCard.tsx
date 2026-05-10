@@ -5,6 +5,8 @@ import { useAccount } from "@razorlabs/razorkit";
 import { useSound } from "../hooks/useSound";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import moveLogo from "../assets/movement-testnet-token.png";
+
 
 interface GameCardProps {
   game: Game;
@@ -20,7 +22,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
   const [isJoining, setIsJoining] = React.useState(false);
   const [isClaiming, setIsClaiming] = React.useState(false);
   const depositInMove = (parseFloat(game.deposit_amount) / 100_000_000).toFixed(2);
-  const totalPool = ((parseFloat(game.prize_pool) + parseFloat(game.sponsored_pool)) / 100_000_000).toFixed(2);
+  const totalPool = ((parseFloat(game.prize_pool || "0") + parseFloat(game.sponsored_pool || "0")) / 100_000_000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const startTime = new Date(parseInt(game.start_time) * 1000);
   const endTime = new Date(parseInt(game.end_time) * 1000);
   // Subtract 1 second to get the last active day (e.g., if it ends at 00:00 on the 13th, the last active day is the 12th)
@@ -139,8 +141,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
           {game.image_url && game.image_url.trim() !== "" && (
             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-white/10">
                <img 
-                  src={game.image_url} 
-                  alt={game.name} 
+                                     src={game.image_url || undefined}                   alt={game.name} 
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover transition-transform duration-500"
@@ -152,9 +153,11 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
               {game.name}
             </h3>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[11px] font-bold text-blue-400">
-                {totalPool} Move
-              </span>
+              {parseFloat(game.prize_pool || "0") + parseFloat(game.sponsored_pool || "0") > 0 && (
+                <span className="text-[11px] font-bold text-blue-400">
+                  {totalPool} Move
+                </span>
+              )}
               {game.is_sponsored && (
                 <span className="bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-md text-[9px] font-semibold tracking-tight">Sponsored</span>
               )}
@@ -229,7 +232,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
                   ) : (
                     <>
                       {claimableReward}
-                      <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3 h-3 rounded-full" loading="lazy" decoding="async" alt="MOVE" />
+                                                                                                                                                                                                <img src={moveLogo} className="w-3 h-3 rounded-full" loading="lazy" decoding="async" alt="MOVE" />
                     </>
                   )}
                 </button>
@@ -254,7 +257,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
         {game.is_sponsored && game.sponsor_image_url && game.sponsor_image_url.trim() !== "" && (
           <div className="absolute top-0 right-0 p-1 px-3 bg-amber-500/10 rounded-bl-xl flex items-center gap-1.5">
             <span className="text-[8px] font-medium text-amber-500 lowercase tracking-tight">sponsored by</span>
-            <img src={game.sponsor_image_url} alt={game.sponsor_name} loading="lazy" decoding="async" className="w-3.5 h-3.5 rounded-full object-cover" />
+                        <img src={game.sponsor_image_url || undefined} alt={game.sponsor_name} loading="lazy" decoding="async" className="w-3.5 h-3.5 rounded-full object-cover" />
             <span className="text-[9px] font-semibold text-amber-500 leading-none">{game.sponsor_name}</span>
           </div>
         )}
@@ -263,10 +266,12 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
           <span className="text-[9px] text-white/40 font-normal tracking-tight mb-0.5 whitespace-nowrap">Entry Fee</span>
           <div className="flex items-center gap-1">
              <span className="text-sm font-bold text-white">
-               {parseFloat(depositInMove).toFixed(0)}
+                               {parseFloat(depositInMove).toLocaleString(undefined, { maximumFractionDigits: 2 })}
              </span>
-             <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3 h-3 rounded-full" loading="lazy" decoding="async" alt="MOVE" />
-             <span className="text-[10px] text-blue-400 font-bold whitespace-nowrap">+10</span>
+                                                                                                                                                                              <img src={moveLogo} className="w-3 h-3 rounded-full" loading="lazy" decoding="async" alt="MOVE" />
+              {(game.gameFee || 0) > 0 && (
+                <span className="text-[10px] text-blue-400 font-bold whitespace-nowrap">+{game.gameFee}</span>
+              )}
           </div>
         </div>
         <div className="flex flex-col items-center border-l border-white/10 pl-1">

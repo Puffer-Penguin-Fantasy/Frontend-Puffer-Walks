@@ -14,6 +14,8 @@ import {
   Share2
 } from "lucide-react";
 import { toast } from "sonner";
+import moveLogo from "../assets/movement-testnet-token.png";
+
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -46,6 +48,7 @@ interface GameLeaderboardProps {
   entryDeposit: number;
   sponsorName?: string;
   sponsorImageUrl?: string;
+  gameFee: number;
   gameId: string;
 }
 
@@ -73,7 +76,7 @@ function ParticipantProfile({ fallbackName, isMe, isPodium, rank, isPinned, prof
           }`}
       >
         {pfp && pfp.trim() !== "" ? (
-          <img src={pfp} alt={username} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                    <img src={pfp || undefined} alt={username} loading="lazy" decoding="async" className="w-full h-full object-cover" />
         ) : (
           <span className={isPodium ? "text-white" : "text-muted-foreground"}>
             {username?.[0]?.toUpperCase() || "?"}
@@ -105,6 +108,7 @@ export function GameLeaderboard({
   entryDeposit,
   sponsorName,
   sponsorImageUrl,
+  gameFee,
   gameId,
 }: GameLeaderboardProps) {
   const { address } = useAccount();
@@ -416,7 +420,7 @@ export function GameLeaderboard({
           <div className="flex items-center gap-3 py-4 px-6 rounded-3xl transition-all">
             <div className="w-10 h-10 flex items-center justify-center overflow-hidden flex-shrink-0">
               {sponsorImageUrl && sponsorImageUrl.trim() !== "" ? (
-                <img src={sponsorImageUrl} alt={sponsorName} loading="lazy" decoding="async" className="w-full h-full object-contain grayscale opacity-60 invert" />
+                                <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-[8px] text-blue-400 font-bold border border-blue-400/20">M</div>
               ) : (
                 <Trophy className="text-muted-foreground/30" size={20} />
               )}
@@ -440,7 +444,7 @@ export function GameLeaderboard({
             <div className="flex items-center gap-3 overflow-hidden flex-1">
               <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border border-white/10">
                 {imageUrl && imageUrl.trim() !== "" ? (
-                  <img src={imageUrl} alt={gameName} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                                    <img src={imageUrl || undefined} alt={gameName} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-white/5 flex items-center justify-center text-white font-bold text-xl uppercase">
                     {gameName?.[0]}
@@ -570,8 +574,8 @@ export function GameLeaderboard({
                 <div className="text-white text-xs md:text-base font-bold tabular-nums leading-none">
                   {Math.floor(entryDeposit || 0)}
                 </div>
-                <img src="https://explorer.movementnetwork.xyz/logo.png" className="w-3.5 h-3.5 md:w-4 md:h-4 rounded-full" loading="lazy" decoding="async" alt="MOVE" />
-                <span className="text-blue-400 text-[9px] font-bold">+10</span>
+                                                                                                                                                                                                <img src={moveLogo} className="w-3.5 h-3.5 md:w-4 md:h-4 rounded-full" loading="lazy" decoding="async" alt="MOVE" />
+                {gameFee > 0 && <span className="text-blue-400 text-[9px] font-bold">+{gameFee}</span>}
               </div>
             </div>
             <div className="flex flex-col gap-1 text-center border-r border-white/10 px-1">

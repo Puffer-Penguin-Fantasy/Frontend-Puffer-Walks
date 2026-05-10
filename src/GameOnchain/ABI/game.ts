@@ -89,7 +89,8 @@ export const ABI = {
                 "address",
                 "u64",
                 "0x1::string::String",
-                "0x1::string::String"
+                "0x1::string::String",
+                "u64"
             ],
             "return": []
         },
@@ -265,7 +266,7 @@ export const ABI = {
                 },
                 {
                     "name": "sponsors",
-                    "type": `vector<${MODULE_ADDRESS}::game::Sponsor>`
+                    "type": "vector<0x4f1da6c96672d8db3ba87fb56ec9aba88b8eecaa3db2466f360b905d74cbdc4d::game::Sponsor>"
                 },
                 {
                     "name": "prize_vault",
@@ -342,6 +343,21 @@ export const ABI = {
             ]
         },
         {
+            "name": "GameFeeStore",
+            "is_native": false,
+            "is_event": false,
+            "abilities": [
+                "key"
+            ],
+            "generic_type_params": [],
+            "fields": [
+                {
+                    "name": "fees",
+                    "type": "0x1::table::Table<u64, u64>"
+                }
+            ]
+        },
+        {
             "name": "GameJoined",
             "is_native": false,
             "is_event": true,
@@ -395,7 +411,7 @@ export const ABI = {
             "fields": [
                 {
                     "name": "games",
-                    "type": `vector<${MODULE_ADDRESS}::game::Game>`
+                    "type": "vector<0x4f1da6c96672d8db3ba87fb56ec9aba88b8eecaa3db2466f360b905d74cbdc4d::game::Game>"
                 },
                 {
                     "name": "admin",
@@ -440,9 +456,9 @@ export const ABI = {
             "is_native": false,
             "is_event": false,
             "abilities": [
-                "store",
                 "copy",
-                "drop"
+                "drop",
+                "store"
             ],
             "generic_type_params": [],
             "fields": [
@@ -523,7 +539,7 @@ export const ABI = {
             "fields": [
                 {
                     "name": "games_status",
-                    "type": `0x1::table::Table<u64, ${MODULE_ADDRESS}::game::GameProgress>`
+                    "type": "0x1::table::Table<u64, 0x4f1da6c96672d8db3ba87fb56ec9aba88b8eecaa3db2466f360b905d74cbdc4d::game::GameProgress>"
                 }
             ]
         }

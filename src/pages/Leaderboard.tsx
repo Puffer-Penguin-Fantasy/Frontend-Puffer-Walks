@@ -199,6 +199,7 @@ export default function LeaderboardPage() {
           entryDeposit={parseFloat(game.deposit_amount || "0") / 100_000_000}
           sponsorName={game.sponsor_name}
           sponsorImageUrl={game.sponsor_image_url}
+          gameFee={game.gameFee || 0}
         />
       </main>
 

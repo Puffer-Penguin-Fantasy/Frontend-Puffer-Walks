@@ -30,5 +30,6 @@ export interface Game {
   daily_forfeited_pool: string[];
   day_winners_count: string[];
   perfect_winners_count: string;
+  gameFee?: number;
   days_completed?: boolean[];
 }

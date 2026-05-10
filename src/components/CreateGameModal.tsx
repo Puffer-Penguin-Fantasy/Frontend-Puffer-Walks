@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { db } from "../lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { toast } from "sonner";
+import moveLogo from "../assets/movement-testnet-token.png";
+
 // useAccount removed to fix build error
 
 interface CreateGameModalProps {
@@ -34,6 +36,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
     code: "",
     sponsor_name: "",
     sponsor_amount: "0",
+    protocol_fee: 10,
   });
 
   const uploadToPinata = async (file: File) => {
@@ -81,7 +84,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
 
   const deposit = parseFloat(formData.deposit) || 0;
   const sponsorAmt = parseFloat(formData.sponsor_amount) || 0;
-  const protocolFee = 10; // 10 MOVE game fee
+  const protocolFee = formData.protocol_fee; // Selectable game fee
   const sponsorProtocolCut = sponsorAmt > 0 ? +(sponsorAmt * 0.2).toFixed(2) : 0;
   const totalCost = deposit + protocolFee + sponsorAmt;
 
@@ -114,6 +117,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
         sponsor_amount: sponsorAmt,
         sponsor_image_url,
         required_nft: "0x0000000000000000000000000000000000000000000000000000000000000000",
+        protocol_fee: protocolFee,
       });
 
       // Saving metadata to Firestore for instant discovery
@@ -133,6 +137,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
           sponsorName: formData.sponsor_name,
           sponsorImageUrl: sponsor_image_url,
           sponsorAmount: sponsorAmt,
+          gameFee: protocolFee,
           createdAt: Date.now(),
         }, { merge: true });
       }
@@ -141,7 +146,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
       setCreatedData({ name: formData.name, code: formData.code, isPublic: formData.is_public });
       setIsCreated(true);
 
-      setFormData({ name: "", deposit: "10", min_steps: "3000", start_date: "", end_date: "", duration_days: 0, is_public: true, code: "", sponsor_name: "", sponsor_amount: "0" });
+      setFormData({ name: "", deposit: "10", min_steps: "3000", start_date: "", end_date: "", duration_days: 0, is_public: true, code: "", sponsor_name: "", sponsor_amount: "0", protocol_fee: 10 });
       setImageFile(null); setImagePreview(null);
       setSponsorLogoFile(null); setSponsorLogoPreview(null);
       // Removed onClose() call here to show success screen
@@ -272,7 +277,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                       className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/40 flex items-center justify-center cursor-pointer overflow-hidden transition-all"
                     >
                       {imagePreview && imagePreview.trim() !== "" ? (
-                        <img src={imagePreview} alt="Banner" className="w-full h-full object-cover" />
+                                                <img src={imagePreview || undefined} alt="Banner" className="w-full h-full object-cover" />
                       ) : (
                         <Upload size={16} className="text-white/30" />
                       )}
@@ -286,9 +291,9 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                   <div>
                     <label className="text-[11px] font-medium text-white/40 mb-2 block tracking-widest">Entry Deposit (MOVE)</label>
                     <div className="relative">
-                      <img src="https://explorer.movementnetwork.xyz/logo.png" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" alt="MOVE" />
+                                                                                                                                                                                <img src={moveLogo} className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" alt="MOVE" />
                       <input
-                        required type="number" step="1" min="1"
+                        required type="number" step="1" min="0"
                         className="w-full h-11 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-blue-500/50 transition-all"
                         value={formData.deposit}
                         onChange={e => setFormData({ ...formData, deposit: e.target.value })}
@@ -306,6 +311,30 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                         onChange={e => setFormData({ ...formData, min_steps: e.target.value })}
                       />
                     </div>
+                  </div>
+                </div>
+
+                {/* Protocol Fee Selection */}
+                <div>
+                  <label className="text-[11px] font-medium text-white/40 mb-3 block uppercase tracking-widest">Protocol Game Fee</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { val: 0, label: "Free" },
+                      { val: 5, label: "5 MOVE" },
+                      { val: 10, label: "10 MOVE" },
+                    ].map(opt => (
+                      <button
+                        key={String(opt.val)} type="button"
+                        onClick={() => setFormData({ ...formData, protocol_fee: opt.val })}
+                        className={`p-3 rounded-xl border text-center transition-all ${
+                          formData.protocol_fee === opt.val
+                            ? "bg-blue-500/15 border-blue-500/40 text-blue-300"
+                            : "bg-white/5 border-white/10 text-white/50 hover:bg-white/8"
+                        }`}
+                      >
+                        <div className="text-xs font-semibold">{opt.label}</div>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -424,7 +453,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                         className="w-full h-11 px-4 bg-white/5 border border-white/10 rounded-xl flex items-center gap-2 cursor-pointer hover:border-amber-500/30 transition-all"
                       >
                         {sponsorLogoPreview && sponsorLogoPreview.trim() !== "" ? (
-                          <img src={sponsorLogoPreview} alt="Logo" className="w-6 h-6 rounded-full object-cover" />
+                                                    <img src={sponsorLogoPreview || undefined} alt="Logo" className="w-6 h-6 rounded-full object-cover" />
                         ) : (
                           <Upload size={14} className="text-white/30" />
                         )}
@@ -435,7 +464,7 @@ export function CreateGameModal({ isOpen, onClose, onSubmit }: CreateGameModalPr
                     <div className="col-span-2">
                       <label className="text-[11px] text-white/30 mb-1.5 block">Sponsor Deposit (MOVE)</label>
                       <div className="relative">
-                        <img src="https://explorer.movementnetwork.xyz/logo.png" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" alt="MOVE" />
+                                                                                                                                                                                    <img src={moveLogo} className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" alt="MOVE" />
                         <input
                           type="number" step="1" min="0" placeholder="0"
                           className="w-full h-11 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-amber-500/40 transition-all"

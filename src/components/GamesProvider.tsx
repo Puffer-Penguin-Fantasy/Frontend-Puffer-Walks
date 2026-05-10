@@ -3,10 +3,12 @@ import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { db } from "../lib/firebase";
 import { doc, setDoc, collection, getDocs, getDoc } from "firebase/firestore";
 import type { Game } from "../types/game";
+import { toast } from "sonner";
+
 
 import { aptosClient } from "../GameOnchain/movement_service/movement-client";
 import { MODULE_ADDRESS } from "../GameOnchain/movement_service/constants";
-const CONTRACT_NAME = "puffer_walks";
+
 
 interface GamesContextType {
   games: Game[];
@@ -143,6 +145,7 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
           admin_claimed: g.admin_claimed || false,
           join_code_hash: hexToBytes(typeof g.join_code_hash === "object" ? g.join_code_hash.value : (g.join_code_hash || "")),
           join_code: fbData?.joinCode || "",
+          gameFee: fbData?.gameFee !== undefined ? fbData.gameFee : 0,
         };
       });
 
@@ -293,8 +296,11 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       }
       await fetchGames();
       return response;
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error joining game:", err);
+      if (err?.message?.includes("INSUFFICIENT_BALANCE") || err?.message?.includes("octas")) {
+        toast.error("Insufficient Balance", { description: "You don't have enough MOVE tokens to pay for gas or the entry fee." });
+      }
       throw err;
     }
   };
@@ -334,8 +340,11 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
 
       await fetchGames();
       return response;
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error claiming rewards:", err);
+      if (err?.message?.includes("INSUFFICIENT_BALANCE")) {
+        toast.error("Insufficient Balance", { description: "You don't have enough MOVE tokens for gas." });
+      }
       throw err;
     }
   };
@@ -357,7 +366,8 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
             params.required_nft || "0x0000000000000000000000000000000000000000000000000000000000000000",
             Math.floor((params.sponsor_amount || 0) * 100_000_000),
             params.sponsor_name || "",
-            params.sponsor_image_url || ""
+            params.sponsor_image_url || "",
+            Math.floor((params.protocol_fee || 0) * 100_000_000)
           ],
         }
       });
@@ -368,7 +378,7 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
         // Try to find the GameCreated event and extract game_id
         if ((result as any).events) {
           const creationEvent = (result as any).events.find((e: any) => 
-            e.type.includes(`${CONTRACT_NAME}::game::GameCreated`) || 
+            e.type.includes(`${MODULE_ADDRESS}::game::GameCreated`) || 
             e.type.includes("GameCreated")
           );
           if (creationEvent) {
@@ -381,8 +391,11 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       }
       await fetchGames();
       return { ...response, game_id: gameIdFromEvent };
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error creating game:", err);
+      if (err?.message?.includes("INSUFFICIENT_BALANCE")) {
+        toast.error("Insufficient Balance", { description: "You don't have enough MOVE tokens to cover the launch fee and gas." });
+      }
       throw err;
     }
   };
@@ -488,8 +501,11 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       }, { merge: true });
 
       return response;
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error pinning user:", err);
+      if (err?.message?.includes("INSUFFICIENT_BALANCE")) {
+        toast.error("Insufficient Balance", { description: "You don't have enough MOVE tokens for the 200 MOVE pin fee." });
+      }
       throw err;
     }
   };
