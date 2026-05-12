@@ -31,15 +31,23 @@ export function GlobalLeaderboard() {
         );
         
         const querySnapshot = await getDocs(q);
-        const data = querySnapshot.docs.map((doc, index) => {
-          const userData = doc.data();
-          return {
-            rank: index + 1,
-            address: doc.id,
-            steps: userData.totalSteps || 0,
-            username: userData.username
-          };
-        });
+        const data = querySnapshot.docs
+          .map((doc) => {
+            const userData = doc.data();
+            return {
+              address: doc.id,
+              steps: userData.totalSteps || 0,
+              username: userData.username
+            };
+          })
+          .filter(user => {
+            // Keep real usernames only
+            return user.username && user.username !== "Puffer User" && !user.username.startsWith("0x");
+          })
+          .map((user, index) => ({
+            ...user,
+            rank: index + 1
+          }));
         
         setEntries(data);
       } catch (err) {
@@ -132,7 +140,7 @@ export function GlobalLeaderboard() {
                             </span>
                           </td>
                           <td className="px-6 py-5 text-sm font-mono text-white/70 group-hover:text-white transition-colors">
-                            {user.username || user.address}
+                            {user.username || formatAddress(user.address)}
                           </td>
                           <td className="px-6 py-5 text-right">
                             <div className="flex items-center justify-end gap-2 text-base font-bold text-white">
