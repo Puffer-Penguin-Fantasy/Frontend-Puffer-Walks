@@ -5,13 +5,28 @@ import LoginPage from './pages/Login'
 import SettingsPage from './pages/Settings'
 import Callback from './pages/Callback'
 
+const lazyWithRetry = (componentImport: () => Promise<any>) =>
+	lazy(async () => {
+		try {
+			return await componentImport();
+		} catch (error: any) {
+			if (
+				error.message?.includes("Failed to fetch dynamically imported module") ||
+				error.message?.includes("Importing a module script failed")
+			) {
+				window.location.reload();
+			}
+			throw error;
+		}
+	});
+
 // Lazy load pages and heavy components
-const LeaderboardPage = lazy(() => import('./pages/Leaderboard'))
-const ProfilePage = lazy(() => import('./pages/Profile'))
-const PrivacyPage = lazy(() => import('./pages/Privacy'))
-const GuidanceDemo = lazy(() => import('./pages/GuidanceDemo'))
-const AppGuidance = lazy(() => import('./components/AppGuidance').then(m => ({ default: m.AppGuidance })))
-const GlobalLeaderboard = lazy(() => import('./components/GlobalLeaderboard').then(m => ({ default: m.GlobalLeaderboard })))
+const LeaderboardPage = lazyWithRetry(() => import('./pages/Leaderboard'))
+const ProfilePage = lazyWithRetry(() => import('./pages/Profile'))
+const PrivacyPage = lazyWithRetry(() => import('./pages/Privacy'))
+const GuidanceDemo = lazyWithRetry(() => import('./pages/GuidanceDemo'))
+const AppGuidance = lazyWithRetry(() => import('./components/AppGuidance').then(m => ({ default: m.AppGuidance })))
+const GlobalLeaderboard = lazyWithRetry(() => import('./components/GlobalLeaderboard').then(m => ({ default: m.GlobalLeaderboard })))
 
 import { NavigationDock } from './components/NavigationDock'
 import { TooltipProvider } from './components/ui/tooltip'
