@@ -180,16 +180,6 @@ export function GameLeaderboard({
   const dayColumns = Array.from({ length: numDays }, (_, i) => i + 1);
 
   const ranked: RankedParticipant[] = participants
-    .filter((p) => {
-      const profile = userProfiles[p.walletAddress?.toLowerCase() || ""];
-      const uname = profile?.username || p.username;
-      // Exclude if no username or it's the default/address
-      // We keep "me" even if no username so the user can see themselves
-      const isMe = p.walletAddress?.toLowerCase() === myAddress;
-      if (isMe) return true;
-      
-      return uname && uname !== "Puffer User" && !uname.startsWith("0x");
-    })
     .map((p) => {
       const totalSteps = dayColumns.reduce((sum, d) => {
         const s = p.days?.[`day${d}`];
