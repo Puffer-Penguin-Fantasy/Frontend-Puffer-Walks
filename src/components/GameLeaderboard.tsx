@@ -1,6 +1,16 @@
 import { useEffect, useState, useMemo } from "react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
 import { FlickeringGrid } from "./FlickeringGrid";
+import { 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip as ChartTooltip, 
+  Legend, 
+  ResponsiveContainer,
+  Area,
+  AreaChart
+} from 'recharts';
 
 import { db } from "../lib/firebase";
 import { collection, onSnapshot, doc, setDoc } from "firebase/firestore";
@@ -201,6 +211,22 @@ export function GameLeaderboard({
       return b.totalSteps - a.totalSteps || b.daysHitTarget - a.daysHitTarget;
     })
     .map((p, i) => ({ ...p, rank: i + 1 }));
+    
+  const chartData = useMemo(() => {
+    // Only show top 3
+    const top3 = ranked.slice(0, 3);
+    
+    // We want to show performance across all game days
+    return dayColumns.map(day => {
+      const dataPoint: any = { name: `Day ${day}` };
+      top3.forEach(player => {
+        // Use username or short address as the key
+        const label = player.username || (player.walletAddress ? player.walletAddress.slice(0, 6) + "…" : "unknown");
+        dataPoint[label] = player.days?.[`day${day}`] || 0;
+      });
+      return dataPoint;
+    });
+  }, [ranked, dayColumns]);
 
   const shortAddr = (addr: string) =>
     addr ? addr.slice(0, 6) + "…" + addr.slice(-4) : "--";
@@ -428,7 +454,7 @@ export function GameLeaderboard({
           <div className="flex items-center gap-3 py-4 px-6 rounded-3xl transition-all">
             <div className="w-10 h-10 flex items-center justify-center overflow-hidden flex-shrink-0">
               {sponsorImageUrl && sponsorImageUrl.trim() !== "" ? (
-                                <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-[8px] text-blue-400 font-bold border border-blue-400/20">M</div>
+                <img src={sponsorImageUrl} alt={sponsorName} className="w-full h-full object-contain rounded-full" />
               ) : (
                 <Trophy className="text-muted-foreground/30" size={20} />
               )}
@@ -610,6 +636,89 @@ export function GameLeaderboard({
             <MaterialReactTable table={table} />
           </div>
         </div>
+
+        {/* Performance Chart Area */}
+        {ranked.length > 0 && (
+          <div className="p-6 border-t border-white/10 bg-black/20">
+            <div className="flex items-center gap-2 mb-6">
+              <Trophy className="text-amber-400" size={16} />
+              <h3 className="text-sm font-bold text-white lowercase tracking-tight">Top 3 Performance</h3>
+            </div>
+            
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorP1" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#fbbf24" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorP2" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#94a3b8" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorP3" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#b45309" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#b45309" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="rgba(255,255,255,0.3)" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false}
+                    dy={10}
+                  />
+                  <YAxis 
+                    stroke="rgba(255,255,255,0.3)" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false}
+                    tickFormatter={(value) => value >= 1000 ? `${value/1000}k` : value}
+                  />
+                  <ChartTooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(0,0,0,0.8)', 
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      backdropFilter: 'blur(8px)'
+                    }}
+                    itemStyle={{ padding: '2px 0' }}
+                  />
+                  <Legend 
+                    verticalAlign="top" 
+                    align="right" 
+                    height={36}
+                    iconType="circle"
+                    formatter={(value) => <span className="text-[10px] text-white/60 lowercase ml-1">{value}</span>}
+                  />
+                  {ranked.slice(0, 3).map((player, index) => {
+                    const label = player.username || (player.walletAddress ? player.walletAddress.slice(0, 6) + "…" : "unknown");
+                    const colors = ["#fbbf24", "#94a3b8", "#b45309"];
+                    return (
+                      <Area
+                        key={label}
+                        type="monotone"
+                        dataKey={label}
+                        stroke={colors[index]}
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill={`url(#colorP${index + 1})`}
+                        animationDuration={1500}
+                      />
+                    );
+                  })}
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="text-[9px] text-white/20 mt-4 text-center lowercase">
+              Daily step count comparison for the current leaders
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
