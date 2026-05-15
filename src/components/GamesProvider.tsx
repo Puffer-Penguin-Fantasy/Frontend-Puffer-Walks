@@ -269,8 +269,16 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
         }
       });
       const hash = detectHash(response);
-      if (hash) await aptosClient.waitForTransaction({ transactionHash: hash });
-      else await new Promise(r => setTimeout(r, 2000));
+      if (hash) {
+        const result = await aptosClient.waitForTransaction({ transactionHash: hash });
+        // --- NEW SECURITY CHECK ---
+        if (!result.success) {
+          throw new Error(`Transaction failed on-chain: ${result.vm_status}`);
+        }
+      } else {
+        // If no hash, we can't verify, so we wait and hope (but this is risky)
+        await new Promise(r => setTimeout(r, 2000));
+      }
 
       const game = games.find(g => g.id === gameId);
       if (game) {
