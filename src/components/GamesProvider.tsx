@@ -67,8 +67,17 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
     return Array.from(new Uint8Array(hashBuffer));
   };
 
-  const fetchGames = useCallback(async () => {
+  const lastFetchTime = useRef<number>(0);
+  const cachedGames = useRef<any[]>([]);
+
+  const fetchGames = useCallback(async (force = false) => {
     try {
+      const now = Date.now();
+      // Throttle: If we fetched in the last 30 seconds, return cached data
+      if (!force && lastFetchTime.current > 0 && now - lastFetchTime.current < 30000) {
+        return cachedGames.current;
+      }
+
       // Only show skeletal loader on first ever load
       if (!hasLoadedOnce.current) {
         setIsLoading(true);
@@ -236,6 +245,11 @@ export function GamesProvider({ children }: { children: React.ReactNode }) {
       });
   
       setGames(finalGames.filter(g => g.id !== "unknown"));
+      
+      // Update Cache
+      cachedGames.current = finalGames;
+      lastFetchTime.current = Date.now();
+      
       return finalGames;
     } catch (err) {
       console.error("Error fetching games:", err);

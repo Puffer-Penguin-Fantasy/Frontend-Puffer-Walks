@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 
 import { db } from "../lib/firebase";
-import { collection, onSnapshot, doc, setDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, writeBatch } from "firebase/firestore";
 import { useAccount } from "@razorlabs/razorkit";
 import { useGamesContext } from "./GamesProvider";
 import {
@@ -153,27 +153,25 @@ export function GameLeaderboard({
         const data = snap.docs.map((d) => d.data() as Participant);
         setParticipants(data);
 
-        // Backfill: ensure all existing participants have a full days template
-        const backfills = snap.docs
-          .filter((d) => {
-            const p = d.data();
-            // backfill if days is missing OR doesn't have all expected day keys
-            const hasDays = p.days && Object.keys(p.days).length >= numDays;
-            return !hasDays;
-          })
-          .map((d) => {
+        // --- OPTIMIZATION: Use Firestore Batches for Backfills ---
+        const toBackfill = snap.docs.filter((d) => {
+          const p = d.data();
+          const hasDays = p.days && Object.keys(p.days).length >= numDays;
+          return !hasDays;
+        });
+
+        if (toBackfill.length > 0) {
+          const batch = writeBatch(db);
+          toBackfill.forEach((d) => {
             const existing = (d.data().days || {}) as Record<string, number>;
             const initialDays: Record<string, number> = {};
             for (let i = 1; i <= numDays; i++) {
               initialDays[`day${i}`] = existing[`day${i}`] ?? 0;
             }
-            return setDoc(
-              doc(db, "games", gameId, "participants", d.id),
-              { days: initialDays },
-              { merge: true }
-            );
+            batch.set(doc(db, "games", gameId, "participants", d.id), { days: initialDays }, { merge: true });
           });
-        if (backfills.length > 0) await Promise.all(backfills);
+          await batch.commit();
+        }
       }
     });
     return () => unsub();
@@ -189,28 +187,29 @@ export function GameLeaderboard({
   const endMonth = endDate.getUTCMonth() + 1;
   const dayColumns = Array.from({ length: numDays }, (_, i) => i + 1);
 
-  const ranked: RankedParticipant[] = participants
-    .map((p) => {
-      const totalSteps = dayColumns.reduce((sum, d) => {
-        const s = p.days?.[`day${d}`];
-        return sum + (typeof s === "number" ? s : 0);
-      }, 0);
-      const daysHitTarget = dayColumns.filter((d) => {
-        const s = p.days?.[`day${d}`];
-        return typeof s === "number" && s >= minDailySteps;
-      }).length;
+  const ranked = useMemo<RankedParticipant[]>(() => {
+    return participants
+      .map((p) => {
+        const totalSteps = dayColumns.reduce((sum, d) => {
+          const s = p.days?.[`day${d}`];
+          return sum + (typeof s === "number" ? s : 0);
+        }, 0);
+        const daysHitTarget = dayColumns.filter((d) => {
+          const s = p.days?.[`day${d}`];
+          return typeof s === "number" && s >= minDailySteps;
+        }).length;
 
-      // Check if pin is still valid (casting to strict boolean to fix TS error)
-      const hasValidPin = !!(p.isPinned && p.pinnedUntil && p.pinnedUntil > Date.now());
+        const hasValidPin = !!(p.isPinned && p.pinnedUntil && p.pinnedUntil > Date.now());
 
-      return { ...p, totalSteps, daysHitTarget, rank: 0, isPinned: hasValidPin };
-    })
-    .sort((a, b) => {
-      if (a.isPinned && !b.isPinned) return -1;
-      if (!a.isPinned && b.isPinned) return 1;
-      return b.totalSteps - a.totalSteps || b.daysHitTarget - a.daysHitTarget;
-    })
-    .map((p, i) => ({ ...p, rank: i + 1 }));
+        return { ...p, totalSteps, daysHitTarget, rank: 0, isPinned: hasValidPin };
+      })
+      .sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return b.totalSteps - a.totalSteps || b.daysHitTarget - a.daysHitTarget;
+      })
+      .map((p, i) => ({ ...p, rank: i + 1 }));
+  }, [participants, dayColumns, minDailySteps]);
     
   const chartData = useMemo(() => {
     // Only show top 3
