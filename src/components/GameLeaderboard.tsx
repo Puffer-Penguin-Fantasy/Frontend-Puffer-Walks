@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 
 import { db } from "../lib/firebase";
-import { collection, onSnapshot, doc, setDoc, writeBatch } from "firebase/firestore";
+import { collection, onSnapshot, doc, writeBatch } from "firebase/firestore";
 import { useAccount } from "@razorlabs/razorkit";
 import { useGamesContext } from "./GamesProvider";
 import {
