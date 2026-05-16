@@ -7,6 +7,8 @@ import { MODULE_ADDRESS } from "../GameOnchain/movement_service/constants";
 export interface ProfileData {
   username: string;
   profileImage: string | null;
+  referredBy: string | null;
+  referralCode: string | null;
   hasFirebaseProfile: boolean;
   hasOnChainProfile: boolean;
   isLoading: boolean;
@@ -29,6 +31,8 @@ export function useProfile(address: string | null | undefined) {
   const [profile, setProfile] = useState<ProfileData>({
     username: cachedData?.username || "Puffer User",
     profileImage: cachedData?.profileImage || null,
+    referredBy: cachedData?.referredBy || null,
+    referralCode: cachedData?.referralCode || null,
     hasFirebaseProfile: !!cachedData,
     hasOnChainProfile: cachedData?.hasOnChainProfile || false,
     isLoading: !cachedData,
@@ -55,13 +59,21 @@ export function useProfile(address: string | null | undefined) {
       // 1. Fetch from Firebase
       const userRef = doc(db, "users", address);
       const userDoc = await getDoc(userRef);
-      let firebaseData = { username: "Puffer User", profileImage: null as string | null, hasFirebaseProfile: false };
+      let firebaseData = { 
+        username: "Puffer User", 
+        profileImage: null as string | null, 
+        referredBy: null as string | null,
+        referralCode: null as string | null,
+        hasFirebaseProfile: false 
+      };
       
       if (userDoc.exists()) {
         const data = userDoc.data();
         firebaseData = {
           username: data.username || "Puffer User",
           profileImage: data.profileImage || null,
+          referredBy: data.referredBy || null,
+          referralCode: data.referralCode || null,
           hasFirebaseProfile: true,
         };
       }
@@ -91,6 +103,8 @@ export function useProfile(address: string | null | undefined) {
       localStorage.setItem(`puffer_profile_${address.toLowerCase()}`, JSON.stringify({
         username: firebaseData.username,
         profileImage: firebaseData.profileImage,
+        referredBy: firebaseData.referredBy,
+        referralCode: firebaseData.referralCode,
         hasOnChainProfile: hasOnChain,
         cachedAt: Date.now(),
       }));

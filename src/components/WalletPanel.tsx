@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LogOut, ChevronDown, Camera, Check, Loader2, Volume2, VolumeX } from "lucide-react";
+import { LogOut, ChevronDown, Camera, Check, Loader2, Volume2, VolumeX, Copy } from "lucide-react";
 import { useAccount, useWallet } from "@razorlabs/razorkit";
 import { FitbitConnector } from "../integrations/fitbit/components/FitbitConnector";
 import { useArcticPenguin } from "../hooks/useArcticPenguin";
 import { useProfile } from "../hooks/useProfile";
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "../lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, collection, getDocs, getDoc, serverTimestamp } from "firebase/firestore";
 import { useSound } from "../hooks/useSound";
+import { Share2, Award } from "lucide-react";
 import { MODULE_ADDRESS } from "../GameOnchain/movement_service/constants";
 import { toast } from "sonner";
 
@@ -40,7 +41,9 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
         isLoading: profileLoading,
         refresh: refreshProfile,
         hasOnChainProfile,
-        hasFirebaseProfile
+        hasFirebaseProfile,
+        referredBy,
+        referralCode: myShortCode
     } = useProfile(address);
 
     const [profileName, setProfileName] = useState("Puffer User");
@@ -48,7 +51,11 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
 
     const { data: arcticData, isLoading: arcticLoading } = useArcticPenguin(address);
 
-    const isLoading = profileLoading || arcticLoading;
+    // Referral States
+    const [referralCode, setReferralCode] = useState("");
+    const [isSubmittingReferral, setIsSubmittingReferral] = useState(false);
+    const [myReferrals, setMyReferrals] = useState<any[]>([]);
+    const [isLoadingReferrals, setIsLoadingReferrals] = useState(false);
 
     const shortAddress = address?.slice(0, 6) + '...' + address?.slice(-4);
 
@@ -61,21 +68,19 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
 
     // Sync state with hook data
     useEffect(() => {
-        if (!isEditing && !isLoading) {
+        if (!isEditing && !profileLoading) {
             if (initialUsername) setProfileName(initialUsername);
             if (initialImage) setProfileImage(initialImage);
         }
-    }, [initialUsername, initialImage, isEditing, isLoading]);
+    }, [initialUsername, initialImage, isEditing, profileLoading]);
 
     const handleLogout = async () => {
         playClick();
         try {
             if (connected && typeof disconnect === 'function') {
-                // Some wallets/libraries have race conditions on disconnect
                 await disconnect();
             }
         } catch (error: any) {
-            // Ignore the specific r.filter error if it's internal to the library
             if (error?.message?.includes('filter')) {
                 console.warn("Caught internal wallet disconnect warning:", error.message);
             } else {
@@ -83,6 +88,96 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
             }
         } finally {
             onClose();
+        }
+    };
+    
+    // Fetch my referrals
+    useEffect(() => {
+        const fetchReferrals = async () => {
+            if (!address) return;
+            setIsLoadingReferrals(true);
+            try {
+                const referralsRef = collection(db, "referrals", address, "referees");
+                const snap = await getDocs(referralsRef);
+                const referees = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setMyReferrals(referees);
+            } catch (err) {
+                console.error("Error fetching referrals:", err);
+            } finally {
+                setIsLoadingReferrals(false);
+            }
+        };
+
+        if (isOpen && expandedKey === "referrals") {
+            fetchReferrals();
+        }
+    }, [isOpen, address, expandedKey]);
+
+    // Auto-generate referral code if missing
+    useEffect(() => {
+        const ensureReferralCode = async () => {
+            if (address && !myShortCode && hasFirebaseProfile && !profileLoading) {
+                const newCode = Math.random().toString(36).substring(2, 9).toUpperCase();
+                try {
+                    await setDoc(doc(db, "users", address), {
+                        referralCode: newCode
+                    }, { merge: true });
+                    
+                    await setDoc(doc(db, "referral_codes", newCode), {
+                        wallet: address,
+                        createdAt: serverTimestamp()
+                    });
+                    
+                    await refreshProfile();
+                } catch (err) {
+                    console.error("Error generating referral code:", err);
+                }
+            }
+        };
+        ensureReferralCode();
+    }, [address, myShortCode, hasFirebaseProfile, profileLoading]);
+
+    const handleApplyReferral = async () => {
+        if (!address || !referralCode.trim()) return;
+        
+        const codeToTry = referralCode.trim().toUpperCase();
+        if (codeToTry === myShortCode) {
+            toast.error("You cannot refer yourself!");
+            return;
+        }
+
+        setIsSubmittingReferral(true);
+        try {
+            const codeRef = doc(db, "referral_codes", codeToTry);
+            const codeDoc = await getDoc(codeRef);
+
+            if (!codeDoc.exists()) {
+                toast.error("Invalid referral code!");
+                return;
+            }
+
+            const referrerAddr = codeDoc.data().wallet;
+
+            await setDoc(doc(db, "users", address), {
+                referredBy: referrerAddr,
+                referredAt: serverTimestamp()
+            }, { merge: true });
+
+            await setDoc(doc(db, "referrals", referrerAddr, "referees", address), {
+                walletAddress: address,
+                username: profileName,
+                profileImage: profileImage,
+                joinedAt: serverTimestamp()
+            });
+
+            toast.success("Referral applied!");
+            await refreshProfile();
+            setReferralCode("");
+        } catch (err: any) {
+            console.error("Referral error:", err);
+            toast.error("Failed to apply referral.");
+        } finally {
+            setIsSubmittingReferral(false);
         }
     };
 
@@ -286,7 +381,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                 )}
                                 <button 
                                     onClick={() => { playClick(); toggleEdit(); }}
-                                    disabled={isSaving || isLoading}
+                                    disabled={isSaving || profileLoading}
                                     className={`text-[10px] font-xirod transition-all px-4 py-1.5 rounded-full border flex items-center gap-2 ${
                                         isEditing 
                                             ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
@@ -335,7 +430,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                             className={`relative w-[75%] h-[75%] rounded-full overflow-hidden bg-black/40 flex items-center justify-center z-10 ${isEditing ? "cursor-pointer" : ""}`}
                                                             onClick={handlePfpClick}
                                                         >
-                                                            {isLoading ? (
+                                                            {profileLoading ? (
                                                                 <Loader2 size={32} className="animate-spin opacity-40" />
                                                             ) : (profileImage && profileImage.trim() !== "") ? (
                                                                 <img src={profileImage || undefined} alt="Profile" loading="lazy" decoding="async" className="w-full h-full object-cover" />
@@ -343,7 +438,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                                 <img src={userAvatar} alt="Default Avatar" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-50" />
                                                             )}
                                                             
-                                                            {isEditing && !isLoading && (
+                                                            {isEditing && !profileLoading && (
                                                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                                                                     <Camera size={24} className="text-white" />
                                                                 </div>
@@ -364,7 +459,7 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                                             </div>
                                                         ) : (
                                                             <div className="text-sm font-xirod text-white leading-tight">
-                                                                {isLoading ? "Loading..." : profileName}
+                                                                {profileLoading ? "Loading..." : profileName}
                                                             </div>
                                                         )}
                                                         <div className="text-[12px] font-bold text-white/50 px-4 py-1.5 bg-black/40 rounded-full border border-white/10 tracking-tight">
@@ -465,6 +560,122 @@ export function WalletPanel({ isOpen, onClose }: WalletPanelProps) {
                                             >
                                                 <div className="pt-2 space-y-4">
                                                     <FitbitConnector variant="row" disabled={false} />
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+
+                                <div className="border-b border-white/10">
+                                    <button 
+                                        onClick={() => { 
+                                            playClick(); 
+                                            setExpandedKey(expandedKey === "referrals" ? null : "referrals"); 
+                                        }}
+                                        className="w-full flex items-center justify-between py-7 group"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[12px] font-xirod transition-all duration-300 ${expandedKey === "referrals" ? "text-white border-b-2 border-white" : "text-white/80 group-hover:text-white"}`}>
+                                                Referrals
+                                            </span>
+                                        </div>
+                                        <motion.div
+                                            animate={{ rotate: expandedKey === "referrals" ? 180 : 0 }}
+                                            className="text-white/60 group-hover:text-white transition-colors"
+                                        >
+                                            <ChevronDown size={22} strokeWidth={1} />
+                                        </motion.div>
+                                    </button>
+                                    <AnimatePresence initial={false}>
+                                        {expandedKey === "referrals" && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: "auto", opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.15, ease: "circOut" }}
+                                                className="overflow-hidden pb-8"
+                                            >
+                                                <div className="pt-2 space-y-6">
+                                                    {/* Apply Referral */}
+                                                    {!referredBy ? (
+                                                        <div className="space-y-3">
+                                                            <div className="text-[10px] text-white/40">Have a referral code?</div>
+                                                            <div className="flex gap-2">
+                                                                <input 
+                                                                    type="text"
+                                                                    placeholder="Enter 7-character code"
+                                                                    value={referralCode}
+                                                                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                                                                    className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-blue-500/50 transition-all"
+                                                                />
+                                                                <button
+                                                                    onClick={handleApplyReferral}
+                                                                    disabled={isSubmittingReferral}
+                                                                    className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-[10px] font-bold px-4 rounded-xl transition-all"
+                                                                >
+                                                                    {isSubmittingReferral ? <Loader2 size={14} className="animate-spin" /> : "Apply"}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3">
+                                                            <Award className="text-blue-400 w-5 h-5" />
+                                                            <div className="text-[10px] text-white/60 font-medium">
+                                                                Referral active! Code used: <span className="text-white font-xirod uppercase">...</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Your Code */}
+                                                    <div className="space-y-3">
+                                                        <div className="text-[10px] text-white/40">Your Referral Code</div>
+                                                        <div 
+                                                            onClick={() => {
+                                                                if (myShortCode) {
+                                                                    navigator.clipboard.writeText(myShortCode);
+                                                                    toast.success("Code copied!");
+                                                                    playClick();
+                                                                }
+                                                            }}
+                                                            className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-white/10 transition-all"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <Share2 className="text-blue-400 w-4 h-4" />
+                                                                <span className="text-xs text-white font-xirod uppercase">{myShortCode || "Generating..."}</span>
+                                                            </div>
+                                                            <Copy size={14} className="text-white/40" />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* My Referrals List */}
+                                                    <div className="space-y-3">
+                                                        <div className="text-[10px] text-white/40">Your Referrals ({myReferrals.length})</div>
+                                                        {isLoadingReferrals ? (
+                                                            <div className="flex items-center gap-2 text-white/40 py-2">
+                                                                <Loader2 size={14} className="animate-spin" />
+                                                                <span className="text-xs">Loading squad...</span>
+                                                            </div>
+                                                        ) : myReferrals.length > 0 ? (
+                                                            <div className="grid grid-cols-5 gap-3">
+                                                                {myReferrals.map((ref, i) => (
+                                                                    <div key={i} className="relative group cursor-help" title={ref.username || "Puffer User"}>
+                                                                        <div className="aspect-square rounded-full overflow-hidden border border-white/10 bg-black/40">
+                                                                            <img 
+                                                                                src={ref.profileImage || userAvatar} 
+                                                                                alt="Referral"
+                                                                                className="w-full h-full object-cover"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="absolute -bottom-1 -right-1 bg-blue-600 rounded-full p-0.5">
+                                                                            <Check size={8} className="text-white" />
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-[11px] text-white/20 italic py-2">No referrals yet. Invite your squad!</div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </motion.div>
                                         )}
