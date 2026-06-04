@@ -1,4 +1,4 @@
-import fitbitLogo from "../assets/fitbit-logo.png";
+import fitbitLogo from "../assets/fitbit-logo.webp";
 import { useFitbit } from "../hooks/useFitbit";
 
 interface FitbitConnectorProps {

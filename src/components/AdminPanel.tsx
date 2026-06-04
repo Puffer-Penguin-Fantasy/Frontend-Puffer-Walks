@@ -4,8 +4,8 @@ import { ChevronDown, Loader2, Coins, Trash2 } from "lucide-react";
 import { useGame } from "../hooks/useGame";
 import { useSound } from "../hooks/useSound";
 import { toast } from "sonner";
-import cancelBg from "../assets/gameframe/cancel.png";
-import buttonBg from "../assets/gameframe/button.png";
+import cancelBg from "../assets/gameframe/cancel.webp";
+import buttonBg from "../assets/gameframe/button.webp";
 import blueBg from "../assets/blue.jpg";
 
 interface AdminPanelProps {

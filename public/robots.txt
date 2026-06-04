@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /callback
+
+Sitemap: https://pufferwalks.arcticpenguin.xyz/sitemap.xml

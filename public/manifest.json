@@ -1,0 +1,22 @@
+{
+  "name": "Puffer Walks",
+  "short_name": "PufferWalks",
+  "description": "Web3 fitness competitions — stake your steps and earn MOVE rewards.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

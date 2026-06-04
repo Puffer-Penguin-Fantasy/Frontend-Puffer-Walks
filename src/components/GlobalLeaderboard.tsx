@@ -20,6 +20,8 @@ export function GlobalLeaderboard() {
   const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
 
+  useEffect(() => { document.title = "Global Leaderboard — Puffer Walks"; }, []);
+
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {

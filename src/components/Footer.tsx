@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSound } from '../hooks/useSound';
 import nftImg from '../assets/tradeport.png';
 import profileImg from '../assets/editprofile.png';
-import buttonImg from '../assets/gameframe/button.png';
+import buttonImg from '../assets/gameframe/button.webp';
 
 export function Footer() {
   const [isOpen, setIsOpen] = useState(false);

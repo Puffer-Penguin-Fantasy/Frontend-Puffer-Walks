@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { db } from "../lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { toast } from "sonner";
-import moveLogo from "../assets/movement-testnet-token.png";
+import moveLogo from "../assets/movement-testnet-token.webp";
 
 // useAccount removed to fix build error
 

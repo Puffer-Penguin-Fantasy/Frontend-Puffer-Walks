@@ -42,6 +42,7 @@ export function NavigationDock() {
             <TooltipTrigger asChild>
               <button
                 id={`step-${item.id}`}
+                aria-label={item.label}
                 onClick={() => navigate(item.href)}
                 className={cn(
                   "relative p-2.5 rounded-full transition-all duration-300 group",

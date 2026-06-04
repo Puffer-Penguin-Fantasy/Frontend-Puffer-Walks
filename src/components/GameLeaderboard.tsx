@@ -24,7 +24,7 @@ import {
   Share2
 } from "lucide-react";
 import { toast } from "sonner";
-import moveLogo from "../assets/movement-testnet-token.png";
+import moveLogo from "../assets/movement-testnet-token.webp";
 
 import {
   MaterialReactTable,

@@ -5,7 +5,7 @@ import { useAccount } from "@razorlabs/razorkit";
 import { useSound } from "../hooks/useSound";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import moveLogo from "../assets/movement-testnet-token.png";
+import moveLogo from "../assets/movement-testnet-token.webp";
 
 
 interface GameCardProps {
@@ -246,7 +246,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
                   ) : (
                     <>
                       {claimableReward}
-                                                                                                                                                                                                <img src={moveLogo} className="w-3 h-3 rounded-full" loading="lazy" decoding="async" alt="MOVE" />
+                                                                                                                                                                                                <img src={moveLogo} className="w-3 h-3 rounded-full" loading="lazy" decoding="async" alt="MOVE" width="12" height="12" />
                     </>
                   )}
                 </button>
@@ -282,7 +282,7 @@ export function GameCard({ game, onJoin, onClaim, globalJoinCode }: GameCardProp
              <span className="text-sm font-bold text-white">
                                {parseFloat(depositInMove).toLocaleString(undefined, { maximumFractionDigits: 2 })}
              </span>
-                                                                                                                                                                              <img src={moveLogo} className="w-3 h-3 rounded-full" loading="lazy" decoding="async" alt="MOVE" />
+                                                                                                                                                                              <img src={moveLogo} className="w-3 h-3 rounded-full" loading="lazy" decoding="async" alt="MOVE" width="12" height="12" />
               {(game.gameFee || 0) > 0 && (
                 <span className="text-[10px] text-blue-400 font-bold whitespace-nowrap">+{game.gameFee}</span>
               )}

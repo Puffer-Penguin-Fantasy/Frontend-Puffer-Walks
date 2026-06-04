@@ -22,6 +22,8 @@ export default function SettingsPage() {
     const { games, adminAddress, isLoading: gamesLoading, joinGame, claimRewards, createGame, hashString } = useGame()
     
     const address = rawAddress?.toLowerCase();
+    React.useEffect(() => { document.title = "Active Competitions — Puffer Walks"; }, []);
+
     React.useEffect(() => {
         const url = new URL(window.location.href);
         const code = url.searchParams.get('code');
@@ -68,7 +70,7 @@ export default function SettingsPage() {
             {/* Shared Header Component */}
             <Header onOpenWallet={() => { playClick(); setIsPanelOpen(true); }} onOpenAdmin={() => { playClick(); setIsAdminPanelOpen(true); }} />
 
-            <div className="container mx-auto px-4 pt-24 pb-20 max-w-6xl">
+            <main className="container mx-auto px-4 pt-24 pb-20 max-w-6xl">
                 {/* Hero Section */}
                 <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
@@ -83,6 +85,7 @@ export default function SettingsPage() {
                         <input
                             id="step-join-code"
                             type="text"
+                            aria-label="Enter join code to discover a private competition"
                             placeholder="Enter Join Code"
                             value={discoverCode}
                             onChange={e => setDiscoverCode(e.target.value)}
@@ -207,7 +210,7 @@ export default function SettingsPage() {
                         </button>
                     </div>
                 )}
-            </div>
+            </main>
 
             <Suspense fallback={null}>
                 <WalletPanel isOpen={isPanelOpen} onClose={() => setIsPanelOpen(false)} />

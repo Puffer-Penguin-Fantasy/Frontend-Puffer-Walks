@@ -28,6 +28,12 @@ export default function LeaderboardPage() {
     return games.find((g) => g.slug === gameSlug || g.id === gameSlug);
   }, [games, gameSlug]);
 
+  useEffect(() => {
+    document.title = game?.name
+      ? `${game.name} Leaderboard — Puffer Walks`
+      : "Leaderboard — Puffer Walks";
+  }, [game?.name]);
+
   const myAddress = rawAddress?.toLowerCase();
 
   // Sync identities and metadata

@@ -1,7 +1,10 @@
+import { useEffect } from "react";
+
 export default function PrivacyPage() {
+  useEffect(() => { document.title = "Privacy Policy — Puffer Walks"; }, []);
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
-      <div className="container mx-auto px-6 py-16 max-w-3xl">
+      <main className="container mx-auto px-6 py-16 max-w-3xl">
         <h1 className="text-3xl font-bold mb-2 text-white">Privacy Policy</h1>
         <p className="text-white/40 text-sm mb-10">Last updated: April 2025</p>
 
@@ -90,7 +93,7 @@ export default function PrivacyPage() {
             ← Back to Puffer Walks
           </a>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

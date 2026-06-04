@@ -13,8 +13,8 @@ interface HeaderProps {
     onOpenAdmin?: () => void;
 }
 
-import pfpFrame from "../assets/gameframe/pfpframe.png"
-import userAvatar from "../assets/user-avatar.png"
+import pfpFrame from "../assets/gameframe/pfpframe.webp"
+import userAvatar from "../assets/user-avatar.webp"
 
 export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
     const { address, isConnected } = useAccount()
@@ -96,7 +96,7 @@ export function Header({ onOpenWallet, onOpenAdmin }: HeaderProps) {
                         className="relative w-10 h-10 md:w-11 md:h-11 cursor-pointer hover:scale-105 transition-transform flex items-center justify-center"
                         onClick={() => { playClick(); onOpenWallet(); }}
                     >
-                        <img src={pfpFrame} alt="Frame" className="absolute inset-0 w-full h-full pointer-events-none" />
+                        <img src={pfpFrame} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full pointer-events-none" />
                         <div className="relative w-[75%] h-[75%] overflow-hidden rounded-full bg-muted flex items-center justify-center z-10">
                             <img src={profileImage || userAvatar} alt="Profile" className="w-full h-full object-cover" />
                         </div>

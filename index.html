@@ -4,21 +4,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Puffer Walks</title>
+  <title>Puffer Walks — Earn Rewards for Your Steps on Movement Network</title>
+  <meta name="description" content="Puffer Walks is a Web3 fitness competition platform. Stake your steps, compete in daily challenges, and earn MOVE token rewards on the Movement Network blockchain." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://pufferwalks.arcticpenguin.xyz/" />
   <meta name="google-site-verification" content="mJYhur-JXZvg2RdeY2OivGpkTMujLujrY2NzmAO123k" />
-  <link rel="icon" type="image/png" href="/favicon.png" />
 
-  <!-- DNS and Connection Pre-warming -->
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://pufferwalks.arcticpenguin.xyz/" />
+  <meta property="og:title" content="Puffer Walks — Earn Rewards for Your Steps" />
+  <meta property="og:description" content="Compete in Web3 fitness challenges, stake your daily steps, and earn MOVE token rewards on the Movement Network." />
+  <meta property="og:image" content="https://pufferwalks.arcticpenguin.xyz/og-image.png" />
+  <meta property="og:site_name" content="Puffer Walks" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Puffer Walks — Earn Rewards for Your Steps" />
+  <meta name="twitter:description" content="Compete in Web3 fitness challenges, stake your daily steps, and earn MOVE token rewards on the Movement Network." />
+  <meta name="twitter:image" content="https://pufferwalks.arcticpenguin.xyz/og-image.png" />
+
+  <!-- Favicon & PWA -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0a0a0a" />
+
+  <!-- DNS and Connection Pre-warming (max 4 to avoid Lighthouse penalty) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://firestore.googleapis.com" />
   <link rel="preconnect" href="https://mainnet.movementnetwork.xyz" />
   <link rel="preconnect" href="https://gateway.pinata.cloud" />
-  <link rel="preconnect" href="https://api.pinata.cloud" />
 
   <!-- Asset Pre-loading -->
-  <link rel="preload" as="image" href="/src/assets/blue.jpg" />
+  <link rel="preload" as="image" href="/src/assets/Backgrounddesktop.webp" media="(min-width: 768px)" />
+  <link rel="preload" as="image" href="/src/assets/Backgroundmobile.webp" media="(max-width: 767px)" />
   <link rel="preload" as="font" href="/Xirod.otf" type="font/otf" crossorigin />
+
+  <!-- Schema.org structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Puffer Walks",
+    "url": "https://pufferwalks.arcticpenguin.xyz",
+    "description": "A Web3 fitness competition platform where users stake steps, compete in daily challenges, and earn MOVE token rewards on the Movement Network.",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Arctic Penguin",
+      "url": "https://arcticpenguin.xyz"
+    }
+  }
+  </script>
 
   <style>
     body { background-color: #0a0a0a; margin: 0; }

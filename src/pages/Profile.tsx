@@ -17,8 +17,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GameCard } from "../components/GameCard";
-import pfpFrame from "../assets/gameframe/pfpframe.png";
-import userAvatar from "../assets/user-avatar.png";
+import pfpFrame from "../assets/gameframe/pfpframe.webp";
+import userAvatar from "../assets/user-avatar.webp";
 import { Header } from "../components/Header";
 import { WalletPanel, AdminPanel } from "../components/LazyPanels";
 import { Suspense } from "react";
@@ -27,6 +27,12 @@ export default function Profile() {
   const { address } = useAccount();
   const normalizedAddress = address?.toLowerCase();
   const { profileImage, username } = useProfile(normalizedAddress);
+
+  useEffect(() => {
+    document.title = username && username !== "Puffer User"
+      ? `${username} — Puffer Walks`
+      : "My Profile — Puffer Walks";
+  }, [username]);
   const { games, joinGame, claimRewards } = useGame();
   const { data: arcticData, isLoading: arcticLoading } = useArcticPenguin(normalizedAddress);
   const { steps: fitbitSteps, isConnected: isFitbitConnected, fetchSteps, isSyncing } = useFitbit();
@@ -107,7 +113,7 @@ export default function Profile() {
 
                   <div className="flex flex-row items-center justify-start gap-5 md:gap-10 relative z-10 text-left w-full max-w-2xl">
                     <div className="relative w-24 h-24 md:w-32 md:h-32 flex-shrink-0">
-                      <img src={pfpFrame} alt="Frame" className="absolute inset-0 w-full h-full pointer-events-none" />
+                      <img src={pfpFrame} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full pointer-events-none" />
                       <div className="relative w-[75%] h-[75%] mx-auto mt-[12.5%] rounded-full overflow-hidden bg-black/40 z-10">
                         <img
                           src={profileImage || userAvatar}
